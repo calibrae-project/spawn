@@ -11,7 +11,7 @@ Test strings, that will cause failure
 */
 
 //problem seckeys
-var _test_seckey []string = []string{
+var testSeckey = []string{
 	"08efb79385c9a8b0d1c6f5f6511be0c6f6c2902963d874a3a4bacc18802528d3",
 	"78298d9ecdc0640c9ae6883201a53f4518055442642024d23c45858f45d0c3e6",
 	"04e04fe65bfa6ded50a12769a3bd83d7351b2dbff08c9bac14662b23a3294b9e",
@@ -30,9 +30,9 @@ func RandBytes(n int) []byte {
 //tests some keys that should work
 func Test_Abnormal_Keys1(t *testing.T) {
 
-	for i := 0; i < len(_test_seckey); i++ {
+	for i := 0; i < len(testSeckey); i++ {
 
-		seckey1, _ := hex.DecodeString(_test_seckey[i])
+		seckey1, _ := hex.DecodeString(testSeckey[i])
 
 		pubkey1 := make([]byte, 33)
 

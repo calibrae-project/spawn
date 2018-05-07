@@ -60,25 +60,25 @@ func TestVerify1(t *testing.T) {
 		sign, _ := hex.DecodeString(ta[i][1])
 		hasz, _ := hex.DecodeString(ta[i][2])
 
-		res := ecdsa_verify(pkey, sign, hasz)
+		res := ecdsaVerify(pkey, sign, hasz)
 		if res != 1 {
 			t.Fatal("Verify failed at", i)
 		}
 
 		hasz[0]++
-		res = ecdsa_verify(pkey, sign, hasz)
+		res = ecdsaVerify(pkey, sign, hasz)
 		if res != 0 {
 			t.Error("Verify not failed while it should", i)
 		}
-		res = ecdsa_verify(pkey[:1], sign, hasz)
+		res = ecdsaVerify(pkey[:1], sign, hasz)
 		if res >= 0 {
 			t.Error("Negative result expected", res, i)
 		}
-		res = ecdsa_verify(pkey, sign[:1], hasz)
+		res = ecdsaVerify(pkey, sign[:1], hasz)
 		if res >= 0 {
 			t.Error("Yet negative result expected", res, i)
 		}
-		res = ecdsa_verify(pkey, sign, hasz[:1])
+		res = ecdsaVerify(pkey, sign, hasz[:1])
 		if res != 0 {
 			t.Error("Zero expected", res, i)
 		}
@@ -91,7 +91,7 @@ func BenchmarkVerifyUncompressed(b *testing.B) {
 	msg, _ := hex.DecodeString("3382219555ddbb5b00e0090f469e590ba1eae03c7f28ab937de330aa60294ed6")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ecdsa_verify(key, sig, msg)
+		ecdsaVerify(key, sig, msg)
 	}
 }
 
@@ -101,7 +101,7 @@ func BenchmarkVerifyCompressed(b *testing.B) {
 	msg, _ := hex.DecodeString("3382219555ddbb5b00e0090f469e590ba1eae03c7f28ab937de330aa60294ed6")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ecdsa_verify(keyCompr, sig, msg)
+		ecdsaVerify(keyCompr, sig, msg)
 	}
 }
 
@@ -138,26 +138,26 @@ func TestWNAF(t *testing.T) {
 	var wnaf [129]int
 	var testvcs = []wnafvec{
 		{
-			"3271156f58b59bd7aa542ca6972c1910", WINDOW_A,
+			"3271156f58b59bd7aa542ca6972c1910", WindowA,
 			[]int{0, 0, 0, 0, -15, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, -9, 0, 0, 0, 0, -11, 0, 0, 0, 0, 0, -11, 0, 0, 0, 0, 13, 0, 0, 0, 0, 1, 0, 0, 0, 0, -11, 0, 0, 0, 0, -11, 0, 0, 0, 0, -5, 0, 0, 0, 0, 0, 0, -5, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 11, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 15, 0, 0, 0, 0, 11, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3},
 		},
 		{
-			"0a8a5afcb465a43b8277801311860430", WINDOW_A,
+			"0a8a5afcb465a43b8277801311860430", WindowA,
 			[]int{0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 7, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, -9, 0, 0, 0, 0, 0, 0, -15, 0, 0, 0, 0, -11, 0, 0, 0, 0, 0, -13, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -5, 0, 0, 0, 0, -13, 0, 0, 0, 0, 3, 0, 0, 0, 0, -11, 0, 0, 0, 0, 1},
 		},
 		{
-			"b1a74471baaf1a3a8b9005821491c4b4", WINDOW_G,
+			"b1a74471baaf1a3a8b9005821491c4b4", WindowG,
 			[]int{0, 0, -3795, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2633, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 705, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5959, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1679, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1361, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4551, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1693, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11},
 		},
 		{
-			"b618eba71ec03638693405c75fc1c9ab", WINDOW_G,
+			"b618eba71ec03638693405c75fc1c9ab", WindowG,
 			[]int{2475, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -249, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4549, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -6527, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7221, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -8165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -6369, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -7249, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1457},
 		},
 	}
 	for idx := range testvcs {
 		var xxx Number
 		xxx.SetHex(testvcs[idx].inp)
-		bits := ecmult_wnaf(wnaf[:], &xxx, testvcs[idx].w)
+		bits := ecmultWnaf(wnaf[:], &xxx, testvcs[idx].w)
 		if bits != len(testvcs[idx].exp) {
 			t.Error("Bad bits at idx", idx)
 		}
@@ -178,7 +178,7 @@ func TestPrecompileGej(t *testing.T) {
 	exp.X.SetHex("ce5dcac5e26ab63868ead1440f359aff29d7ffade62abe801bca97b471bcd416")
 	exp.Y.SetHex("0cc6f63793a207751d507aa4be629f0776441e4873548095bd6d39d34ce8a9d7")
 	exp.Z.SetHex("122927e4908740d51df1f03dc921c00fef68c542e7f28aa270862619cf971815")
-	pre := a.precomp(WINDOW_A)
+	pre := a.precomp(WindowA)
 	if len(pre) != 8 {
 		t.Error("Bad result length")
 	}
@@ -192,7 +192,7 @@ func TestPrecompileGej(t *testing.T) {
 	exp.X.SetHex("ce5dcac5e26ab63868ead1440f359aff29d7ffade62abe801bca97b471bcd416")
 	exp.Y.SetHex("0cc6f63793a207751d507aa4be629f0776441e4873548095bd6d39d34ce8a9d7")
 	exp.Z.SetHex("49f0fb9f1840e7a58d485c6cc394e597e521bf7d4598be2b367c27326949e507")
-	pre = a.precomp(WINDOW_A)
+	pre = a.precomp(WindowA)
 	if len(pre) != 8 {
 		t.Error("Bad result length")
 	}

@@ -1,14 +1,14 @@
 package secp256k1
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"strconv"
 	"testing"
-	"encoding/hex"
-	"crypto/rand"
 )
 
 func TestSigRecover(t *testing.T) {
-	var vs = [][6]string {
+	var vs = [][6]string{
 		{
 			"6028b9e3a31c9e725fcbd7d5d16736aaaafcc9bf157dfb4be62bcbcf0969d488",
 			"036d4a36fa235b8f9f815aa6f5457a607f956a71a035bf0970d8578bf218bb5a",
@@ -85,7 +85,6 @@ func TestSigVerify(t *testing.T) {
 	}
 }
 
-
 func TestSigSign(t *testing.T) {
 	var sec, msg, non Number
 	var sig Signature
@@ -97,7 +96,7 @@ func TestSigSign(t *testing.T) {
 	if res != 1 {
 		t.Error("res failed", res)
 	}
-	if FORCE_LOW_S {
+	if ForceLowS {
 		if recid != 0 {
 			t.Error("recid failed", recid)
 		}
@@ -107,19 +106,18 @@ func TestSigSign(t *testing.T) {
 		}
 	}
 	non.SetHex("98f9d784ba6c5c77bb7323d044c0fc9f2b27baa0a5b0718fe88596cc56681980")
-	if sig.R.Cmp(&non.Int)!=0 {
+	if sig.R.Cmp(&non.Int) != 0 {
 		t.Error("R failed", sig.R.String())
 	}
-	if FORCE_LOW_S {
+	if ForceLowS {
 		non.SetHex("1ca662aaefd6cc958ba4604fea999db133a75bf34c13334dabac7124ff0cfcc1")
 	} else {
 		non.SetHex("E3599D551029336A745B9FB01566624D870780F363356CEE1425ED67D1294480")
 	}
-	if sig.S.Cmp(&non.Int)!=0 {
+	if sig.S.Cmp(&non.Int) != 0 {
 		t.Error("S failed", sig.S.String())
 	}
 }
-
 
 func BenchmarkVerify(b *testing.B) {
 	var msg Number
@@ -138,7 +136,6 @@ func BenchmarkVerify(b *testing.B) {
 	}
 }
 
-
 func BenchmarkPrv2Pub(b *testing.B) {
 	var prv [32]byte
 	var pub [33]byte
@@ -148,7 +145,6 @@ func BenchmarkPrv2Pub(b *testing.B) {
 		BaseMultiply(prv[:], pub[:])
 	}
 }
-
 
 func BenchmarkSign(b *testing.B) {
 	var sec, msg, non Number

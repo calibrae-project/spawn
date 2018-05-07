@@ -9,7 +9,7 @@ import (
 
 
 var (
-	pre_g, pre_g_128 []XY
+	preG, pre_g_128 []XY
 	prec [64][16]XY
 	fin XY
 )
@@ -33,8 +33,8 @@ func ecmult_start() {
 	g_128.SetXYZ(&g_128j)
 
     // precompute the tables with odd multiples
-	pre_g = g.precomp(WINDOW_G)
-	pre_g_128 = g_128.precomp(WINDOW_G)
+	preG = g.precomp(WindowG)
+	pre_g_128 = g_128.precomp(WindowG)
 
 	// compute prec and fin
 	var gg XYZ
@@ -70,9 +70,9 @@ func ecmult_start() {
 
 	if false {
 		f, _ := os.Create("z_pre_g.go")
-		fmt.Fprintln(f, "package secp256k1\n\nvar pre_g = []XY {")
-		for i := range pre_g {
-			fmt.Fprintln(f, "{X:" + fe2str(&pre_g[i].X) + ", Y:" + fe2str(&pre_g[i].Y) + "},")
+		fmt.Fprintln(f, "package secp256k1\n\nvar preG = []XY {")
+		for i := range preG {
+			fmt.Fprintln(f, "{X:" + fe2str(&preG[i].X) + ", Y:" + fe2str(&preG[i].Y) + "},")
 		}
 		fmt.Fprintln(f, "}")
 		f.Close()

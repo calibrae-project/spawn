@@ -2,46 +2,51 @@ package secp256k1
 
 import (
 	"fmt"
-//	"encoding/hex"
+	//	"encoding/hex"
 )
 
-
+// XYZ -
 type XYZ struct {
-	X, Y, Z Field
+	X, Y, Z  Field
 	Infinity bool
 }
 
-func (gej XYZ) Print(lab string) {
-	if gej.Infinity {
+// Print -
+func (xyz XYZ) Print(lab string) {
+	if xyz.Infinity {
 		fmt.Println(lab + " - INFINITY")
 		return
 	}
-	fmt.Println(lab + ".X", gej.X.String())
-	fmt.Println(lab + ".Y", gej.Y.String())
-	fmt.Println(lab + ".Z", gej.Z.String())
+	fmt.Println(lab+".X", xyz.X.String())
+	fmt.Println(lab+".Y", xyz.Y.String())
+	fmt.Println(lab+".Z", xyz.Z.String())
 }
 
-
-func (r *XYZ) SetXY(a *XY) {
-	r.Infinity = a.Infinity
-	r.X = a.X
-	r.Y = a.Y
-	r.Z.SetInt(1)
+// SetXY -
+func (xyz *XYZ) SetXY(a *XY) {
+	xyz.Infinity = a.Infinity
+	xyz.X = a.X
+	xyz.Y = a.Y
+	xyz.Z.SetInt(1)
 }
 
-func (r *XYZ) IsInfinity() bool {
-	return r.Infinity
+// IsInfinity -
+func (xyz *XYZ) IsInfinity() bool {
+	return xyz.Infinity
 }
 
-func (a *XYZ) IsValid() bool {
-	if a.Infinity {
+// IsValid -
+func (xyz *XYZ) IsValid() bool {
+	if xyz.Infinity {
 		return false
 	}
 	var y2, x3, z2, z6 Field
-	a.Y.Sqr(&y2)
-	a.X.Sqr(&x3); x3.Mul(&x3, &a.X)
-	a.Z.Sqr(&z2)
-	z2.Sqr(&z6); z6.Mul(&z6, &z2)
+	xyz.Y.Sqr(&y2)
+	xyz.X.Sqr(&x3)
+	x3.Mul(&x3, &xyz.X)
+	xyz.Z.Sqr(&z2)
+	z2.Sqr(&z6)
+	z6.Mul(&z6, &z2)
 	z6.MulInt(7)
 	x3.SetAdd(&z6)
 	y2.Normalize()
@@ -49,104 +54,105 @@ func (a *XYZ) IsValid() bool {
 	return y2.Equals(&x3)
 }
 
-func (a *XYZ) get_x(r *Field) {
+func (xyz *XYZ) getX(r *Field) {
 	var zi2 Field
-	a.Z.InvVar(&zi2)
+	xyz.Z.InvVar(&zi2)
 	zi2.Sqr(&zi2)
-	a.X.Mul(r, &zi2)
+	xyz.X.Mul(r, &zi2)
 }
 
-func (a *XYZ) Normalize() {
-	a.X.Normalize()
-	a.Y.Normalize()
-	a.Z.Normalize()
+// Normalize -
+func (xyz *XYZ) Normalize() {
+	xyz.X.Normalize()
+	xyz.Y.Normalize()
+	xyz.Z.Normalize()
 }
 
-func (a *XYZ) Equals(b *XYZ) bool {
-	if a.Infinity != b.Infinity {
+// Equals -
+func (xyz *XYZ) Equals(b *XYZ) bool {
+	if xyz.Infinity != b.Infinity {
 		return false
 	}
 	// TODO: is the normalize really needed here?
-	a.Normalize()
+	xyz.Normalize()
 	b.Normalize()
-	return a.X.Equals(&b.X) && a.Y.Equals(&b.Y) && a.Z.Equals(&b.Z)
+	return xyz.X.Equals(&b.X) && xyz.Y.Equals(&b.Y) && xyz.Z.Equals(&b.Z)
 }
 
-
-func (a *XYZ) precomp(w int) (pre []XYZ) {
+func (xyz *XYZ) precomp(w int) (pre []XYZ) {
 	var d XYZ
-	pre = make([]XYZ, (1 << (uint(w)-2)))
-	pre[0] = *a;
+	pre = make([]XYZ, (1 << (uint(w) - 2)))
+	pre[0] = *xyz
 	pre[0].Double(&d)
-	for i:=1 ; i<len(pre); i++ {
+	for i := 1; i < len(pre); i++ {
 		d.Add(&pre[i], &pre[i-1])
 	}
 	return
 }
 
-
-func ecmult_wnaf(wnaf []int, a *Number, w uint) (ret int) {
+func ecmultWnaf(wnaf []int, a *Number, w uint) (ret int) {
 	var zeroes uint
 	var X Number
 	X.Set(&a.Int)
 
-	for X.Sign()!=0 {
-		for X.Bit(0)==0 {
+	for X.Sign() != 0 {
+		for X.Bit(0) == 0 {
 			zeroes++
 			X.rsh(1)
 		}
-		word := X.rsh_x(w)
+		word := X.rshX(w)
 		for zeroes > 0 {
 			wnaf[ret] = 0
 			ret++
 			zeroes--
 		}
-		if (word & (1 << (w-1))) != 0 {
+		if (word & (1 << (w - 1))) != 0 {
 			X.inc()
 			wnaf[ret] = (word - (1 << w))
 		} else {
 			wnaf[ret] = word
 		}
-		zeroes = w-1
+		zeroes = w - 1
 		ret++
 	}
 	return
 }
 
+// ECmult -
 // r = na*a + ng*G
-func (a *XYZ) ECmult(r *XYZ, na, ng *Number) {
-	var na_1, na_lam, ng_1, ng_128 Number
+func (xyz *XYZ) ECmult(r *XYZ, na, ng *Number) {
+	var na1, naLam, ng1, ng128 Number
 
-	// split na into na_1 and na_lam (where na = na_1 + na_lam*lambda, and na_1 and na_lam are ~128 bit)
-	na.split_exp(&na_1, &na_lam)
+	// split na into na1 and naLam (where na = na1 + naLam*lambda, and na1 and naLam are ~128 bit)
+	na.splitExp(&na1, &naLam)
 
-	// split ng into ng_1 and ng_128 (where gn = gn_1 + gn_128*2^128, and gn_1 and gn_128 are ~128 bit)
-	ng.split(&ng_1, &ng_128, 128)
+	// split ng into ng1 and ng128 (where gn = gn_1 + gn_128*2^128, and gn_1 and gn_128 are ~128 bit)
+	ng.split(&ng1, &ng128, 128)
 
-	// build wnaf representation for na_1, na_lam, ng_1, ng_128
-	var wnaf_na_1, wnaf_na_lam, wnaf_ng_1, wnaf_ng_128 [129]int
-	bits_na_1 := ecmult_wnaf(wnaf_na_1[:], &na_1, WINDOW_A)
-	bits_na_lam := ecmult_wnaf(wnaf_na_lam[:], &na_lam, WINDOW_A)
-	bits_ng_1 := ecmult_wnaf(wnaf_ng_1[:], &ng_1, WINDOW_G)
-	bits_ng_128 := ecmult_wnaf(wnaf_ng_128[:], &ng_128, WINDOW_G)
+	// build wnaf representation for na1, naLam, ng1, ng128
+	var wnafNa1, wnafNaLam, wnafNg1, wnafNg128 [129]int
+	bitsNa1 := ecmultWnaf(wnafNa1[:], &na1, WindowA)
+	bitsNaLam := ecmultWnaf(wnafNaLam[:], &naLam, WindowA)
+	bitsNg1 := ecmultWnaf(wnafNg1[:], &ng1, WindowG)
+	bitsNg128 := ecmultWnaf(wnafNg128[:], &ng128, WindowG)
 
-	// calculate a_lam = a*lambda
-	var a_lam XYZ
-	a.mul_lambda(&a_lam)
+	// calculate aLam = xyz*lambda
+	var aLam XYZ
+	xyz.mulLambda(&aLam)
 
-	// calculate odd multiples of a and a_lam
-	pre_a_1 := a.precomp(WINDOW_A)
-	pre_a_lam := a_lam.precomp(WINDOW_A)
+	// calculate odd multiples of xyz and aLam
+	preA1 := xyz.precomp(WindowA)
+	preALam := aLam.precomp(WindowA)
 
-	bits := bits_na_1
-	if bits_na_lam > bits {
-		bits = bits_na_lam
+	bits := bitsNa1
+	if bitsNaLam > bits {
+		bits = bitsNaLam
 	}
-	if bits_ng_1 > bits {
-		bits = bits_ng_1
+	if bitsNg1 > bits {
+		bits = bitsNg1
 	}
-	if bits_ng_128 > bits {
-		bits = bits_ng_128
+	if bitsNg128 > bits {
+		bits = bitsNg128
 	}
 
 	r.Infinity = true
@@ -155,41 +161,41 @@ func (a *XYZ) ECmult(r *XYZ, na, ng *Number) {
 	var tmpa XY
 	var n int
 
-	for i:=bits-1; i>=0; i-- {
+	for i := bits - 1; i >= 0; i-- {
 		r.Double(r)
 
-		if i < bits_na_1 {
-			n = wnaf_na_1[i]
+		if i < bitsNa1 {
+			n = wnafNa1[i]
 			if n > 0 {
-				r.Add(r, &pre_a_1[((n)-1)/2])
+				r.Add(r, &preA1[((n)-1)/2])
 			} else if n != 0 {
-				pre_a_1[(-(n)-1)/2].Neg(&tmpj)
+				preA1[(-(n)-1)/2].Neg(&tmpj)
 				r.Add(r, &tmpj)
 			}
 		}
 
-		if i < bits_na_lam {
-			n = wnaf_na_lam[i]
+		if i < bitsNaLam {
+			n = wnafNaLam[i]
 			if n > 0 {
-				r.Add(r, &pre_a_lam[((n)-1)/2])
+				r.Add(r, &preALam[((n)-1)/2])
 			} else if n != 0 {
-				pre_a_lam[(-(n)-1)/2].Neg(&tmpj)
+				preALam[(-(n)-1)/2].Neg(&tmpj)
 				r.Add(r, &tmpj)
 			}
 		}
 
-		if i < bits_ng_1 {
-			n = wnaf_ng_1[i]
+		if i < bitsNg1 {
+			n = wnafNg1[i]
 			if n > 0 {
-				r.AddXY(r, &pre_g[((n)-1)/2])
+				r.AddXY(r, &preG[((n)-1)/2])
 			} else if n != 0 {
-				pre_g[(-(n)-1)/2].Neg(&tmpa)
+				preG[(-(n)-1)/2].Neg(&tmpa)
 				r.AddXY(r, &tmpa)
 			}
 		}
 
-		if i < bits_ng_128 {
-			n = wnaf_ng_128[i]
+		if i < bitsNg128 {
+			n = wnafNg128[i]
 			if n > 0 {
 				r.AddXY(r, &pre_g_128[((n)-1)/2])
 			} else if n != 0 {
@@ -200,42 +206,42 @@ func (a *XYZ) ECmult(r *XYZ, na, ng *Number) {
 	}
 }
 
-
-func (a *XYZ) Neg(r *XYZ) {
-	r.Infinity = a.Infinity
-	r.X = a.X
-	r.Y = a.Y
-	r.Z = a.Z
+// Neg -
+func (xyz *XYZ) Neg(r *XYZ) {
+	r.Infinity = xyz.Infinity
+	r.X = xyz.X
+	r.Y = xyz.Y
+	r.Z = xyz.Z
 	r.Y.Normalize()
 	r.Y.Negate(&r.Y, 1)
 }
 
-func (a *XYZ) mul_lambda(r *XYZ) {
-	*r = *a
+func (xyz *XYZ) mulLambda(r *XYZ) {
+	*r = *xyz
 	r.X.Mul(&r.X, &TheCurve.beta)
 }
 
-
-func (a *XYZ) Double(r *XYZ) {
+// Double -
+func (xyz *XYZ) Double(r *XYZ) {
 	var t1, t2, t3, t4, t5 Field
 
-	t5 = a.Y
+	t5 = xyz.Y
 	t5.Normalize()
-	if (a.Infinity || t5.IsZero()) {
+	if xyz.Infinity || t5.IsZero() {
 		r.Infinity = true
 		return
 	}
 
-	t5.Mul(&r.Z, &a.Z)
+	t5.Mul(&r.Z, &xyz.Z)
 	r.Z.MulInt(2)
-	a.X.Sqr(&t1)
+	xyz.X.Sqr(&t1)
 	t1.MulInt(3)
 	t1.Sqr(&t2)
 	t5.Sqr(&t3)
 	t3.MulInt(2)
 	t3.Sqr(&t4)
 	t4.MulInt(2)
-	a.X.Mul(&t3, &t3)
+	xyz.X.Mul(&t3, &t3)
 	r.X = t3
 	r.X.MulInt(4)
 	r.X.Negate(&r.X, 4)
@@ -249,9 +255,9 @@ func (a *XYZ) Double(r *XYZ) {
 	r.Infinity = false
 }
 
-
-func (a *XYZ) AddXY(r *XYZ, b *XY) {
-	if a.Infinity {
+// AddXY -
+func (xyz *XYZ) AddXY(r *XYZ, b *XY) {
+	if xyz.Infinity {
 		r.Infinity = b.Infinity
 		r.X = b.X
 		r.Y = b.Y
@@ -259,27 +265,27 @@ func (a *XYZ) AddXY(r *XYZ, b *XY) {
 		return
 	}
 	if b.Infinity {
-		*r = *a
+		*r = *xyz
 		return
 	}
 	r.Infinity = false
 	var z12, u1, u2, s1, s2 Field
-	a.Z.Sqr(&z12)
-	u1 = a.X
+	xyz.Z.Sqr(&z12)
+	u1 = xyz.X
 	u1.Normalize()
 	b.X.Mul(&u2, &z12)
-	s1 = a.Y
+	s1 = xyz.Y
 	s1.Normalize()
 	b.Y.Mul(&s2, &z12)
-	s2.Mul(&s2, &a.Z)
+	s2.Mul(&s2, &xyz.Z)
 	u1.Normalize()
 	u2.Normalize()
 
 	if u1.Equals(&u2) {
 		s1.Normalize()
 		s2.Normalize()
-		if (s1.Equals(&s2)) {
-			a.Double(r)
+		if s1.Equals(&s2) {
+			xyz.Double(r)
 		} else {
 			r.Infinity = true
 		}
@@ -294,7 +300,7 @@ func (a *XYZ) AddXY(r *XYZ, b *XY) {
 	i.Sqr(&i2)
 	h.Sqr(&h2)
 	h.Mul(&h3, &h2)
-	r.Z = a.Z
+	r.Z = xyz.Z
 	r.Z.Mul(&r.Z, &h)
 	u1.Mul(&t, &h2)
 	r.X = t
@@ -310,34 +316,34 @@ func (a *XYZ) AddXY(r *XYZ, b *XY) {
 	r.Y.SetAdd(&h3)
 }
 
-
-func (a *XYZ) Add(r, b *XYZ) {
-	if a.Infinity {
+// Add -
+func (xyz *XYZ) Add(r, b *XYZ) {
+	if xyz.Infinity {
 		*r = *b
 		return
 	}
 	if b.Infinity {
-		*r = *a
+		*r = *xyz
 		return
 	}
 	r.Infinity = false
 	var z22, z12, u1, u2, s1, s2 Field
 
 	b.Z.Sqr(&z22)
-	a.Z.Sqr(&z12)
-	a.X.Mul(&u1, &z22)
+	xyz.Z.Sqr(&z12)
+	xyz.X.Mul(&u1, &z22)
 	b.X.Mul(&u2, &z12)
-	a.Y.Mul(&s1, &z22)
+	xyz.Y.Mul(&s1, &z22)
 	s1.Mul(&s1, &b.Z)
 	b.Y.Mul(&s2, &z12)
-	s2.Mul(&s2, &a.Z)
+	s2.Mul(&s2, &xyz.Z)
 	u1.Normalize()
 	u2.Normalize()
 	if u1.Equals(&u2) {
 		s1.Normalize()
 		s2.Normalize()
 		if s1.Equals(&s2) {
-			a.Double(r)
+			xyz.Double(r)
 		} else {
 			r.Infinity = true
 		}
@@ -352,7 +358,7 @@ func (a *XYZ) Add(r, b *XYZ) {
 	i.Sqr(&i2)
 	h.Sqr(&h2)
 	h.Mul(&h3, &h2)
-	a.Z.Mul(&r.Z, &b.Z)
+	xyz.Z.Mul(&r.Z, &b.Z)
 	r.Z.Mul(&r.Z, &h)
 	u1.Mul(&t, &h2)
 	r.X = t
@@ -368,14 +374,14 @@ func (a *XYZ) Add(r, b *XYZ) {
 	r.Y.SetAdd(&h3)
 }
 
-
+// ECmultGen -
 // r = a*G
-func ECmultGen(r *XYZ, a *Number) {
-	var n Number;
+func ECmultGen(xyz *XYZ, a *Number) {
+	var n Number
 	n.Set(&a.Int)
-	r.SetXY(&prec[0][n.rsh_x(4)])
-	for j:=1; j<64; j++ {
-		r.AddXY(r, &prec[j][n.rsh_x(4)])
+	xyz.SetXY(&prec[0][n.rshX(4)])
+	for j := 1; j < 64; j++ {
+		xyz.AddXY(xyz, &prec[j][n.rshX(4)])
 	}
-	r.AddXY(r, &fin)
+	xyz.AddXY(xyz, &fin)
 }
