@@ -75,7 +75,7 @@ type SortedConnections []struct {
 }
 
 // Returns the slowest peers first
-// Make suure to call it with locked Mutex_net
+// Make suure to call it with locked MutexNet
 func GetSortedConnections() (list SortedConnections, any_ping bool, segwit_cnt int) {
 	var cnt int
 	var now time.Time
@@ -99,7 +99,7 @@ func GetSortedConnections() (list SortedConnections, any_ping bool, segwit_cnt i
 		if tlist[cnt].Ping > 0 {
 			any_ping = true
 		}
-		if (v.Node.Services & SERVICE_SEGWIT) != 0 {
+		if (v.Node.Services & ServiceSegwit) != 0 {
 			segwit_cnt++
 		}
 
@@ -151,8 +151,8 @@ func drop_worst_peer() bool {
 	var any_ping bool
 	var segwit_cnt int
 
-	Mutex_net.Lock()
-	defer Mutex_net.Unlock()
+	MutexNet.Lock()
+	defer MutexNet.Unlock()
 
 	list, any_ping, segwit_cnt = GetSortedConnections()
 	if !any_ping { // if "list" is empty "any_ping" will also be false
@@ -167,7 +167,7 @@ func drop_worst_peer() bool {
 			continue
 		}
 		if common.CFG.Net.MinSegwitCons > 0 && segwit_cnt <= int(common.CFG.Net.MinSegwitCons) &&
-			(v.Conn.Node.Services&SERVICE_SEGWIT) != 0 {
+			(v.Conn.Node.Services&ServiceSegwit) != 0 {
 			continue
 		}
 		if v.Conn.X.Incomming {

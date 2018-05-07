@@ -270,7 +270,7 @@ func getBlockToFetch(max_height uint32, cnt_in_progress, avg_block_size uint) (l
 }
 
 func (c *OneConnection) GetBlockData() (yes bool) {
-	//MAX_GETDATA_FORWARD
+	//MaxGetDataForward
 	// Need to send getdata...?
 	MutexRcv.Lock()
 	defer MutexRcv.Unlock()
@@ -291,7 +291,7 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	cbip := len(c.GetBlockInProgress)
 	c.Mutex.Unlock()
 
-	if cbip >= MAX_PEERS_BLOCKS_IN_PROGRESS {
+	if cbip >= MaxPeersBlocksInProgress {
 		c.IncCnt("FetchMaxCountInProgress", 1)
 		// wake up in a few seconds, maybe some blocks will complete by then
 		c.nextGetData = time.Now().Add(1 * time.Second)
@@ -301,7 +301,7 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	avg_block_size := common.AverageBlockSize.Get()
 	block_data_in_progress := cbip * avg_block_size
 
-	if block_data_in_progress > 0 && (block_data_in_progress+avg_block_size) > MAX_GETDATA_FORWARD {
+	if block_data_in_progress > 0 && (block_data_in_progress+avg_block_size) > MaxGetDataForward {
 		c.IncCnt("FetchMaxBytesInProgress", 1)
 		// wake up in a few seconds, maybe some blocks will complete by then
 		c.nextGetData = time.Now().Add(1 * time.Second) // wait for some blocks to complete
@@ -311,7 +311,7 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	var cnt uint64
 	var block_type uint32
 
-	if (c.Node.Services & SERVICE_SEGWIT) != 0 {
+	if (c.Node.Services & ServiceSegwit) != 0 {
 		block_type = MSG_WITNESS_BLOCK
 	} else {
 		block_type = MSG_BLOCK
@@ -321,9 +321,9 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	// Let's look for the lowest height block in BlocksToGet that isn't being downloaded yet
 
 	common.Last.Mutex.Lock()
-	max_height := common.Last.Block.Height + uint32(MAX_BLOCKS_FORWARD_SIZ/avg_block_size)
-	if max_height > common.Last.Block.Height+MAX_BLOCKS_FORWARD_CNT {
-		max_height = common.Last.Block.Height + MAX_BLOCKS_FORWARD_CNT
+	max_height := common.Last.Block.Height + uint32(MaxBlocksForwardSize/avg_block_size)
+	if max_height > common.Last.Block.Height+MaxBlocksForwardCount {
+		max_height = common.Last.Block.Height + MaxBlocksForwardCount
 	}
 	common.Last.Mutex.Unlock()
 	if max_height > c.Node.Height {
@@ -333,7 +333,7 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 		max_height = LastCommitedHeader.Height
 	}
 
-	if common.BlockChain.Consensus.Enforce_SEGWIT != 0 && (c.Node.Services&SERVICE_SEGWIT) == 0 { // no segwit node
+	if common.BlockChain.Consensus.Enforce_SEGWIT != 0 && (c.Node.Services&ServiceSegwit) == 0 { // no segwit node
 		if max_height >= common.BlockChain.Consensus.Enforce_SEGWIT-1 {
 			max_height = common.BlockChain.Consensus.Enforce_SEGWIT - 1
 			if max_height <= common.Last.Block.Height {
@@ -386,11 +386,11 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 		cbip = len(c.GetBlockInProgress)
 		c.Mutex.Unlock()
 
-		if cbip >= MAX_PEERS_BLOCKS_IN_PROGRESS {
+		if cbip >= MaxPeersBlocksInProgress {
 			break // no more than 2000 blocks in progress / peer
 		}
 		block_data_in_progress += avg_block_size
-		if block_data_in_progress > MAX_GETDATA_FORWARD {
+		if block_data_in_progress > MaxGetDataForward {
 			break
 		}
 	}

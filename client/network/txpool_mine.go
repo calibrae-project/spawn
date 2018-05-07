@@ -128,7 +128,7 @@ func BlockMined(bl *btc.Block) {
 func (c *OneConnection) SendGetMP() error {
 	TxMutex.Lock()
 	tcnt := len(TransactionsToSend) + len(TransactionsRejected)
-	if tcnt > MAX_GETMP_TXS {
+	if tcnt > MaxGetmpTxs {
 		fmt.Println("Too many transactions in the current pool")
 		TxMutex.Unlock()
 		return errors.New("Too many transactions in the current pool")

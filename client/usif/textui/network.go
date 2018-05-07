@@ -45,7 +45,7 @@ func node_info(par string) {
 
 	var r *network.ConnInfo
 
-	network.Mutex_net.Lock()
+	network.MutexNet.Lock()
 
 	for _, v := range network.OpenCons {
 		if uint32(conid) == v.ConnID {
@@ -54,7 +54,7 @@ func node_info(par string) {
 			break
 		}
 	}
-	network.Mutex_net.Unlock()
+	network.MutexNet.Unlock()
 
 	if r == nil {
 		return
@@ -62,9 +62,9 @@ func node_info(par string) {
 
 	fmt.Printf("Connection ID %d:\n", r.ID)
 	if r.Incomming {
-		fmt.Println("Comming from", r.PeerIp)
+		fmt.Println("Comming from", r.PeerIP)
 	} else {
-		fmt.Println("Going to", r.PeerIp)
+		fmt.Println("Going to", r.PeerIP)
 	}
 	if !r.ConnectedAt.IsZero() {
 		fmt.Println("Connected at", r.ConnectedAt.Format("2006-01-02 15:04:05"))
@@ -72,8 +72,8 @@ func node_info(par string) {
 			fmt.Println("Node Version:", r.Version, "/ Services:", fmt.Sprintf("0x%x", r.Services))
 			fmt.Println("User Agent:", r.Agent)
 			fmt.Println("Chain Height:", r.Height)
-			fmt.Printf("Reported IP: %d.%d.%d.%d\n", byte(r.ReportedIp4>>24), byte(r.ReportedIp4>>16),
-				byte(r.ReportedIp4>>8), byte(r.ReportedIp4))
+			fmt.Printf("Reported IP: %d.%d.%d.%d\n", byte(r.ReportedIPv4>>24), byte(r.ReportedIPv4>>16),
+				byte(r.ReportedIPv4>>8), byte(r.ReportedIPv4))
 			fmt.Println("SendHeaders:", r.SendHeaders)
 		}
 		fmt.Println("Invs Done:", r.InvsDone)
@@ -115,7 +115,7 @@ func net_stats(par string) {
 		return
 	}
 
-	network.Mutex_net.Lock()
+	network.MutexNet.Lock()
 	fmt.Printf("%d active net connections, %d outgoing\n", len(network.OpenCons), network.OutConsActive)
 	srt := make(SortedKeys, len(network.OpenCons))
 	cnt := 0
@@ -159,7 +159,7 @@ func net_stats(par string) {
 		fmt.Println("No known external address")
 	}
 
-	network.Mutex_net.Unlock()
+	network.MutexNet.Unlock()
 
 	fmt.Print("RecentlyDisconencted:")
 	network.HammeringMutex.Lock()

@@ -36,13 +36,13 @@ func hash2invid(hash []byte) uint64 {
 // Make sure c.Mutex is locked when calling it
 func (c *OneConnection) InvStore(typ uint32, hash []byte) {
 	inv_id := hash2invid(hash)
-	if len(c.InvDone.History) < MAX_INV_HISTORY {
+	if len(c.InvDone.History) < MaxInvHistory {
 		c.InvDone.History = append(c.InvDone.History, inv_id)
 		c.InvDone.Map[inv_id] = typ
 		c.InvDone.Idx++
 		return
 	}
-	if c.InvDone.Idx == MAX_INV_HISTORY {
+	if c.InvDone.Idx == MaxInvHistory {
 		c.InvDone.Idx = 0
 	}
 	delete(c.InvDone.Map, c.InvDone.History[c.InvDone.Idx])
@@ -134,7 +134,7 @@ func NetRouteInvExt(typ uint32, h *btc.Uint256, fromConn *OneConnection, fee_spk
 	copy(inv[4:36], h.Bytes())
 
 	// Append it to PendingInvs in each open connection
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	for _, v := range OpenCons {
 		if v != fromConn { // except the one that this inv came from
 			send_inv := true
@@ -170,7 +170,7 @@ func NetRouteInvExt(typ uint32, h *btc.Uint256, fromConn *OneConnection, fee_spk
 			v.Mutex.Unlock()
 		}
 	}
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 	return
 }
 

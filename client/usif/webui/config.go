@@ -3,6 +3,11 @@ package webui
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/client/network"
 	"github.com/calibrae-project/spawn/client/usif"
@@ -10,10 +15,6 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/peersdb"
 	"github.com/calibrae-project/spawn/lib/others/sys"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 func p_cfg(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +43,9 @@ func p_cfg(w http.ResponseWriter, r *http.Request) {
 
 		if len(r.Form["friends_file"]) > 0 {
 			ioutil.WriteFile(common.SpawnHomeDir+"friends.txt", []byte(r.Form["friends_file"][0]), 0600)
-			network.Mutex_net.Lock()
+			network.MutexNet.Lock()
 			network.NextConnectFriends = time.Now()
-			network.Mutex_net.Unlock()
+			network.MutexNet.Unlock()
 			http.Redirect(w, r, "/net", http.StatusFound)
 			return
 		}

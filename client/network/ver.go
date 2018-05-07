@@ -58,14 +58,14 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		}
 
 		// check if we don't have this nonce yet
-		Mutex_net.Lock()
+		MutexNet.Lock()
 		for _, v := range OpenCons {
 			if v != c {
 				v.Mutex.Lock()
 				yes := v.X.VersionReceived && bytes.Equal(v.Node.Nonce[:], pl[72:80])
 				v.Mutex.Unlock()
 				if yes {
-					Mutex_net.Unlock()
+					MutexNet.Unlock()
 					v.Mutex.Lock()
 					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.Ip(),
 					"already connected as ", v.ConnID, "from ", v.PeerAddr.Ip(), v.Node.Agent)*/
@@ -75,11 +75,11 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				}
 			}
 		}
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 
 		c.Mutex.Lock()
 		c.Node.Version = binary.LittleEndian.Uint32(pl[0:4])
-		if c.Node.Version < MIN_PROTO_VERSION {
+		if c.Node.Version < MinProtoVersion {
 			c.Mutex.Unlock()
 			return errors.New("Client version too low")
 		}
@@ -87,7 +87,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		copy(c.Node.Nonce[:], pl[72:80])
 		c.Node.Services = binary.LittleEndian.Uint64(pl[4:12])
 		c.Node.Timestamp = binary.LittleEndian.Uint64(pl[12:20])
-		c.Node.ReportedIp4 = binary.BigEndian.Uint32(pl[40:44])
+		c.Node.ReportedIPv4 = binary.BigEndian.Uint32(pl[40:44])
 
 		use_this_ip := sys.ValidIp4(pl[40:44])
 
@@ -144,7 +144,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 
 		if use_this_ip {
 			ExternalIPmutex.Lock()
-			if _, known := ExternalIP4[c.Node.ReportedIp4]; !known { // New IP
+			if _, known := ExternalIP4[c.Node.ReportedIPv4]; !known { // New IP
 				use_this_ip = true
 				for x, v := range IgnoreExternalIpFrom {
 					if c.Node.Agent == v {
@@ -159,7 +159,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				}
 			}
 			if use_this_ip {
-				ExternalIP4[c.Node.ReportedIp4] = [2]uint{ExternalIP4[c.Node.ReportedIp4][0] + 1,
+				ExternalIP4[c.Node.ReportedIPv4] = [2]uint{ExternalIP4[c.Node.ReportedIPv4][0] + 1,
 					uint(time.Now().Unix())}
 			}
 			ExternalIPmutex.Unlock()

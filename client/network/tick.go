@@ -128,7 +128,7 @@ func (c *OneConnection) Tick(now time.Time) {
 
 	if now.After(c.nextMaintanence) {
 		c.Maintanence(now)
-		c.nextMaintanence = now.Add(MAINTANENCE_PERIOD)
+		c.nextMaintanence = now.Add(MaintenancePeriod)
 	}
 
 	// Ask node for new addresses...?
@@ -168,10 +168,10 @@ func (c *OneConnection) Tick(now time.Time) {
 
 func DoNetwork(ad *peersdb.PeerAddr) {
 	conn := NewConnection(ad)
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	if _, ok := OpenCons[ad.UniqID()]; ok {
 		common.CountSafe("ConnectingAgain")
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 		return
 	}
 	if ad.Friend || ad.Manual {
@@ -179,7 +179,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 	}
 	OpenCons[ad.UniqID()] = conn
 	OutConsActive++
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 	go func() {
 		var con net.Conn
 		var e error
@@ -195,10 +195,10 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 			select {
 			case <-con_done:
 				if e == nil {
-					Mutex_net.Lock()
+					MutexNet.Lock()
 					conn.Conn = con
 					conn.X.ConnectedAt = time.Now()
-					Mutex_net.Unlock()
+					MutexNet.Unlock()
 					conn.Run()
 				}
 			case <-time.After(10 * time.Millisecond):
@@ -209,10 +209,10 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 			break
 		}
 
-		Mutex_net.Lock()
+		MutexNet.Lock()
 		delete(OpenCons, ad.UniqID())
 		OutConsActive--
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 		ad.Dead()
 	}()
 }
@@ -236,9 +236,9 @@ func tcp_server() {
 
 	for common.IsListenTCP() {
 		common.CountSafe("NetServerLoops")
-		Mutex_net.Lock()
+		MutexNet.Lock()
 		ica := InConsActive
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 		if ica < common.GetUint32(&common.CFG.Net.MaxInCons) {
 			lis.SetDeadline(time.Now().Add(100 * time.Millisecond))
 			tc, e := lis.AcceptTCP()
@@ -265,22 +265,22 @@ func tcp_server() {
 						conn.X.ConnectedAt = time.Now()
 						conn.X.Incomming = true
 						conn.Conn = tc
-						Mutex_net.Lock()
+						MutexNet.Lock()
 						if _, ok := OpenCons[ad.UniqID()]; ok {
 							//fmt.Println(ad.Ip(), "already connected")
 							common.CountSafe("SameIpReconnect")
-							Mutex_net.Unlock()
+							MutexNet.Unlock()
 							terminate = true
 						} else {
 							OpenCons[ad.UniqID()] = conn
 							InConsActive++
-							Mutex_net.Unlock()
+							MutexNet.Unlock()
 							go func() {
 								conn.Run()
-								Mutex_net.Lock()
+								MutexNet.Lock()
 								delete(OpenCons, ad.UniqID())
 								InConsActive--
-								Mutex_net.Unlock()
+								MutexNet.Unlock()
 							}()
 						}
 					}
@@ -298,14 +298,14 @@ func tcp_server() {
 			time.Sleep(1e8)
 		}
 	}
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	for _, c := range OpenCons {
 		if c.X.Incomming {
 			c.Disconnect("CloseAllIn")
 		}
 	}
 	TCPServerStarted = false
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 	//fmt.Println("TCP server stopped")
 }
 
@@ -331,9 +331,9 @@ func ConnectFriends() {
 			ls := strings.SplitN(strings.Trim(string(ln), "\r\n\t"), " ", 2)
 			ad, _ := peersdb.NewAddrFromString(ls[0], false)
 			if ad != nil {
-				Mutex_net.Lock()
+				MutexNet.Lock()
 				curr, _ := OpenCons[ad.UniqID()]
-				Mutex_net.Unlock()
+				MutexNet.Unlock()
 				if curr == nil {
 					//print("Connecting friend ", ad.Ip(), " ...\n> ")
 					ad.Friend = true
@@ -356,7 +356,7 @@ func ConnectFriends() {
 	}
 
 	// Unmark those that are not longer friends
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	for _, v := range OpenCons {
 		v.Lock()
 		if v.PeerAddr.Friend && !friend_ids[v.PeerAddr.UniqID()] {
@@ -367,7 +367,7 @@ func ConnectFriends() {
 		}
 		v.Unlock()
 	}
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 }
 
 func NetworkTick() {
@@ -381,7 +381,7 @@ func NetworkTick() {
 	now := time.Now()
 
 	// Push GetHeaders if not in progress
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	var cnt_headers_in_progress int
 	var max_headers_got_cnt int
 	var _v *OneConnection
@@ -398,7 +398,7 @@ func NetworkTick() {
 		v.Mutex.Unlock()
 	}
 	conn_cnt := OutConsActive
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 
 	if cnt_headers_in_progress == 0 {
 		if _v != nil {
@@ -441,31 +441,31 @@ func NetworkTick() {
 	}
 
 	// Connect friends
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	if now.After(NextConnectFriends) {
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 		ConnectFriends()
-		Mutex_net.Lock()
+		MutexNet.Lock()
 		NextConnectFriends = now.Add(15 * time.Minute)
 	}
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 
 	for conn_cnt < common.GetUint32(&common.CFG.Net.MaxOutCons) {
 		var segwit_conns uint32
 		if common.CFG.Net.MinSegwitCons > 0 {
-			Mutex_net.Lock()
+			MutexNet.Lock()
 			for _, cc := range OpenCons {
 				cc.Mutex.Lock()
-				if (cc.Node.Services & SERVICE_SEGWIT) != 0 {
+				if (cc.Node.Services & ServiceSegwit) != 0 {
 					segwit_conns++
 				}
 				cc.Mutex.Unlock()
 			}
-			Mutex_net.Unlock()
+			MutexNet.Unlock()
 		}
 
 		adrs := peersdb.GetBestPeers(128, func(ad *peersdb.PeerAddr) bool {
-			if segwit_conns < common.CFG.Net.MinSegwitCons && (ad.Services&SERVICE_SEGWIT) == 0 {
+			if segwit_conns < common.CFG.Net.MinSegwitCons && (ad.Services&ServiceSegwit) == 0 {
 				return true
 			}
 			return ConnectionActive(ad)
@@ -482,9 +482,9 @@ func NetworkTick() {
 			break
 		}
 		DoNetwork(adrs[rand.Int31n(int32(len(adrs)))])
-		Mutex_net.Lock()
+		MutexNet.Lock()
 		conn_cnt = OutConsActive
-		Mutex_net.Unlock()
+		MutexNet.Unlock()
 	}
 
 	if expireTxsNow {
@@ -546,7 +546,7 @@ func (c *OneConnection) GetMPDone(pl []byte) {
 
 // Process that handles communication with a single peer
 func (c *OneConnection) Run() {
-	c.writing_thread_push = make(chan bool, 1)
+	c.writingThreadPush = make(chan bool, 1)
 
 	c.SendVersion()
 
@@ -564,8 +564,8 @@ func (c *OneConnection) Run() {
 	next_tick := now
 	next_invs := now
 
-	c.writing_thread_done.Add(1)
-	go c.writing_thread()
+	c.writingThreadDone.Add(1)
+	go c.writingThread()
 
 	for !c.IsBroken() {
 		if c.IsBroken() {
@@ -645,7 +645,7 @@ func (c *OneConnection) Run() {
 						c.SendFeeFilter()
 					}
 					if c.Node.Version >= 70014 {
-						if (c.Node.Services & SERVICE_SEGWIT) == 0 {
+						if (c.Node.Services & ServiceSegwit) == 0 {
 							// if the node does not support segwit, request compact blocks
 							// only if we have not achieved the segwit enforcement moment
 							if common.BlockChain.Consensus.Enforce_SEGWIT == 0 ||
@@ -787,7 +787,7 @@ func (c *OneConnection) Run() {
 	c.GetMPDone(nil)
 
 	c.Conn.SetWriteDeadline(time.Now()) // this should cause c.Conn.Write() to terminate
-	c.writing_thread_done.Wait()
+	c.writingThreadDone.Wait()
 
 	c.Mutex.Lock()
 	MutexRcv.Lock()

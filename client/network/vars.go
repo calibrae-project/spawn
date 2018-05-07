@@ -54,7 +54,7 @@ var (
 	LastCommitedHeader       *chain.BlockTreeNode
 	MutexRcv                 sync.Mutex
 
-	NetBlocks chan *BlockRcvd = make(chan *BlockRcvd, MAX_BLOCKS_FORWARD_CNT+10)
+	NetBlocks chan *BlockRcvd = make(chan *BlockRcvd, MaxBlocksForwardCount+10)
 	NetTxs    chan *TxRcvd    = make(chan *TxRcvd, 2000)
 
 	CachedBlocks    []*BlockRcvd
@@ -73,11 +73,11 @@ func AddB2G(b2g *OneBlockToGet) {
 
 	/* TODO: this was causing deadlock. Removing it for now as maybe it is not even needed.
 	// Trigger each connection to as the peer for block data
-	Mutex_net.Lock()
+	MutexNet.Lock()
 	for _, v := range OpenCons {
 		v.MutexSetBool(&v.X.GetBlocksDataNow, true)
 	}
-	Mutex_net.Unlock()
+	MutexNet.Unlock()
 	*/
 }
 

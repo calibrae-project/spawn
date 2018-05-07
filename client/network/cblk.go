@@ -216,7 +216,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		if b2g.Block.Height >= common.BlockChain.Consensus.Enforce_SEGWIT {
 			common.CountSafe("CmpctBlockIgnore")
 			println("Ignore compact block", b2g.Block.Height, "from non-segwit node", c.ConnID)
-			if (c.Node.Services & SERVICE_SEGWIT) != 0 {
+			if (c.Node.Services & ServiceSegwit) != 0 {
 				// it only makes sense to ask this node for block's data, if it supports segwit
 				c.MutexSetBool(&c.X.GetBlocksDataNow, true)
 			}

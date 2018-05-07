@@ -5,14 +5,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/client/network"
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/sys"
 	"github.com/calibrae-project/spawn/lib/script"
-	"math/rand"
-	"sync"
-	"time"
 )
 
 type OneUiReq struct {
@@ -180,7 +181,7 @@ func SendInvToRandomPeer(typ uint32, h *btc.Uint256) {
 	copy(inv[4:36], h.Bytes())
 
 	// Append it to PendingInvs in a random connection
-	network.Mutex_net.Lock()
+	network.MutexNet.Lock()
 	idx := rand.Intn(len(network.OpenCons))
 	var cnt int
 	for _, v := range network.OpenCons {
@@ -192,7 +193,7 @@ func SendInvToRandomPeer(typ uint32, h *btc.Uint256) {
 		}
 		cnt++
 	}
-	network.Mutex_net.Unlock()
+	network.MutexNet.Unlock()
 	return
 }
 
