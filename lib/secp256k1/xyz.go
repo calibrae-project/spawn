@@ -197,9 +197,9 @@ func (xyz *XYZ) ECmult(r *XYZ, na, ng *Number) {
 		if i < bitsNg128 {
 			n = wnafNg128[i]
 			if n > 0 {
-				r.AddXY(r, &pre_g_128[((n)-1)/2])
+				r.AddXY(r, &preG128[((n)-1)/2])
 			} else if n != 0 {
-				pre_g_128[(-(n)-1)/2].Neg(&tmpa)
+				preG128[(-(n)-1)/2].Neg(&tmpa)
 				r.AddXY(r, &tmpa)
 			}
 		}
