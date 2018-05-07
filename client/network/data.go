@@ -77,7 +77,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 				//notfound = append(notfound, h[:]...)
 			}
 		} else if typ == MSG_CMPCT_BLOCK {
-			if !c.SendCmpctBlk(btc.NewUint256(h[4:])) {
+			if !c.SendCompactBlock(btc.NewUint256(h[4:])) {
 				println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
 				if c.Misbehave("GetCmpctBlk", 100) {
 					break
@@ -172,7 +172,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 			if b2g.BlockTreeNode == LastCommitedHeader {
 				LastCommitedHeader = LastCommitedHeader.Parent
 			}
-			common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2G_callback)
+			common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2Gcallback)
 		}
 
 		MutexRcv.Unlock()

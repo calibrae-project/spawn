@@ -10,17 +10,19 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-type oneMinerId struct {
+type oneMinerID struct {
 	Name string
 	Tag  []byte
 }
 
-var MinerIds []oneMinerId
+// MinerIDs -
+var MinerIDs []oneMinerID
 
+// TxMiner -
 // return miner ID of the given coinbase transaction
 func TxMiner(cbtx *btc.Tx) (string, int) {
 	txdat := cbtx.Serialize()
-	for i, m := range MinerIds {
+	for i, m := range MinerIDs {
 		if bytes.Equal(m.Tag, []byte("_p2pool_")) { // P2Pool
 			if len(cbtx.TxOut) > 10 &&
 				bytes.Equal(cbtx.TxOut[len(cbtx.TxOut)-1].Pk_script[:2], []byte{0x6A, 0x28}) {
@@ -51,9 +53,9 @@ func ReloadMiners() {
 			println("miners.json", e.Error())
 			return
 		}
-		MinerIds = nil
+		MinerIDs = nil
 		for _, r := range MinerIDfile {
-			var rec oneMinerId
+			var rec oneMinerID
 			rec.Name = r[0]
 			if r[1] != "" {
 				rec.Tag = []byte(r[1])
@@ -65,7 +67,7 @@ func ReloadMiners() {
 					continue
 				}
 			}
-			MinerIds = append(MinerIds, rec)
+			MinerIDs = append(MinerIDs, rec)
 		}
 	}
 }

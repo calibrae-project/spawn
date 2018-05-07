@@ -4,14 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/usif"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/calibrae-project/spawn"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/usif"
 )
 
 var start_time time.Time
@@ -183,7 +184,7 @@ func ServerThread(iface string) {
 	http.HandleFunc("/txs2s.xml", xml_txs2s)
 	http.HandleFunc("/txsre.xml", xml_txsre)
 	http.HandleFunc("/txw4i.xml", xml_txw4i)
-	http.HandleFunc("/raw_tx", raw_tx)
+	http.HandleFunc("/rawTx", rawTx)
 
 	http.HandleFunc("/", p_home)
 	http.HandleFunc("/status.json", json_status)

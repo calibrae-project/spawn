@@ -149,11 +149,11 @@ func net_stats(par string) {
 
 	if network.ExternalAddrLen() > 0 {
 		fmt.Print("External addresses:")
-		network.ExternalIpMutex.Lock()
+		network.ExternalIPmutex.Lock()
 		for ip, cnt := range network.ExternalIP4 {
 			fmt.Printf(" %d.%d.%d.%d(%d)", byte(ip>>24), byte(ip>>16), byte(ip>>8), byte(ip), cnt)
 		}
-		network.ExternalIpMutex.Unlock()
+		network.ExternalIPmutex.Unlock()
 		fmt.Println()
 	} else {
 		fmt.Println("No known external address")

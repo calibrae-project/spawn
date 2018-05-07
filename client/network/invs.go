@@ -269,7 +269,7 @@ func (c *OneConnection) SendInvs() (res bool) {
 
 	if len(c_blk) > 0 {
 		for _, h := range c_blk {
-			c.SendCmpctBlk(h)
+			c.SendCompactBlock(h)
 		}
 	}
 

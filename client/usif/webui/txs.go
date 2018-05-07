@@ -429,7 +429,7 @@ func xml_txw4i(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func raw_tx(w http.ResponseWriter, r *http.Request) {
+func rawTx(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}

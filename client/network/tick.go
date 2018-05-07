@@ -752,14 +752,14 @@ func (c *OneConnection) Run() {
 			}
 
 		case "cmpctblock":
-			c.ProcessCmpctBlock(cmd.pl)
+			c.ProcessCompactBlock(cmd.pl)
 
 		case "getblocktxn":
-			c.ProcessGetBlockTxn(cmd.pl)
+			c.ProcessGetBlockTx(cmd.pl)
 			//println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "getblocktxn", hex.EncodeToString(cmd.pl))
 
 		case "blocktxn":
-			c.ProcessBlockTxn(cmd.pl)
+			c.ProcessBlockTx(cmd.pl)
 			//println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn", hex.EncodeToString(cmd.pl))
 
 		case "getmp":

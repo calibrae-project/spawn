@@ -117,7 +117,7 @@ type ConnectionStatus struct {
 	TxsReceived int // During last hour
 
 	IsSpecial bool // Special connections get more debgs and are not being automatically dropped
-	IsSpawn  bool
+	IsSpawn   bool
 
 	Authorized bool
 	AuthMsgGot uint
@@ -220,7 +220,7 @@ type BIDX [btc.Uint256IdxLen]byte
 type oneBlockDl struct {
 	hash          *btc.Uint256
 	start         time.Time
-	col           *CmpctBlockCollector
+	col           *CompactBlockCollector
 	SentAtPingCnt uint64
 }
 

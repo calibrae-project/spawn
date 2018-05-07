@@ -16,31 +16,36 @@ import (
 )
 
 var (
-	// ExternalIP4 -
-	ExternalIP4            map[uint32][2]uint = make(map[uint32][2]uint) // [0]-count, [1]-timestamp
-	ExternalIpMutex        sync.Mutex
-	ExternalIpExpireTicker int
+	// ExternalIP4 - [0]-count, [1]-timestamp
+	ExternalIP4 = make(map[uint32][2]uint)
+	// ExternalIPmutex -
+	ExternalIPmutex sync.Mutex
+	// ExternalIPexpireTicker -
+	ExternalIPexpireTicker int
 )
 
+// ExternalAddrLen -
 func ExternalAddrLen() (res int) {
-	ExternalIpMutex.Lock()
+	ExternalIPmutex.Lock()
 	res = len(ExternalIP4)
-	ExternalIpMutex.Unlock()
+	ExternalIPmutex.Unlock()
 	return
 }
 
-type ExternalIpRec struct {
+// ExternalIPrec -
+type ExternalIPrec struct {
 	IP  uint32
 	Cnt uint
 	Tim uint
 }
 
+// GetExternalIPs -
 // Returns the list sorted by "freshness"
-func GetExternalIPs() (arr []ExternalIpRec) {
-	ExternalIpMutex.Lock()
-	defer ExternalIpMutex.Unlock()
+func GetExternalIPs() (arr []ExternalIPrec) {
+	ExternalIPmutex.Lock()
+	defer ExternalIPmutex.Unlock()
 	if len(ExternalIP4) > 0 {
-		arr = make([]ExternalIpRec, len(ExternalIP4))
+		arr = make([]ExternalIPrec, len(ExternalIP4))
 		var idx int
 		for ip, rec := range ExternalIP4 {
 			arr[idx].IP = ip
@@ -58,6 +63,7 @@ func GetExternalIPs() (arr []ExternalIpRec) {
 	return
 }
 
+// BestExternalAddr -
 func BestExternalAddr() []byte {
 	arr := GetExternalIPs()
 
@@ -67,11 +73,11 @@ func BestExternalAddr() []byte {
 
 		if uint(time.Now().Unix())-worst.Tim > 3600 {
 			common.CountSafe("ExternalIPExpire")
-			ExternalIpMutex.Lock()
+			ExternalIPmutex.Lock()
 			if ExternalIP4[worst.IP][0] == worst.Cnt {
 				delete(ExternalIP4, worst.IP)
 			}
-			ExternalIpMutex.Unlock()
+			ExternalIPmutex.Unlock()
 		}
 	}
 
@@ -86,6 +92,7 @@ func BestExternalAddr() []byte {
 	return res
 }
 
+// SendAddr -
 func (c *OneConnection) SendAddr() {
 	pers := peersdb.GetBestPeers(MaxAddrsPerMessage, nil)
 	maxtime := uint32(time.Now().Unix() + 3600)
@@ -104,6 +111,7 @@ func (c *OneConnection) SendAddr() {
 	}
 }
 
+// SendOwnAddr -
 func (c *OneConnection) SendOwnAddr() {
 	if ExternalAddrLen() > 0 {
 		buf := new(bytes.Buffer)
@@ -114,7 +122,8 @@ func (c *OneConnection) SendOwnAddr() {
 	}
 }
 
-// Parese network's "addr" message
+// ParseAddr -
+// Parse network's "addr" message
 func (c *OneConnection) ParseAddr(pl []byte) {
 	b := bytes.NewBuffer(pl)
 	cnt, _ := btc.ReadVLen(b)

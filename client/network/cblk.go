@@ -18,11 +18,11 @@ import (
 	"github.com/dchest/siphash"
 )
 
-var (
-	CompactBlocksMutex sync.Mutex
-)
+// CompactBlocksMutex -
+var CompactBlocksMutex sync.Mutex
 
-type CmpctBlockCollector struct {
+// CompactBlockCollector -
+type CompactBlockCollector struct {
 	Header  []byte
 	Txs     []interface{} // either []byte of uint64
 	K0, K1  uint64
@@ -30,12 +30,14 @@ type CmpctBlockCollector struct {
 	Missing int
 }
 
+// ShortIDToU64 -
 func ShortIDToU64(d []byte) uint64 {
 	return uint64(d[0]) | (uint64(d[1]) << 8) | (uint64(d[2]) << 16) |
 		(uint64(d[3]) << 24) | (uint64(d[4]) << 32) | (uint64(d[5]) << 40)
 }
 
-func (col *CmpctBlockCollector) Assemble() []byte {
+// Assemble -
+func (col *CompactBlockCollector) Assemble() []byte {
 	bdat := new(bytes.Buffer)
 	bdat.Write(col.Header)
 	btc.WriteVlen(bdat, uint64(len(col.Txs)))
@@ -45,6 +47,7 @@ func (col *CmpctBlockCollector) Assemble() []byte {
 	return bdat.Bytes()
 }
 
+// GetchBlockForBIP152 -
 func GetchBlockForBIP152(hash *btc.Uint256) (crec *chain.BlckCachRec) {
 	CompactBlocksMutex.Lock()
 	defer CompactBlocksMutex.Unlock()
@@ -82,7 +85,8 @@ func GetchBlockForBIP152(hash *btc.Uint256) (crec *chain.BlckCachRec) {
 	return
 }
 
-func (c *OneConnection) SendCmpctBlk(hash *btc.Uint256) bool {
+// SendCompactBlock -
+func (c *OneConnection) SendCompactBlock(hash *btc.Uint256) bool {
 	crec := GetchBlockForBIP152(hash)
 	if crec == nil {
 		//fmt.Println(c.ConnID, "cmpctblock not sent:", c.Node.Agent, hash.String())
@@ -118,7 +122,8 @@ func (c *OneConnection) SendCmpctBlk(hash *btc.Uint256) bool {
 	return true
 }
 
-func (c *OneConnection) ProcessGetBlockTxn(pl []byte) {
+// ProcessGetBlockTx -
+func (c *OneConnection) ProcessGetBlockTx(pl []byte) {
 	if len(pl) < 34 {
 		println(c.ConnID, "GetBlockTxnShort")
 		c.DoS("GetBlockTxnShort")
@@ -132,18 +137,18 @@ func (c *OneConnection) ProcessGetBlockTxn(pl []byte) {
 	}
 
 	req := bytes.NewReader(pl[32:])
-	indexes_length, _ := btc.ReadVLen(req)
-	if indexes_length == 0 {
+	indexesLength, _ := btc.ReadVLen(req)
+	if indexesLength == 0 {
 		println(c.ConnID, "GetBlockTxnEmpty")
 		c.DoS("GetBlockTxnEmpty")
 		return
 	}
 
-	var exp_idx uint64
+	var expIdx uint64
 	msg := new(bytes.Buffer)
 
 	msg.Write(hash.Hash[:])
-	btc.WriteVlen(msg, indexes_length)
+	btc.WriteVlen(msg, indexesLength)
 
 	for {
 		idx, er := btc.ReadVLen(req)
@@ -152,7 +157,7 @@ func (c *OneConnection) ProcessGetBlockTxn(pl []byte) {
 			c.DoS("GetBlockTxnERR")
 			return
 		}
-		idx += exp_idx
+		idx += expIdx
 		if int(idx) >= len(crec.Block.Txs) {
 			println(c.ConnID, "GetBlockTxnIdx+")
 			c.DoS("GetBlockTxnIdx+")
@@ -163,21 +168,22 @@ func (c *OneConnection) ProcessGetBlockTxn(pl []byte) {
 		} else {
 			crec.Block.Txs[idx].WriteSerialized(msg) // coinbase - index 0
 		}
-		if indexes_length == 1 {
+		if indexesLength == 1 {
 			break
 		}
-		indexes_length--
-		exp_idx = idx + 1
+		indexesLength--
+		expIdx = idx + 1
 	}
 
 	c.SendRawMsg("blocktxn", msg.Bytes())
 }
 
-func delB2G_callback(hash *btc.Uint256) {
+func delB2Gcallback(hash *btc.Uint256) {
 	DelB2G(hash.BIdx())
 }
 
-func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
+// ProcessCompactBlock -
+func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	if len(pl) < 90 {
 		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error A", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrA")
@@ -187,9 +193,9 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 	MutexRcv.Lock()
 	defer MutexRcv.Unlock()
 
-	var tmp_hdr [81]byte
-	copy(tmp_hdr[:80], pl[:80])
-	sta, b2g := c.ProcessNewHeader(tmp_hdr[:]) // ProcessNewHeader() needs byte(0) after the header,
+	var tmpHdr [81]byte
+	copy(tmpHdr[:80], pl[:80])
+	sta, b2g := c.ProcessNewHeader(tmpHdr[:]) // ProcessNewHeader() needs byte(0) after the header,
 	// but don't try to change it to ProcessNewHeader(append(pl[:80], 0)) as it'd overwrite pl[80]
 
 	if b2g == nil {
@@ -231,9 +237,9 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 		return
 	}
 
-	var n, idx, shortidscnt, shortidx_idx, prefilledcnt int
+	var n, idx, shortidscnt, shortIdxIdx, prefilledcnt int
 
-	col := new(CmpctBlockCollector)
+	col := new(CompactBlockCollector)
 	col.Header = b2g.Block.Raw[:80]
 
 	offs := 88
@@ -244,7 +250,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 		return
 	}
 	offs += n
-	shortidx_idx = offs
+	shortIdxIdx = offs
 	shortids := make(map[uint64][]byte, shortidscnt)
 	for i := 0; i < int(shortidscnt); i++ {
 		if len(pl[offs:offs+6]) < 6 {
@@ -294,7 +300,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 	col.K0 = binary.LittleEndian.Uint64(kks[0:8])
 	col.K1 = binary.LittleEndian.Uint64(kks[8:16])
 
-	var cnt_found int
+	var cntFound int
 
 	TxMutex.Lock()
 
@@ -313,7 +319,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 				return
 			}
 			shortids[sid] = v.Raw
-			cnt_found++
+			cntFound++
 		}
 	}
 
@@ -335,15 +341,15 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 				return
 			}
 			shortids[sid] = v.Raw
-			cnt_found++
+			cntFound++
 			common.CountSafe(fmt.Sprint("CmpctBlkUseRej-", v.Reason))
 		}
 	}
 
 	var msg *bytes.Buffer
 
-	missing := len(shortids) - cnt_found
-	//fmt.Println(c.ConnID, c.Node.SendCmpctVer, "ShortIDs", cnt_found, "/", shortidscnt, "  Prefilled", prefilledcnt, "  Missing", missing, "  MemPool:", len(TransactionsToSend))
+	missing := len(shortids) - cntFound
+	//fmt.Println(c.ConnID, c.Node.SendCmpctVer, "ShortIDs", cntFound, "/", shortidscnt, "  Prefilled", prefilledcnt, "  Missing", missing, "  MemPool:", len(TransactionsToSend))
 	col.Missing = missing
 	if missing > 0 {
 		msg = new(bytes.Buffer)
@@ -357,7 +363,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 		case []byte: // prefilled transaction
 
 		default:
-			sid := ShortIDToU64(pl[shortidx_idx : shortidx_idx+6])
+			sid := ShortIDToU64(pl[shortIdxIdx : shortIdxIdx+6])
 			if ptr, ok := shortids[sid]; ok {
 				if ptr != nil {
 					col.Txs[n] = ptr
@@ -372,7 +378,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 			} else {
 				panic(fmt.Sprint("Tx idx ", n, " is missing - this should not happen!!!"))
 			}
-			shortidx_idx += 6
+			shortIdxIdx += 6
 		}
 	}
 	TxMutex.Unlock()
@@ -393,7 +399,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 				if b2g.BlockTreeNode == LastCommitedHeader {
 					LastCommitedHeader = LastCommitedHeader.Parent
 				}
-				common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2G_callback)
+				common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2Gcallback)
 			}
 
 			//c.DoS("BadCmpctBlockA")
@@ -424,7 +430,8 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 	}
 }
 
-func (c *OneConnection) ProcessBlockTxn(pl []byte) {
+// ProcessBlockTx -
+func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	if len(pl) < 33 {
 		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn error A", hex.EncodeToString(pl))
 		c.DoS("BlkTxnErrLen")
@@ -474,7 +481,6 @@ func (c *OneConnection) ProcessBlockTxn(pl []byte) {
 	b2g := BlocksToGet[idx]
 	if b2g == nil {
 		panic("BlockTxn: Block missing from BlocksToGet")
-		return
 	}
 	//b2g.InProgress--
 
@@ -488,13 +494,13 @@ func (c *OneConnection) ProcessBlockTxn(pl []byte) {
 			c.DoS("BlkTxnErrTx")
 			return
 		}
-		raw_tx := pl[offs : offs+n]
-		var tx_hash btc.Uint256
-		tx_hash.Calc(raw_tx)
+		rawTx := pl[offs : offs+n]
+		var txHash btc.Uint256
+		txHash.Calc(rawTx)
 		if common.GetBool(&common.CFG.TXPool.Debug) {
 			if f, _ := os.OpenFile("missing_txs.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); f != nil {
-				_tx, _ := btc.NewTx(raw_tx)
-				_tx.SetHash(raw_tx)
+				_tx, _ := btc.NewTx(rawTx)
+				_tx.SetHash(rawTx)
 				fmt.Fprintf(f, "%s: Tx %s was missing in bock %d\n",
 					time.Now().Format("2006-01-02 15:04:05"), _tx.Hash.String(), b2g.Block.Height)
 				f.Close()
@@ -502,9 +508,9 @@ func (c *OneConnection) ProcessBlockTxn(pl []byte) {
 		}
 		offs += n
 
-		sid := siphash.Hash(col.K0, col.K1, tx_hash.Hash[:]) & 0xffffffffffff
+		sid := siphash.Hash(col.K0, col.K1, txHash.Hash[:]) & 0xffffffffffff
 		if idx, ok := col.Sid2idx[sid]; ok {
-			col.Txs[idx] = raw_tx
+			col.Txs[idx] = rawTx
 		} else {
 			common.CountSafe("ShortIDUnknown")
 			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn TX (short) ID unknown")
@@ -529,7 +535,7 @@ func (c *OneConnection) ProcessBlockTxn(pl []byte) {
 			if b2g.BlockTreeNode == LastCommitedHeader {
 				LastCommitedHeader = LastCommitedHeader.Parent
 			}
-			common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2G_callback)
+			common.BlockChain.DeleteBranch(b2g.BlockTreeNode, delB2Gcallback)
 		}
 
 		return
