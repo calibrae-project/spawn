@@ -32,7 +32,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 	bl, _ := btc.NewBlock(hdr)
 
 	c.Mutex.Lock()
-	c.InvStore(MSG_BLOCK, bl.Hash.Hash[:])
+	c.InvStore(MsgBlock, bl.Hash.Hash[:])
 	c.Mutex.Unlock()
 
 	if _, ok = ReceivedBlocks[bl.Hash.BIdx()]; ok {

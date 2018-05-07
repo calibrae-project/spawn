@@ -1,4 +1,4 @@
-//Package network
+//Package network -
 package network
 
 import (
@@ -13,13 +13,18 @@ import (
 )
 
 const (
-	MSG_WITNESS_FLAG = 0x40000000
-
-	MSG_TX            = 1
-	MSG_BLOCK         = 2
-	MSG_CMPCT_BLOCK   = 4
-	MSG_WITNESS_TX    = MSG_TX | MSG_WITNESS_FLAG
-	MSG_WITNESS_BLOCK = MSG_BLOCK | MSG_WITNESS_FLAG
+	// MsgWitnessFlag -
+	MsgWitnessFlag = 0x40000000
+	// MsgTx -
+	MsgTx = 1
+	// MsgBlock -
+	MsgBlock = 2
+	// MsgCompactBlock -
+	MsgCompactBlock = 4
+	// MsgWitnessTx -
+	MsgWitnessTx = MsgTx | MsgWitnessFlag
+	// MsgWitnessBlock -
+	MsgWitnessBlock = MsgBlock | MsgWitnessFlag
 )
 
 func blockReceived(bh *btc.Uint256) (ok bool) {
@@ -33,12 +38,12 @@ func hash2invid(hash []byte) uint64 {
 	return binary.LittleEndian.Uint64(hash[4:12])
 }
 
-// Make sure c.Mutex is locked when calling it
+// InvStore - Make sure c.Mutex is locked when calling it
 func (c *OneConnection) InvStore(typ uint32, hash []byte) {
-	inv_id := hash2invid(hash)
+	invID := hash2invid(hash)
 	if len(c.InvDone.History) < MaxInvHistory {
-		c.InvDone.History = append(c.InvDone.History, inv_id)
-		c.InvDone.Map[inv_id] = typ
+		c.InvDone.History = append(c.InvDone.History, invID)
+		c.InvDone.Map[invID] = typ
 		c.InvDone.Idx++
 		return
 	}
@@ -46,11 +51,12 @@ func (c *OneConnection) InvStore(typ uint32, hash []byte) {
 		c.InvDone.Idx = 0
 	}
 	delete(c.InvDone.Map, c.InvDone.History[c.InvDone.Idx])
-	c.InvDone.History[c.InvDone.Idx] = inv_id
-	c.InvDone.Map[inv_id] = typ
+	c.InvDone.History[c.InvDone.Idx] = invID
+	c.InvDone.Map[invID] = typ
 	c.InvDone.Idx++
 }
 
+// ProcessInv -
 func (c *OneConnection) ProcessInv(pl []byte) {
 	if len(pl) < 37 {
 		//println(c.PeerAddr.Ip(), "inv payload too short", len(pl))
@@ -73,7 +79,7 @@ func (c *OneConnection) ProcessInv(pl []byte) {
 		ahr := c.X.AllHeadersReceived
 		c.Mutex.Unlock()
 		common.CountSafe(fmt.Sprint("InvGot-", typ))
-		if typ == MSG_BLOCK {
+		if typ == MsgBlock {
 			bhash := btc.NewUint256(pl[of+4 : of+36])
 			if !ahr {
 				common.CountSafe("InvBlockIgnored")
@@ -97,7 +103,7 @@ func (c *OneConnection) ProcessInv(pl []byte) {
 					common.CountSafe("InvBlockOld")
 				}
 			}
-		} else if typ == MSG_TX {
+		} else if typ == MsgTx {
 			if common.AcceptTx() {
 				c.TxInvNotify(pl[of+4 : of+36])
 			} else {
@@ -110,22 +116,23 @@ func (c *OneConnection) ProcessInv(pl []byte) {
 	return
 }
 
+// NetRouteInv -
 func NetRouteInv(typ uint32, h *btc.Uint256, fromConn *OneConnection) uint32 {
-	var fee_spkb uint64
-	if typ == MSG_TX {
+	var feeSpkb uint64
+	if typ == MsgTx {
 		TxMutex.Lock()
 		if tx, ok := TransactionsToSend[h.BIdx()]; ok {
-			fee_spkb = (1000 * tx.Fee) / uint64(tx.VSize())
+			feeSpkb = (1000 * tx.Fee) / uint64(tx.VSize())
 		} else {
 			println("NetRouteInv: txid", h.String(), "not in mempool")
 		}
 		TxMutex.Unlock()
 	}
-	return NetRouteInvExt(typ, h, fromConn, fee_spkb)
+	return NetRouteInvExt(typ, h, fromConn, feeSpkb)
 }
 
-// This function is called from the main thread (or from an UI)
-func NetRouteInvExt(typ uint32, h *btc.Uint256, fromConn *OneConnection, fee_spkb uint64) (cnt uint32) {
+// NetRouteInvExt - This function is called from the main thread (or from an UI)
+func NetRouteInvExt(typ uint32, h *btc.Uint256, fromConn *OneConnection, feeSpkb uint64) (cnt uint32) {
 	common.CountSafe(fmt.Sprint("NetRouteInv", typ))
 
 	// Prepare the inv
@@ -137,25 +144,25 @@ func NetRouteInvExt(typ uint32, h *btc.Uint256, fromConn *OneConnection, fee_spk
 	MutexNet.Lock()
 	for _, v := range OpenCons {
 		if v != fromConn { // except the one that this inv came from
-			send_inv := true
+			sendInv := true
 			v.Mutex.Lock()
-			if typ == MSG_TX {
+			if typ == MsgTx {
 				if v.Node.DoNotRelayTxs {
-					send_inv = false
+					sendInv = false
 					common.CountSafe("SendInvNoTxNode")
-				} else if v.X.MinFeeSPKB > 0 && uint64(v.X.MinFeeSPKB) > fee_spkb {
-					send_inv = false
+				} else if v.X.MinFeeSPKB > 0 && uint64(v.X.MinFeeSPKB) > feeSpkb {
+					sendInv = false
 					common.CountSafe("SendInvFeeTooLow")
 				}
 
 				/* This is to prevent sending own txs to "spying" peers:
 				else if fromConn==nil && v.X.InvsRecieved==0 {
-					send_inv = false
+					sendInv = false
 					common.CountSafe("SendInvOwnBlocked")
 				}
 				*/
 			}
-			if send_inv {
+			if sendInv {
 				if len(v.PendingInvs) < 500 {
 					if typ, ok := v.InvDone.Map[hash2invid(inv[4:36])]; ok {
 						common.CountSafe(fmt.Sprint("SendInvSame-", typ))
@@ -241,7 +248,7 @@ func (c *OneConnection) SendInvs() (res bool) {
 			var inv_sent_otherwise bool
 			typ := binary.LittleEndian.Uint32((*c.PendingInvs[i])[:4])
 			c.InvStore(typ, (*c.PendingInvs[i])[4:36])
-			if typ == MSG_BLOCK {
+			if typ == MsgBlock {
 				if c.Node.SendCmpctVer >= 1 && c.Node.HighBandwidth {
 					c_blk = append(c_blk, btc.NewUint256((*c.PendingInvs[i])[4:]))
 					inv_sent_otherwise = true

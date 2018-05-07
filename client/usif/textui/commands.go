@@ -477,7 +477,7 @@ func show_cached(par string) {
 	fmt.Println(len(network.CachedBlocks), "block cached with heights", lo, "to", hi, hi-lo)
 }
 
-func send_inv(par string) {
+func sendInv(par string) {
 	cs := strings.Split(par, " ")
 	if len(cs) != 2 {
 		println("Specify hash and type")
@@ -563,7 +563,7 @@ func init() {
 	newUi("dlimit dl", false, set_dlmax, "Set maximum download speed. The value is in KB/second - 0 for unlimited")
 	newUi("help h ?", false, show_help, "Shows this help")
 	newUi("info i", false, show_info, "Shows general info about the node")
-	newUi("inv", false, send_inv, "Send inv message to all the peers - specify type & hash")
+	newUi("inv", false, sendInv, "Send inv message to all the peers - specify type & hash")
 	newUi("mem", false, show_mem, "Show detailed memory stats (optionally free, gc or a numeric param)")
 	newUi("peers", false, show_addresses, "Dump pers database (specify number)")
 	newUi("pend", false, show_pending, "Show pending blocks, to be fetched")

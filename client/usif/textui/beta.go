@@ -2,12 +2,13 @@ package textui
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/calibrae-project/spawn/client/network"
 	"github.com/calibrae-project/spawn/lib/btc"
-	"time"
 )
 
-func new_block(par string) {
+func newBlock(par string) {
 	sta := time.Now()
 	txs := network.GetSortedMempool()
 	println(len(txs), "txs got in", time.Now().Sub(sta).String())
@@ -47,7 +48,7 @@ func new_block(par string) {
 	}
 }
 
-func gettxchildren(par string) {
+func getTxChildren(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		println("Specify valid txid")
@@ -61,17 +62,17 @@ func gettxchildren(par string) {
 	}
 	chlds := t2s.GetAllChildren()
 	println("has", len(chlds), "all children")
-	var tot_wg, tot_fee uint64
+	var totWg, totFee uint64
 	for _, tx := range chlds {
 		println(" -", tx.Hash.String(), len(tx.GetChildren()), tx.SPB(), "@", tx.Weight())
-		tot_wg += uint64(tx.Weight())
-		tot_fee += tx.Fee
-		//gettxchildren(tx.Hash.String())
+		totWg += uint64(tx.Weight())
+		totFee += tx.Fee
+		//getTxChildren(tx.Hash.String())
 	}
-	println("Groups SPB:", float64(tot_fee)/float64(tot_wg)*4.0)
+	println("Groups SPB:", float64(totFee)/float64(totWg)*4.0)
 }
 
 func init() {
-	newUi("newblock nb", true, new_block, "build a new block")
-	newUi("txchild ch", true, gettxchildren, "show all the children fo the given tx")
+	newUi("newblock nb", true, newBlock, "build a new block")
+	newUi("txchild ch", true, getTxChildren, "show all the children fo the given tx")
 }

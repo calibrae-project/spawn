@@ -39,13 +39,13 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 		c.Mutex.Unlock()
 
 		common.CountSafe(fmt.Sprintf("GetdataType-%x", typ))
-		if typ == MSG_BLOCK || typ == MSG_WITNESS_BLOCK {
+		if typ == MsgBlock || typ == MsgWitnessBlock {
 			hash := btc.NewUint256(h[4:])
 			crec, _, er := common.BlockChain.Blocks.BlockGetExt(hash)
 
 			if er == nil {
 				bl := crec.Data
-				if typ == MSG_BLOCK {
+				if typ == MsgBlock {
 					// remove witness data from the block
 					if crec.Block == nil {
 						crec.Block, _ = btc.NewBlock(bl)
@@ -61,14 +61,14 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 				//fmt.Println("BlockGetExt-2 failed for", hash.String(), er.Error())
 				//notfound = append(notfound, h[:]...)
 			}
-		} else if typ == MSG_TX || typ == MSG_WITNESS_TX {
+		} else if typ == MsgTx || typ == MsgWitnessTx {
 			// transaction
 			TxMutex.Lock()
 			if tx, ok := TransactionsToSend[btc.NewUint256(h[4:]).BIdx()]; ok && tx.Blocked == 0 {
 				tx.SentCnt++
 				tx.Lastsent = time.Now()
 				TxMutex.Unlock()
-				if tx.SegWit == nil || typ == MSG_WITNESS_TX {
+				if tx.SegWit == nil || typ == MsgWitnessTx {
 					c.SendRawMsg("tx", tx.Raw)
 				} else {
 					c.SendRawMsg("tx", tx.Serialize())
@@ -77,7 +77,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 				TxMutex.Unlock()
 				//notfound = append(notfound, h[:]...)
 			}
-		} else if typ == MSG_CMPCT_BLOCK {
+		} else if typ == MsgCompactBlock {
 			if !c.SendCompactBlock(btc.NewUint256(h[4:])) {
 				println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
 				if c.Misbehave("GetCmpctBlk", 100) {
@@ -314,9 +314,9 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	var blockType uint32
 
 	if (c.Node.Services & ServiceSegwit) != 0 {
-		blockType = MSG_WITNESS_BLOCK
+		blockType = MsgWitnessBlock
 	} else {
-		blockType = MSG_BLOCK
+		blockType = MsgBlock
 	}
 
 	// We can issue getdata for this peer

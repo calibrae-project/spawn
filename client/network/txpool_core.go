@@ -160,10 +160,10 @@ func (c *OneConnection) TxInvNotify(hash []byte) {
 		var b [1 + 4 + 32]byte
 		b[0] = 1 // One inv
 		if (c.Node.Services & ServiceSegwit) != 0 {
-			binary.LittleEndian.PutUint32(b[1:5], MSG_WITNESS_TX) // SegWit Tx
+			binary.LittleEndian.PutUint32(b[1:5], MsgWitnessTx) // SegWit Tx
 			//println(c.ConnID, "getdata", btc.NewUint256(hash).String())
 		} else {
-			b[1] = MSG_TX // Tx
+			b[1] = MsgTx // Tx
 		}
 		copy(b[5:37], hash)
 		c.SendRawMsg("getdata", b[:])
