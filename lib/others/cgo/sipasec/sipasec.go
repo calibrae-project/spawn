@@ -1,6 +1,7 @@
 package sipasec
 
 /*
+
 #include <stdio.h>
 #include <string.h>
 #include "secp256k1.h"
@@ -161,7 +162,6 @@ static int secp256k1_verify(unsigned char *msg, unsigned char *sig, int siglen, 
 */
 import "C"
 import "unsafe"
-
 
 // Verify ECDSA signature
 func EC_Verify(pkey, sign, hash []byte) int {

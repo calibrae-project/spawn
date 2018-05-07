@@ -27,14 +27,16 @@ import (
 
 var (
 	retryCachedBlocks bool
-	SaveBlockChain    *time.Timer = time.NewTimer(24 * time.Hour)
+	// SaveBlockChain -
+	SaveBlockChain = time.NewTimer(24 * time.Hour)
 )
 
 const (
+	// SaveBlockChainAfter -
 	SaveBlockChainAfter = 2 * time.Second
 )
 
-func reset_save_timer() {
+func resetSaveTimer() {
 	SaveBlockChain.Stop()
 	for len(SaveBlockChain.C) > 0 {
 		<-SaveBlockChain.C
@@ -49,6 +51,7 @@ func blockMined(bl *btc.Block) {
 	}
 }
 
+// LocalAcceptBlock -
 func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 	bl := newbl.Block
 	if common.FLAG.TrustAll || newbl.BlockTreeNode.Trusted {
@@ -82,17 +85,17 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 		common.Last.Block = common.BlockChain.LastBlock()
 		common.Last.Mutex.Unlock()
 
-		reset_save_timer()
+		resetSaveTimer()
 	} else {
 		//fmt.Println("Warning: AcceptBlock failed. If the block was valid, you may need to rebuild the unspent DB (-r)")
-		new_end := common.BlockChain.LastBlock()
+		newEnd := common.BlockChain.LastBlock()
 		common.Last.Mutex.Lock()
-		common.Last.Block = new_end
+		common.Last.Block = newEnd
 		common.Last.Mutex.Unlock()
 		// update network.LastCommitedHeader
 		network.MutexRcv.Lock()
-		if network.LastCommitedHeader != new_end {
-			network.LastCommitedHeader = new_end
+		if network.LastCommitedHeader != newEnd {
+			network.LastCommitedHeader = newEnd
 			//println("LastCommitedHeader moved to", network.LastCommitedHeader.Height)
 		}
 		network.DiscardedBlocks[newbl.Hash.BIdx()] = true
@@ -101,7 +104,8 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 	return
 }
 
-func retry_cached_blocks() bool {
+// RetryCachedBlocks -
+func RetryCachedBlocks() bool {
 	var idx int
 	common.CountSafe("RedoCachedBlks")
 	for idx < len(network.CachedBlocks) {
@@ -146,13 +150,13 @@ func retry_cached_blocks() bool {
 			network.CachedBlocks = append(network.CachedBlocks[:idx], network.CachedBlocks[idx+1:]...)
 			network.CachedBlocksLen.Store(len(network.CachedBlocks))
 			return len(network.CachedBlocks) > 0
-		} else {
-			idx++
 		}
+		idx++
 	}
 	return false
 }
 
+// CheckParentDiscarded -
 // Return true iof the block's parent is on the DiscardedBlocks list
 // Add it to DiscardedBlocks, if returning true
 func CheckParentDiscarded(n *chain.BlockTreeNode) bool {
@@ -165,6 +169,7 @@ func CheckParentDiscarded(n *chain.BlockTreeNode) bool {
 	return false
 }
 
+// HandleNetBlock -
 // Called from the blockchain thread
 func HandleNetBlock(newbl *network.BlockRcvd) {
 	defer func() {
@@ -214,11 +219,12 @@ func HandleNetBlock(newbl *network.BlockRcvd) {
 		newbl.Conn.Misbehave("LocalAcceptBl1", 250)
 	} else {
 		//println("block", newbl.Block.Height, "accepted")
-		retryCachedBlocks = retry_cached_blocks()
+		retryCachedBlocks = RetryCachedBlocks()
 	}
 }
 
-func HandleRpcBlock(msg *rpcapi.BlockSubmited) {
+// HandleRPCblock -
+func HandleRPCblock(msg *rpcapi.BlockSubmited) {
 	common.CountSafe("RPCNewBlock")
 
 	network.MutexRcv.Lock()
@@ -300,7 +306,7 @@ func main() {
 		fmt.Println("WARNING! Assuming all scripts inside new blocks to PASS. Verify the last block's hash when finished.")
 	}
 
-	host_init() // This will create the DB lock file and keep it open
+	hostInit() // This will create the DB lock file and keep it open
 
 	os.RemoveAll(common.TempBlocksDir())
 	common.MkTempBlocksDir()
@@ -320,7 +326,7 @@ func main() {
 		peersTick := time.Tick(5 * time.Minute)
 		netTick := time.Tick(time.Second)
 
-		reset_save_timer() // we wil do one save try after loading, in case if ther was a rescan
+		resetSaveTimer() // we wil do one save try after loading, in case if ther was a rescan
 
 		peersdb.Testnet = common.Testnet
 		peersdb.ConnectOnly = common.CFG.ConnectOnly
@@ -395,9 +401,9 @@ func main() {
 			return usif.Exit_now.Get()
 		}
 
-		startup_ticks := 5 // give 5 seconds for finding out missing blocks
+		startupTicks := 5 // give 5 seconds for finding out missing blocks
 		if !common.FLAG.NoWallet {
-			// snooze the timer to 10 seconds after startup_ticks goes down
+			// snooze the timer to 10 seconds after startupTicks goes down
 			common.SetUint32(&common.WalletOnIn, 10)
 		}
 
@@ -406,7 +412,7 @@ func main() {
 
 			common.CountSafe("MainThreadLoops")
 			for retryCachedBlocks {
-				retryCachedBlocks = retry_cached_blocks()
+				retryCachedBlocks = RetryCachedBlocks()
 				// We have done one per loop - now do something else if pending...
 				if len(network.NetBlocks) > 0 || len(usif.UiChannel) > 0 {
 					break
@@ -426,7 +432,7 @@ func main() {
 
 			case rpcbl := <-rpcapi.RpcBlocks:
 				common.Busy()
-				HandleRpcBlock(rpcbl)
+				HandleRPCblock(rpcbl)
 
 			default: // timeout immediatelly if no priority message
 			}
@@ -445,7 +451,7 @@ func main() {
 
 			case rpcbl := <-rpcapi.RpcBlocks:
 				common.Busy()
-				HandleRpcBlock(rpcbl)
+				HandleRPCblock(rpcbl)
 
 			case rec := <-usif.LocksChan:
 				common.Busy()
@@ -469,13 +475,13 @@ func main() {
 				common.Busy()
 				common.CountSafe("MainNetTick")
 				network.NetworkTick()
-				if startup_ticks > 0 {
-					startup_ticks--
+				if startupTicks > 0 {
+					startupTicks--
 					break
 				}
 				if !common.BlockChainSynchronized && network.BlocksToGetCnt() == 0 &&
 					len(network.NetBlocks) == 0 && network.CachedBlocksLen.Get() == 0 {
-					// only when we have no pending blocks startup_ticks go down..
+					// only when we have no pending blocks startupTicks go down..
 					common.SetBool(&common.BlockChainSynchronized, true)
 				}
 				if common.WalletPendingTick() {

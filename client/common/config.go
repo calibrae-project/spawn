@@ -305,7 +305,7 @@ func Reset() {
 
 // MkTempBlocksDir -
 func MkTempBlocksDir() {
-	// no point doing it before SpawnHomeDir is set in host_init()
+	// no point doing it before SpawnHomeDir is set in hostInit()
 	if CFG.Memory.CacheOnDisk && SpawnHomeDir != "" {
 		os.Mkdir(TempBlocksDir(), 0700)
 	}

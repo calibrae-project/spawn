@@ -1,6 +1,6 @@
 <style>
 .dbg {
-	//display:table-cell;
+	
 	display:none;
 }
 td.agent {
@@ -307,7 +307,7 @@ function row_clicked(id) {
 	}
 }
 
-function net_drop(id) {
+function netDrop(id) {
 	if (server_mode) {
 		alert('Droping connections is not available in Server Mode')
 		return
@@ -507,7 +507,7 @@ function refreshconnections(force) {
 				td = row.insertCell(-1)
 				td.className = "r nw"
 				td.innerHTML = ( ( cs[i].IsGocoin && !cs[i].GetMPInProgress ) ? '<img title="Request missing transactions" class="hand" src="webui/request.png" onclick="net_getmp('+id+')"> ' : '' ) +
-					'<img title="Drop this connection and ban peer" class="hand" src="webui/del.png" onclick="net_drop('+id+')">'
+					'<img title="Drop this connection and ban peer" class="hand" src="webui/del.png" onclick="netDrop('+id+')">'
 
 				onc(row, id)
 				row.title = "Connection Details"

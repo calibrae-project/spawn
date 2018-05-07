@@ -13,7 +13,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-func load_tx(par string) {
+func loadTx(par string) {
 	if par == "" {
 		fmt.Println("Specify a name of a transaction file")
 		return
@@ -31,11 +31,11 @@ func load_tx(par string) {
 	fmt.Println(usif.LoadRawTx(buf))
 }
 
-func send_tx(par string) {
+func sendTx(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		fmt.Println("You must specify a valid transaction ID for this command.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	network.TxMutex.Lock()
@@ -48,15 +48,15 @@ func send_tx(par string) {
 	} else {
 		network.TxMutex.Unlock()
 		fmt.Println("No such transaction ID in the memory pool.")
-		list_txs("")
+		listTxs("")
 	}
 }
 
-func send1_tx(par string) {
+func send1Tx(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		fmt.Println("You must specify a valid transaction ID for this command.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	network.TxMutex.Lock()
@@ -69,15 +69,15 @@ func send1_tx(par string) {
 	} else {
 		network.TxMutex.Unlock()
 		fmt.Println("No such transaction ID in the memory pool.")
-		list_txs("")
+		listTxs("")
 	}
 }
 
-func del_tx(par string) {
+func delTx(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		fmt.Println("You must specify a valid transaction ID for this command.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	network.TxMutex.Lock()
@@ -86,18 +86,18 @@ func del_tx(par string) {
 	if !ok {
 		network.TxMutex.Unlock()
 		fmt.Println("No such transaction ID in the memory pool.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	tx.Delete(true, 0)
 	fmt.Println("Transaction", txid.String(), "and all its children removed from the memory pool")
 }
 
-func dec_tx(par string) {
+func decTx(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		fmt.Println("You must specify a valid transaction ID for this command.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	if tx, ok := network.TransactionsToSend[txid.BIdx()]; ok {
@@ -108,11 +108,11 @@ func dec_tx(par string) {
 	}
 }
 
-func save_tx(par string) {
+func saveTx(par string) {
 	txid := btc.NewUint256FromString(par)
 	if txid == nil {
 		fmt.Println("You must specify a valid transaction ID for this command.")
-		list_txs("")
+		listTxs("")
 		return
 	}
 	if tx, ok := network.TransactionsToSend[txid.BIdx()]; ok {
@@ -124,11 +124,11 @@ func save_tx(par string) {
 	}
 }
 
-func mempool_stats(par string) {
+func mempoolStats(par string) {
 	fmt.Print(usif.MemoryPoolFees())
 }
 
-func list_txs(par string) {
+func listTxs(par string) {
 	limitbytes, _ := strconv.ParseUint(par, 10, 64)
 	fmt.Println("Transactions in the memory pool:", limitbytes)
 	cnt := 0
@@ -169,7 +169,7 @@ func list_txs(par string) {
 	}
 }
 
-func baned_txs(par string) {
+func bannedTxs(par string) {
 	fmt.Println("Rejected transactions:")
 	cnt := 0
 	network.TxMutex.Lock()
@@ -181,7 +181,7 @@ func baned_txs(par string) {
 	network.TxMutex.Unlock()
 }
 
-func send_all_tx(par string) {
+func sendAllTxs(par string) {
 	network.TxMutex.Lock()
 	for k, v := range network.TransactionsToSend {
 		if v.Local {
@@ -193,39 +193,39 @@ func send_all_tx(par string) {
 	network.TxMutex.Unlock()
 }
 
-func save_mempool(par string) {
+func saveMempool(par string) {
 	network.MempoolSave(true)
 }
 
-func check_txs(par string) {
+func checkTxs(par string) {
 	network.TxMutex.Lock()
 	network.MempoolCheck()
 	network.TxMutex.Unlock()
 }
 
-func load_mempool(par string) {
+func loadMempool(par string) {
 	if par == "" {
 		par = common.SpawnHomeDir + "mempool.dmp"
 	}
 	var abort bool
-	__exit := make(chan bool)
-	__done := make(chan bool)
+	_Exit := make(chan bool)
+	_Done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case s := <-common.KillChan:
 				fmt.Println(s)
 				abort = true
-			case <-__exit:
-				__done <- true
+			case <-_Exit:
+				_Done <- true
 				return
 			}
 		}
 	}()
 	fmt.Println("Press Ctrl+C to abort...")
 	network.MempoolLoadNew(par, &abort)
-	__exit <- true
-	_ = <-__done
+	_Exit <- true
+	_ = <-_Done
 	if abort {
 		fmt.Println("Aborted")
 	}
@@ -243,18 +243,18 @@ func get_mempool(par string) {
 }
 
 func init() {
-	newUI("txload tx", true, load_tx, "Load transaction data from the given file, decode it and store in memory")
-	newUI("txsend stx", true, send_tx, "Broadcast transaction from memory pool (identified by a given <txid>)")
-	newUI("tx1send stx1", true, send1_tx, "Broadcast transaction to a single random peer (identified by a given <txid>)")
-	newUI("txsendall stxa", true, send_all_tx, "Broadcast all the transactions (what you see after ltx)")
-	newUI("txdel dtx", true, del_tx, "Remove a transaction from memory pool (identified by a given <txid>)")
-	newUI("txdecode td", true, dec_tx, "Decode a transaction from memory pool (identified by a given <txid>)")
-	newUI("txlist ltx", true, list_txs, "List all the transaction loaded into memory pool up to 1MB space <max_size>")
-	newUI("txlistban ltxb", true, baned_txs, "List the transaction that we have rejected")
-	newUI("mempool mp", true, mempool_stats, "Show the mempool statistics")
-	newUI("txsave", true, save_tx, "Save raw transaction from memory pool to disk")
-	newUI("txmpsave mps", true, save_mempool, "Save memory pool to disk")
-	newUI("txcheck txc", true, check_txs, "Verify consistency of mempool")
-	newUI("txmpload mpl", true, load_mempool, "Load transaction from the given file (must be in mempool.dmp format)")
+	newUI("txload tx", true, loadTx, "Load transaction data from the given file, decode it and store in memory")
+	newUI("txsend stx", true, sendTx, "Broadcast transaction from memory pool (identified by a given <txid>)")
+	newUI("tx1send stx1", true, send1Tx, "Broadcast transaction to a single random peer (identified by a given <txid>)")
+	newUI("txsendall stxa", true, sendAllTxs, "Broadcast all the transactions (what you see after ltx)")
+	newUI("txdel dtx", true, delTx, "Remove a transaction from memory pool (identified by a given <txid>)")
+	newUI("txdecode td", true, decTx, "Decode a transaction from memory pool (identified by a given <txid>)")
+	newUI("txlist ltx", true, listTxs, "List all the transaction loaded into memory pool up to 1MB space <max_size>")
+	newUI("txlistban ltxb", true, bannedTxs, "List the transaction that we have rejected")
+	newUI("mempool mp", true, mempoolStats, "Show the mempool statistics")
+	newUI("txsave", true, saveTx, "Save raw transaction from memory pool to disk")
+	newUI("txmpsave mps", true, saveMempool, "Save memory pool to disk")
+	newUI("txcheck txc", true, checkTxs, "Verify consistency of mempool")
+	newUI("txmpload mpl", true, loadMempool, "Load transaction from the given file (must be in mempool.dmp format)")
 	newUI("getmp mpg", true, get_mempool, "Get getmp message to the peer with teh given ID")
 }

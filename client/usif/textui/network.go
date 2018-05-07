@@ -11,24 +11,28 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/peersdb"
 )
 
+// SortedKeys -
 type SortedKeys []struct {
 	Key    uint64
 	ConnID uint32
 }
 
+// Len -
 func (sk SortedKeys) Len() int {
 	return len(sk)
 }
 
+// Less -
 func (sk SortedKeys) Less(a, b int) bool {
 	return sk[a].ConnID < sk[b].ConnID
 }
 
+// Swap -
 func (sk SortedKeys) Swap(a, b int) {
 	sk[a], sk[b] = sk[b], sk[a]
 }
 
-func net_drop(par string) {
+func netDrop(par string) {
 	conid, e := strconv.ParseUint(par, 10, 32)
 	if e != nil {
 		println(e.Error())
@@ -37,7 +41,7 @@ func net_drop(par string) {
 	network.DropPeer(uint32(conid))
 }
 
-func node_info(par string) {
+func nodeInfo(par string) {
 	conid, e := strconv.ParseUint(par, 10, 32)
 	if e != nil {
 		return
@@ -95,7 +99,7 @@ func node_info(par string) {
 	}
 }
 
-func net_conn(par string) {
+func netConn(par string) {
 	ad, er := peersdb.NewAddrFromString(par, false)
 	if er != nil {
 		fmt.Println(par, er.Error())
@@ -106,12 +110,12 @@ func net_conn(par string) {
 	network.DoNetwork(ad)
 }
 
-func net_stats(par string) {
+func netStats(par string) {
 	if par == "bw" {
 		common.PrintBWStats()
 		return
 	} else if par != "" {
-		node_info(par)
+		nodeInfo(par)
 		return
 	}
 
@@ -175,7 +179,7 @@ func net_stats(par string) {
 }
 
 func init() {
-	newUI("net n", false, net_stats, "Show network statistics. Specify ID to see its details.")
-	newUI("drop", false, net_drop, "Disconenct from node with a given IP")
-	newUI("conn", false, net_conn, "Connect to the given node (specify IP and optionally a port)")
+	newUI("net n", false, netStats, "Show network statistics. Specify ID to see its details.")
+	newUI("drop", false, netDrop, "Disconenct from node with a given IP")
+	newUI("conn", false, netConn, "Connect to the given node (specify IP and optionally a port)")
 }

@@ -118,7 +118,7 @@ func jsonMiners(w http.ResponseWriter, r *http.Request) {
 
 	nextDiffChange := 2016 - end.Height%2016
 
-	//eb_ad_x := regexp.MustCompile("/EB[0-9]+/AD[0-9]+/")
+	//ebAdX := regexp.MustCompile("/EB[0-9]+/AD[0-9]+/")
 
 	for ; end != nil; cnt++ {
 		if now-int64(end.Timestamp()) > int64(common.CFG.Stat.MiningHrs)*3600 {
@@ -154,7 +154,7 @@ func jsonMiners(w http.ResponseWriter, r *http.Request) {
 			om.fees += fees
 		}
 
-		/*if eb_ad_x.Find(cbasetx.TxIn[0].ScriptSig) != nil {
+		/*if ebAdX.Find(cbasetx.TxIn[0].ScriptSig) != nil {
 			om.ebad_cnt++
 		}
 
