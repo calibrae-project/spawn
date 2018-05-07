@@ -3,7 +3,7 @@ package main
 /*
   This is a EC_Verify speedup that works only with Windows
 
-  Use secp256k1.dll from gocoin/tools/sipa_dll
+  Use secp256k1.dll from Spawn/tools/sipa_dll
   or build one yourself.
 
 */

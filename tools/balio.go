@@ -152,7 +152,7 @@ func load_wallet(fn string) (addrs []*btc.BtcAddr) {
 }
 
 func main() {
-	fmt.Println("Gocoin BalIO version", gocoin.Version)
+	fmt.Println("Spawn BalIO version", Spawn.Version)
 
 	if len(os.Args) < 2 {
 		print_help()

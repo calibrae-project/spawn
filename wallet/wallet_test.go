@@ -19,7 +19,7 @@ const (
 func start() error {
 	PassSeedFilename = SECRET
 	RawKeysFilename = OTHERS
-	os.Setenv("GOCOIN_WALLET_CONFIG", CONFIG_FILE)
+	os.Setenv("Spawn_WALLET_CONFIG", CONFIG_FILE)
 	return ioutil.WriteFile(SECRET, []byte(SEED_PASS), 0600)
 }
 

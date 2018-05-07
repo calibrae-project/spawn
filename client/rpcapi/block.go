@@ -35,8 +35,8 @@ func SubmitBlock(cmd *RpcCommand, resp *RpcResponse, b []byte) {
 			str := uu[0].(string)
 			if str[0]=='@' {
 				/*
-					gocoin special case: if the string starts with @, it's a name of the file with block's binary data
-						curl --user gocoinrpc:gocoinpwd --data-binary \
+					Spawn special case: if the string starts with @, it's a name of the file with block's binary data
+						curl --user Spawnrpc:Spawnpwd --data-binary \
 							'{"jsonrpc": "1.0", "id":"curltest", "method": "submitblock", "params": \
 								["@450529_000000000000000000cf208f521de0424677f7a87f2f278a1042f38d159565f5.bin"] }' \
 							-H 'content-type: text/plain;' http://127.0.0.1:8332/

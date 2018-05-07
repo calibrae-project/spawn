@@ -1,12 +1,10 @@
+// Package common -
 package common
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
 	"io/ioutil"
 	"os"
 	"runtime/debug"
@@ -14,10 +12,15 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/calibrae-project/spawn"
+	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
 var (
-	FLAG struct { // Command line only options
+	// FLAG - Command line only options
+	FLAG struct {
 		Rescan        bool
 		VolatileUTXO  bool
 		UndoBlocks    uint
@@ -28,16 +31,17 @@ var (
 		SaveConfig    bool
 	}
 
-	CFG struct { // Options that can come from either command line or common file
-		Testnet        bool
-		ConnectOnly    string
-		Datadir        string
-		TextUI_Enabled bool
-		UserAgent      string
-		UTXOSaveSec    uint
+	// CFG - Options that can come from either command line or common file
+	CFG struct {
+		Testnet          bool
+		ConnectOnly      string
+		Datadir          string
+		TextUIEnabled    bool
+		UserAgent        string
+		UTXOSaveSec      uint
 		LastTrustedBlock string
 
-		WebUI          struct {
+		WebUI struct {
 			Interface   string
 			AllowedIP   string // comma separated
 			ShowBlocks  uint32
@@ -77,7 +81,7 @@ var (
 			Enabled    bool // Global on/off swicth
 			FeePerByte float64
 			MaxTxSize  uint32
-			MemInputs bool
+			MemInputs  bool
 		}
 		Memory struct {
 			GCPercTrshold int
@@ -85,13 +89,13 @@ var (
 			MaxCachedBlks uint
 			FreeAtStart   bool // Free all possible memory after initial loading of block chain
 			CacheOnDisk   bool
-			MaxDataFileMB uint // 0 for unlimited size
+			MaxDataFileMB uint   // 0 for unlimited size
 			DataFilesKeep uint32 // 0 for all
 		}
 		AllBalances struct {
-			MinValue   uint64 // Do not keep balance records for values lower than this
-			UseMapCnt  int
-			AutoLoad   bool
+			MinValue  uint64 // Do not keep balance records for values lower than this
+			UseMapCnt int
+			AutoLoad  bool
 		}
 		Stat struct {
 			HashrateHrs uint
@@ -106,15 +110,17 @@ var (
 		}
 	}
 
-	mutex_cfg sync.Mutex
+	mutexCfg sync.Mutex
 )
 
 type oneAllowedAddr struct {
 	Addr, Mask uint32
 }
 
+// WebUIAllowed -
 var WebUIAllowed []oneAllowedAddr
 
+// InitConfig -
 func InitConfig() {
 	// Fill in default values
 	CFG.Net.ListenTCP = true
@@ -123,17 +129,17 @@ func InitConfig() {
 	CFG.Net.MaxBlockAtOnce = 3
 	CFG.Net.MinSegwitCons = 4
 
-	CFG.TextUI_Enabled = true
+	CFG.TextUIEnabled = true
 
 	CFG.WebUI.Interface = "127.0.0.1:8833"
 	CFG.WebUI.AllowedIP = "127.0.0.1"
 	CFG.WebUI.ShowBlocks = 144
 	CFG.WebUI.AddrListLen = 15
-	CFG.WebUI.Title = "Gocoin"
+	CFG.WebUI.Title = "Spawn"
 	CFG.WebUI.PayCmdName = "pay_cmd.txt"
 
-	CFG.RPC.Username = "gocoinrpc"
-	CFG.RPC.Password = "gocoinpwd"
+	CFG.RPC.Username = "Spawnrpc"
+	CFG.RPC.Password = "Spawnpwd"
 
 	CFG.TXPool.Enabled = true
 	CFG.TXPool.AllowMemInputs = true
@@ -186,22 +192,22 @@ func InitConfig() {
 	flag.BoolVar(&CFG.Testnet, "t", CFG.Testnet, "Use Testnet3")
 	flag.StringVar(&CFG.ConnectOnly, "c", CFG.ConnectOnly, "Connect only to this host and nowhere else")
 	flag.BoolVar(&CFG.Net.ListenTCP, "l", CFG.Net.ListenTCP, "Listen for incoming TCP connections (on default port)")
-	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Gocoin's database root folder")
+	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Spawn's database root folder")
 	flag.UintVar(&CFG.Net.MaxUpKBps, "ul", CFG.Net.MaxUpKBps, "Upload limit in KB/s (0 for no limit)")
 	flag.UintVar(&CFG.Net.MaxDownKBps, "dl", CFG.Net.MaxDownKBps, "Download limit in KB/s (0 for no limit)")
 	flag.StringVar(&CFG.WebUI.Interface, "webui", CFG.WebUI.Interface, "Serve WebUI from the given interface")
 	flag.BoolVar(&CFG.TXRoute.Enabled, "txp", CFG.TXPool.Enabled, "Enable Memory Pool")
 	flag.BoolVar(&CFG.TXRoute.Enabled, "txr", CFG.TXRoute.Enabled, "Enable Transaction Routing")
-	flag.BoolVar(&CFG.TextUI_Enabled, "textui", CFG.TextUI_Enabled, "Enable processing TextUI commands (from stdin)")
+	flag.BoolVar(&CFG.TextUIEnabled, "textui", CFG.TextUIEnabled, "Enable processing TextUI commands (from stdin)")
 	flag.UintVar(&FLAG.UndoBlocks, "undo", 0, "Undo UTXO with this many blocks and exit")
 	flag.BoolVar(&FLAG.TrustAll, "trust", FLAG.TrustAll, "Trust all scripts inside new blocks (for fast syncig)")
 	flag.BoolVar(&FLAG.UnbanAllPeers, "unban", FLAG.UnbanAllPeers, "Un-ban all peers in databse, before starting")
 	flag.BoolVar(&FLAG.NoWallet, "nowallet", FLAG.NoWallet, "Do not automatically enable the wallet functionality (lower memory usage and faster block processing)")
 	flag.BoolVar(&FLAG.Log, "log", FLAG.Log, "Store some runtime information in the log files")
-	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save gocoin.conf file and exit (use to create default config file)")
+	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save Spawn.conf file and exit (use to create default config file)")
 
 	if CFG.Datadir == "" {
-		CFG.Datadir = sys.BitcoinHome() + "gocoin"
+		CFG.Datadir = sys.BitcoinHome() + "Spawn"
 	}
 
 	if flag.Lookup("h") != nil {
@@ -220,18 +226,18 @@ func InitConfig() {
 		}
 	}
 
-
 	Reset()
 }
 
+// DataSubdir -
 func DataSubdir() string {
 	if CFG.Testnet {
 		return "tstnet"
-	} else {
-		return "btcnet"
 	}
+	return "btcnet"
 }
 
+// SaveConfig -
 func SaveConfig() bool {
 	dat, _ := json.MarshalIndent(&CFG, "", "    ")
 	if dat == nil {
@@ -242,7 +248,8 @@ func SaveConfig() bool {
 
 }
 
-// make sure to call it with locked mutex_cfg
+// Reset -
+// make sure to call it with locked mutexCfg
 func Reset() {
 	SetUploadLimit(uint64(CFG.Net.MaxUpKBps) << 10)
 	SetDownloadLimit(uint64(CFG.Net.MaxDownKBps) << 10)
@@ -254,11 +261,11 @@ func Reset() {
 	BlockExpireEvery = time.Duration(CFG.DropPeers.BlckExpireHours) * time.Hour
 	PingPeerEvery = time.Duration(CFG.DropPeers.PingPeriodSec) * time.Second
 
-	atomic.StoreUint64(&maxMempoolSizeBytes, uint64(CFG.TXPool.MaxSizeMB) * 1e6)
-	atomic.StoreUint64(&maxRejectedSizeBytes, uint64(CFG.TXPool.MaxRejectMB) * 1e6)
-	atomic.StoreUint64(&minFeePerKB, uint64(CFG.TXPool.FeePerByte * 1000))
+	atomic.StoreUint64(&maxMempoolSizeBytes, uint64(CFG.TXPool.MaxSizeMB)*1e6)
+	atomic.StoreUint64(&maxRejectedSizeBytes, uint64(CFG.TXPool.MaxRejectMB)*1e6)
+	atomic.StoreUint64(&minFeePerKB, uint64(CFG.TXPool.FeePerByte*1000))
 	atomic.StoreUint64(&minminFeePerKB, MinFeePerKB())
-	atomic.StoreUint64(&routeMinFeePerKB, uint64(CFG.TXRoute.FeePerByte * 1000))
+	atomic.StoreUint64(&routeMinFeePerKB, uint64(CFG.TXRoute.FeePerByte*1000))
 
 	ips := strings.Split(CFG.WebUI.AllowedIP, ",")
 	WebUIAllowed = nil
@@ -282,7 +289,7 @@ func Reset() {
 	if CFG.UserAgent != "" {
 		UserAgent = CFG.UserAgent
 	} else {
-		UserAgent = "/Gocoin:" + gocoin.Version + "/"
+		UserAgent = "/Spawn:" + Spawn.Version + "/"
 	}
 
 	if CFG.Memory.MaxDataFileMB != 0 && CFG.Memory.MaxDataFileMB < 8 {
@@ -296,16 +303,18 @@ func Reset() {
 	ApplyLastTrustedBlock()
 }
 
+// MkTempBlocksDir -
 func MkTempBlocksDir() {
-	// no point doing it before GocoinHomeDir is set in host_init()
-	if CFG.Memory.CacheOnDisk && GocoinHomeDir != "" {
+	// no point doing it before SpawnHomeDir is set in host_init()
+	if CFG.Memory.CacheOnDisk && SpawnHomeDir != "" {
 		os.Mkdir(TempBlocksDir(), 0700)
 	}
 }
 
+// RPCPort -
 func RPCPort() (res uint32) {
-	mutex_cfg.Lock()
-	defer mutex_cfg.Unlock()
+	mutexCfg.Lock()
+	defer mutexCfg.Unlock()
 
 	if CFG.RPC.TCPPort != 0 {
 		res = CFG.RPC.TCPPort
@@ -319,9 +328,10 @@ func RPCPort() (res uint32) {
 	return
 }
 
-func DefaultTcpPort() (res uint16) {
-	mutex_cfg.Lock()
-	defer mutex_cfg.Unlock()
+// DefaultTCPport -
+func DefaultTCPport() (res uint16) {
+	mutexCfg.Lock()
+	defer mutexCfg.Unlock()
 
 	if CFG.Net.TCPPort != 0 {
 		res = CFG.Net.TCPPort
@@ -357,14 +367,17 @@ func str2oaa(ip string) (res *oneAllowedAddr) {
 	return
 }
 
+// LockCfg -
 func LockCfg() {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 }
 
+// UnlockCfg -
 func UnlockCfg() {
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 }
 
+// CloseBlockChain -
 func CloseBlockChain() {
 	if BlockChain != nil {
 		fmt.Println("Closing BlockChain")
@@ -373,59 +386,69 @@ func CloseBlockChain() {
 	}
 }
 
+// GetDuration -
 func GetDuration(addr *time.Duration) (res time.Duration) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	res = *addr
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// GetUint64 -
 func GetUint64(addr *uint64) (res uint64) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	res = *addr
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// GetUint32 -
 func GetUint32(addr *uint32) (res uint32) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	res = *addr
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// SetUint32 -
 func SetUint32(addr *uint32, val uint32) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	*addr = val
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// GetBool -
 func GetBool(addr *bool) (res bool) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	res = *addr
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// SetBool -
 func SetBool(addr *bool, val bool) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	*addr = val
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 }
 
+// AllBalMinVal -
 func AllBalMinVal() uint64 {
 	return atomic.LoadUint64(&allBalMinVal)
 }
 
+// ApplyBalMinVal -
 func ApplyBalMinVal() {
 	atomic.StoreUint64(&allBalMinVal, CFG.AllBalances.MinValue)
 }
 
+// MinFeePerKB -
 func MinFeePerKB() uint64 {
 	return atomic.LoadUint64(&minFeePerKB)
 }
 
+// SetMinFeePerKB -
 func SetMinFeePerKB(val uint64) bool {
 	minmin := atomic.LoadUint64(&minminFeePerKB)
 	if val < minmin {
@@ -438,29 +461,34 @@ func SetMinFeePerKB(val uint64) bool {
 	return true
 }
 
+// RouteMinFeePerKB -
 func RouteMinFeePerKB() uint64 {
 	return atomic.LoadUint64(&routeMinFeePerKB)
 }
 
+// IsListenTCP -
 func IsListenTCP() (res bool) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	res = CFG.ConnectOnly == "" && ListenTCP
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// MaxMempoolSize -
 func MaxMempoolSize() uint64 {
 	return atomic.LoadUint64(&maxMempoolSizeBytes)
 }
 
+// RejectedTxsLimits -
 func RejectedTxsLimits() (size uint64, cnt int) {
-	mutex_cfg.Lock()
+	mutexCfg.Lock()
 	size = maxRejectedSizeBytes
 	cnt = int(CFG.TXPool.MaxRejectCnt)
-	mutex_cfg.Unlock()
+	mutexCfg.Unlock()
 	return
 }
 
+// TempBlocksDir -
 func TempBlocksDir() string {
-	return GocoinHomeDir + "tmpblk" + string(os.PathSeparator)
+	return SpawnHomeDir + "tmpblk" + string(os.PathSeparator)
 }

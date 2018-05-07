@@ -1,3 +1,4 @@
+//Package network
 package network
 
 import (
@@ -6,11 +7,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
 	"io"
 	"os"
 	"time"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 var (
@@ -49,11 +51,11 @@ func (t2s *OneTxToSend) WriteBytes(wr io.Writer) {
 
 func MempoolSave(force bool) {
 	if !force && !common.CFG.TXPool.SaveOnDisk {
-		os.Remove(common.GocoinHomeDir + MEMPOOL_FILE_NAME2)
+		os.Remove(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
 		return
 	}
 
-	f, er := os.Create(common.GocoinHomeDir + MEMPOOL_FILE_NAME2)
+	f, er := os.Create(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
 	if er != nil {
 		println(er.Error())
 		return
@@ -89,7 +91,7 @@ func MempoolLoad2() bool {
 	var i int
 	var cnt1, cnt2 uint
 
-	f, er := os.Open(common.GocoinHomeDir + MEMPOOL_FILE_NAME2)
+	f, er := os.Open(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
 	if er != nil {
 		fmt.Println("MempoolLoad:", er.Error())
 		return false
@@ -248,7 +250,6 @@ fatal_error:
 	return false
 }
 
-
 // this one is only called from TextUI
 func MempoolLoadNew(fname string, abort *bool) bool {
 	var ntx *TxRcvd
@@ -276,10 +277,10 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 	}
 	fmt.Println("Loading", totcnt, "transactions from", fname)
 
-	oneperc = totcnt/100
+	oneperc = totcnt / 100
 
 	for idx = 0; idx < totcnt; idx++ {
-		if cntdwn==0 {
+		if cntdwn == 0 {
 			fmt.Print("\r", perc, "% complete...")
 			perc++
 			cntdwn = oneperc

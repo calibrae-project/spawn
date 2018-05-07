@@ -12,9 +12,9 @@ var (
 	DbLockFileHndl *os.File
 )
 
-func LockDatabaseDir(GocoinHomeDir string) {
-	os.MkdirAll(GocoinHomeDir, 0770)
-	DbLockFileName = GocoinHomeDir+".lock"
+func LockDatabaseDir(SpawnHomeDir string) {
+	os.MkdirAll(SpawnHomeDir, 0770)
+	DbLockFileName = SpawnHomeDir+".lock"
 	DbLockFileHndl, _ = os.Open(DbLockFileName)
 	if DbLockFileHndl==nil {
 		DbLockFileHndl, _ = os.Create(DbLockFileName)

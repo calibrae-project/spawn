@@ -39,7 +39,7 @@ Now use "MSYS2 MinGW 64-bit" shell and execute:
 
 
 If everything went well, you should see "PASS" executing "go test" in this folder.
-Then copy "gocoin/client/speedups/sipasec.go" to "gocoin/client/" to boost your client.
+Then copy "Spawn/client/speedups/sipasec.go" to "Spawn/client/" to boost your client.
 */
 
 // #cgo LDFLAGS: -lsecp256k1 -lgmp

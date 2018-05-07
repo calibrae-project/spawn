@@ -1,3 +1,4 @@
+//Package network
 package network
 
 import (
@@ -5,14 +6,15 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/peersdb"
 	"math/rand"
 	"net"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/peersdb"
 )
 
 var (
@@ -32,7 +34,7 @@ func (c *OneConnection) ExpireBlocksToGet(now *time.Time, curr_ping_cnt uint64) 
 		if curr_ping_cnt > v.SentAtPingCnt {
 			common.CountSafe("BlockInprogNotfound")
 			c.counters["BlockTotFound"]++
-		} else if now != nil && now.After(v.start.Add(5 * time.Minute)) {
+		} else if now != nil && now.After(v.start.Add(5*time.Minute)) {
 			common.CountSafe("BlockInprogTimeout")
 			c.counters["BlockTimeout"]++
 		} else {
@@ -191,7 +193,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 
 		for {
 			select {
-			case <- con_done:
+			case <-con_done:
 				if e == nil {
 					Mutex_net.Lock()
 					conn.Conn = con
@@ -199,7 +201,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 					Mutex_net.Unlock()
 					conn.Run()
 				}
-			case <-time.After(10*time.Millisecond):
+			case <-time.After(10 * time.Millisecond):
 				if !conn.IsBroken() {
 					continue
 				}
@@ -217,7 +219,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 
 // TCP server
 func tcp_server() {
-	ad, e := net.ResolveTCPAddr("tcp4", fmt.Sprint("0.0.0.0:", common.DefaultTcpPort()))
+	ad, e := net.ResolveTCPAddr("tcp4", fmt.Sprint("0.0.0.0:", common.DefaultTCPport()))
 	if e != nil {
 		println("ResolveTCPAddr", e.Error())
 		return
@@ -310,7 +312,7 @@ func tcp_server() {
 func ConnectFriends() {
 	common.CountSafe("ConnectFriends")
 
-	f, _ := os.Open(common.GocoinHomeDir + "friends.txt")
+	f, _ := os.Open(common.SpawnHomeDir + "friends.txt")
 	if f == nil {
 		return
 	}
@@ -632,7 +634,7 @@ func (c *OneConnection) Run() {
 			}
 			c.X.LastMinFeePerKByte = common.MinFeePerKB()
 
-			if c.X.IsGocoin {
+			if c.X.IsSpawn {
 				c.SendAuth()
 			}
 

@@ -160,7 +160,7 @@ func main() {
 		return
 	}
 
-	HOST = os.Getenv("GOCOIN_WEBUI")
+	HOST = os.Getenv("Spawn_WEBUI")
 	if HOST == "" {
 		HOST = "http://127.0.0.1:8833/"
 	} else {
@@ -171,7 +171,7 @@ func main() {
 			HOST = HOST + "/"
 		}
 	}
-	fmt.Println("Gocoin WebUI at", HOST, "(you can overwrite it via env variable GOCOIN_WEBUI)")
+	fmt.Println("Spawn WebUI at", HOST, "(you can overwrite it via env variable Spawn_WEBUI)")
 
 	switch os.Args[1] {
 		case "wal":

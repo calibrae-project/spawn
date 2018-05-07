@@ -98,7 +98,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 			common.CountSafe("TxConsensusERR")
 			mut.Lock()
 			println("Compare to consensus failed!")
-			println("Gocoin:", result, "   ConsLIB:", res)
+			println("Spawn:", result, "   ConsLIB:", res)
 			println("pkScr", hex.EncodeToString(pkScr))
 			println("txTo", hex.EncodeToString(txTo))
 			println("amount:", amount, "  input_idx:", i, "  ver_flags:", ver_flags)

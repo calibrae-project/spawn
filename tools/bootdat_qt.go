@@ -1,4 +1,4 @@
-// This tool can import blockchain database from satoshi client to gocoin
+// This tool can import blockchain database from satoshi client to Spawn
 package main
 
 import (

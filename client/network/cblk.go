@@ -1,3 +1,4 @@
+// Package network -
 package network
 
 import (
@@ -6,14 +7,15 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/dchest/siphash"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
 	"io/ioutil"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/chain"
+	"github.com/dchest/siphash"
 )
 
 var (
@@ -415,7 +417,7 @@ func (c *OneConnection) ProcessCmpctBlock(pl []byte) {
 		}
 		b2g.InProgress++
 		c.Mutex.Lock()
-		c.GetBlockInProgress[b2g.Block.Hash.BIdx()] = &oneBlockDl{hash: b2g.Block.Hash, start: time.Now(), col: col, SentAtPingCnt:c.X.PingSentCnt}
+		c.GetBlockInProgress[b2g.Block.Hash.BIdx()] = &oneBlockDl{hash: b2g.Block.Hash, start: time.Now(), col: col, SentAtPingCnt: c.X.PingSentCnt}
 		c.Mutex.Unlock()
 		c.SendRawMsg("getblocktxn", msg.Bytes())
 		//fmt.Println(c.ConnID, "Send getblocktxn for", col.Missing, "/", shortidscnt, "missing txs.  ", msg.Len(), "bytes")

@@ -1,9 +1,11 @@
+//Package network
 package network
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/lib/btc"
 )

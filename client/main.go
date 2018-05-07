@@ -2,6 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/signal"
+	"runtime"
+	"runtime/debug"
+	"time"
+	"unsafe"
+
 	"github.com/calibrae-project/spawn"
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/client/network"
@@ -15,13 +23,6 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/peersdb"
 	"github.com/calibrae-project/spawn/lib/others/qdb"
 	"github.com/calibrae-project/spawn/lib/others/sys"
-	"io/ioutil"
-	"os"
-	"os/signal"
-	"runtime"
-	"runtime/debug"
-	"time"
-	"unsafe"
 )
 
 var (
@@ -259,10 +260,10 @@ func HandleRpcBlock(msg *rpcapi.BlockSubmited) {
 func main() {
 	var ptr *byte
 	if unsafe.Sizeof(ptr) < 8 {
-		fmt.Println("WARNING: Gocoin client shall be build for 64-bit arch. It will likely crash now.")
+		fmt.Println("WARNING: Spawn client shall be build for 64-bit arch. It will likely crash now.")
 	}
 
-	fmt.Println("Gocoin client version", gocoin.Version)
+	fmt.Println("Spawn client version", Spawn.Version)
 	runtime.GOMAXPROCS(runtime.NumCPU()) // It seems that Go does not do it by default
 
 	// Disable Ctrl+C
@@ -324,7 +325,7 @@ func main() {
 		peersdb.Testnet = common.Testnet
 		peersdb.ConnectOnly = common.CFG.ConnectOnly
 		peersdb.Services = common.Services
-		peersdb.InitPeers(common.GocoinHomeDir)
+		peersdb.InitPeers(common.SpawnHomeDir)
 		if common.FLAG.UnbanAllPeers {
 			var keys []qdb.KeyType
 			var vals [][]byte
@@ -354,7 +355,7 @@ func main() {
 			network.MempoolLoad2()
 		}
 
-		if common.CFG.TextUI_Enabled {
+		if common.CFG.TextUIEnabled {
 			go textui.MainThread()
 		}
 

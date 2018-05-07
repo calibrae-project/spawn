@@ -1,16 +1,18 @@
+//Package network
 package network
 
 import (
-	"os"
-	"fmt"
-	"time"
 	"bytes"
-	"errors"
-	"strings"
 	"encoding/binary"
+	"errors"
+	"fmt"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/client/common"
 )
 
 var IgnoreExternalIpFrom = []string{}
@@ -23,7 +25,7 @@ func (c *OneConnection) SendVersion() {
 	binary.Write(b, binary.LittleEndian, uint64(time.Now().Unix()))
 
 	b.Write(c.PeerAddr.NetAddr.Bytes())
-	if ExternalAddrLen()>0 {
+	if ExternalAddrLen() > 0 {
 		b.Write(BestExternalAddr())
 	} else {
 		b.Write(bytes.Repeat([]byte{0}, 26))
@@ -38,14 +40,14 @@ func (c *OneConnection) SendVersion() {
 
 	binary.Write(b, binary.LittleEndian, uint32(common.Last.BlockHeight()))
 	if !common.GetBool(&common.CFG.TXPool.Enabled) {
-		b.WriteByte(0)  // don't notify me about txs
+		b.WriteByte(0) // don't notify me about txs
 	}
 
 	c.SendRawMsg("version", b.Bytes())
 }
 
-func (c *OneConnection) IsGocoin() bool {
-	return strings.HasPrefix(c.Node.Agent, "/Gocoin:")
+func (c *OneConnection) IsSpawn() bool {
+	return strings.HasPrefix(c.Node.Agent, "/Spawn:")
 }
 
 func (c *OneConnection) HandleVersion(pl []byte) error {
@@ -66,7 +68,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					Mutex_net.Unlock()
 					v.Mutex.Lock()
 					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.Ip(),
-						"already connected as ", v.ConnID, "from ", v.PeerAddr.Ip(), v.Node.Agent)*/
+					"already connected as ", v.ConnID, "from ", v.PeerAddr.Ip(), v.Node.Agent)*/
 					v.Mutex.Unlock()
 					common.CountSafe("VerNonceSame")
 					return errors.New("Peer already connected")
@@ -92,17 +94,17 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		if len(pl) >= 86 {
 			le, of := btc.VLen(pl[80:])
 			of += 80
-			c.Node.Agent = string(pl[of:of+le])
+			c.Node.Agent = string(pl[of : of+le])
 			of += le
 			if len(pl) >= of+4 {
-				c.Node.Height = binary.LittleEndian.Uint32(pl[of:of+4])
+				c.Node.Height = binary.LittleEndian.Uint32(pl[of : of+4])
 				c.X.GetBlocksDataNow = true
 				of += 4
-				if len(pl) > of && pl[of]==0 {
+				if len(pl) > of && pl[of] == 0 {
 					c.Node.DoNotRelayTxs = true
 				}
 			}
-			c.X.IsGocoin = strings.HasPrefix(c.Node.Agent, "/Gocoin:")
+			c.X.IsSpawn = strings.HasPrefix(c.Node.Agent, "/Spawn:")
 		}
 		c.X.VersionReceived = true
 		c.Mutex.Unlock()
@@ -111,7 +113,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 			if bytes.Equal(pl[40:44], c.PeerAddr.Ip4[:]) {
 				if common.FLAG.Log {
 					ExternalIpMutex.Lock()
-					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660);
+					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
 					if f != nil {
 						fmt.Fprintf(f, "%s: OWN IP from %s @ %s - %d\n",
 							time.Now().Format("2006-01-02 15:04:05"),
@@ -126,7 +128,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				!bytes.Equal(pl[66:70], c.PeerAddr.Ip4[:]) {
 				if common.FLAG.Log {
 					ExternalIpMutex.Lock()
-					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660);
+					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
 					if f != nil {
 						fmt.Fprintf(f, "%s: BAD IP=%d.%d.%d.%d from %s @ %s - %d\n",
 							time.Now().Format("2006-01-02 15:04:05"),
@@ -142,10 +144,10 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 
 		if use_this_ip {
 			ExternalIpMutex.Lock()
-			if _, known := ExternalIp4[c.Node.ReportedIp4]; !known { // New IP
+			if _, known := ExternalIP4[c.Node.ReportedIp4]; !known { // New IP
 				use_this_ip = true
 				for x, v := range IgnoreExternalIpFrom {
-					if c.Node.Agent==v {
+					if c.Node.Agent == v {
 						use_this_ip = false
 						common.CountSafe(fmt.Sprint("IgnoreExtIP", x))
 						break
@@ -157,7 +159,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				}
 			}
 			if use_this_ip {
-				ExternalIp4[c.Node.ReportedIp4] = [2]uint {ExternalIp4[c.Node.ReportedIp4][0]+1,
+				ExternalIP4[c.Node.ReportedIp4] = [2]uint{ExternalIP4[c.Node.ReportedIp4][0] + 1,
 					uint(time.Now().Unix())}
 			}
 			ExternalIpMutex.Unlock()

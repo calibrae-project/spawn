@@ -1,4 +1,4 @@
-package gocoin
+package Spawn
 // This file is only to make "go get" working
 
 import (
