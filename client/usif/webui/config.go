@@ -106,7 +106,7 @@ func pCfg(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(er.Error()))
 			return
 		}
-		w.Write([]byte(fmt.Sprint("Connecting to ", ad.Ip())))
+		w.Write([]byte(fmt.Sprint("Connecting to ", ad.IP())))
 		ad.Manual = true
 		network.DoNetwork(ad)
 		return

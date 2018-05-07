@@ -185,7 +185,7 @@ func delB2Gcallback(hash *btc.Uint256) {
 // ProcessCompactBlock -
 func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	if len(pl) < 90 {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error A", hex.EncodeToString(pl))
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error A", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrA")
 		return
 	}
@@ -245,7 +245,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	offs := 88
 	shortidscnt, n = btc.VLen(pl[offs:])
 	if shortidscnt < 0 || n > 3 {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error B", hex.EncodeToString(pl))
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrB")
 		return
 	}
@@ -254,7 +254,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	shortids := make(map[uint64][]byte, shortidscnt)
 	for i := 0; i < int(shortidscnt); i++ {
 		if len(pl[offs:offs+6]) < 6 {
-			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error B2", hex.EncodeToString(pl))
+			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B2", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrB2")
 			return
 		}
@@ -264,7 +264,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 
 	prefilledcnt, n = btc.VLen(pl[offs:])
 	if prefilledcnt < 0 || n > 3 {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error C", hex.EncodeToString(pl))
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error C", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrC")
 		return
 	}
@@ -276,7 +276,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	for i := 0; i < int(prefilledcnt); i++ {
 		idx, n = btc.VLen(pl[offs:])
 		if idx < 0 || n > 3 {
-			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error D", hex.EncodeToString(pl))
+			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error D", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrD")
 			return
 		}
@@ -284,7 +284,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		offs += n
 		n = btc.TxSize(pl[offs:])
 		if n == 0 {
-			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "cmpctblock error E", hex.EncodeToString(pl))
+			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error E", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrE")
 			return
 		}
@@ -315,7 +315,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		if ptr, ok := shortids[sid]; ok {
 			if ptr != nil {
 				common.CountSafe("ShortIDSame")
-				println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "Same short ID - abort")
+				println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "Same short ID - abort")
 				return
 			}
 			shortids[sid] = v.Raw
@@ -337,7 +337,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		if ptr, ok := shortids[sid]; ok {
 			if ptr != nil {
 				common.CountSafe("ShortIDSame")
-				println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "Same short ID - abort")
+				println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "Same short ID - abort")
 				return
 			}
 			shortids[sid] = v.Raw
@@ -433,14 +433,14 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 // ProcessBlockTx -
 func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	if len(pl) < 33 {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn error A", hex.EncodeToString(pl))
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn error A", hex.EncodeToString(pl))
 		c.DoS("BlkTxnErrLen")
 		return
 	}
 	hash := btc.NewUint256(pl[:32])
 	le, n := btc.VLen(pl[32:])
 	if le < 0 || n > 3 {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn error B", hex.EncodeToString(pl))
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn error B", hex.EncodeToString(pl))
 		c.DoS("BlkTxnErrCnt")
 		return
 	}
@@ -452,7 +452,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	c.Mutex.Lock()
 	bip := c.GetBlockInProgress[idx]
 	if bip == nil {
-		println(time.Now().Format("2006-01-02 15:04:05"), c.ConnID, "BlkTxnNoBIP:", c.PeerAddr.Ip(), c.Node.Agent, hash.String())
+		println(time.Now().Format("2006-01-02 15:04:05"), c.ConnID, "BlkTxnNoBIP:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
 		c.Mutex.Unlock()
 		c.counters["BlkTxnNoBIP"]++
 		c.Misbehave("BlkTxnErrBip", 100)
@@ -461,7 +461,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	col := bip.col
 	if col == nil {
 		c.Mutex.Unlock()
-		println("BlkTxnNoCOL:", c.PeerAddr.Ip(), c.Node.Agent, hash.String())
+		println("BlkTxnNoCOL:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
 		common.CountSafe("UnxpectedBlockTxn")
 		c.counters["BlkTxnNoCOL"]++
 		c.Misbehave("BlkTxnNoCOL", 100)
@@ -490,7 +490,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	for offs < len(pl) {
 		n = btc.TxSize(pl[offs:])
 		if n == 0 {
-			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn corrupt TX")
+			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn corrupt TX")
 			c.DoS("BlkTxnErrTx")
 			return
 		}
@@ -513,7 +513,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 			col.Txs[idx] = rawTx
 		} else {
 			common.CountSafe("ShortIDUnknown")
-			println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn TX (short) ID unknown")
+			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn TX (short) ID unknown")
 			return
 		}
 	}
@@ -525,7 +525,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	//sto := time.Now()
 	er := common.BlockChain.PostCheckBlock(b2g.Block)
 	if er != nil {
-		println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "Corrupt CmpctBlkB")
+		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "Corrupt CmpctBlkB")
 		//c.DoS("BadCmpctBlockB")
 		ioutil.WriteFile(b2g.Hash.String()+".bin", b2g.Block.Raw, 0700)
 

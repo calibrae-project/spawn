@@ -15,28 +15,28 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-func p_net(w http.ResponseWriter, r *http.Request) {
+func pNet(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
-	net_page := load_template("net.html")
+	netPage := load_template("net.html")
 
 	network.MutexNet.Lock()
-	net_page = strings.Replace(net_page, "{LISTEN_TCP}", fmt.Sprint(common.IsListenTCP(), network.TCPServerStarted), 1)
-	net_page = strings.Replace(net_page, "{EXTERNAL_ADDR}", btc.NewNetAddr(network.BestExternalAddr()).String(), 1)
+	netPage = strings.Replace(netPage, "{LISTEN_TCP}", fmt.Sprint(common.IsListenTCP(), network.TCPServerStarted), 1)
+	netPage = strings.Replace(netPage, "{EXTERNAL_ADDR}", btc.NewNetAddr(network.BestExternalAddr()).String(), 1)
 
 	network.MutexNet.Unlock()
 
 	d, _ := ioutil.ReadFile(common.SpawnHomeDir + "friends.txt")
-	net_page = strings.Replace(net_page, "{FRIENDS_TXT}", html.EscapeString(string(d)), 1)
+	netPage = strings.Replace(netPage, "{FRIENDS_TXT}", html.EscapeString(string(d)), 1)
 
 	write_html_head(w, r)
-	w.Write([]byte(net_page))
+	w.Write([]byte(netPage))
 	write_html_tail(w)
 }
 
-func json_netcon(w http.ResponseWriter, r *http.Request) {
+func jsonNetCon(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -47,7 +47,7 @@ func json_netcon(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				err = fmt.Errorf("pkg: %v", r)
 			}
-			fmt.Println("json_netcon recovered:", err.Error())
+			fmt.Println("jsonNetCon recovered:", err.Error())
 			fmt.Println(string(debug.Stack()))
 		}
 	}()
@@ -55,16 +55,16 @@ func json_netcon(w http.ResponseWriter, r *http.Request) {
 	network.MutexNet.Lock()
 	defer network.MutexNet.Unlock()
 
-	net_cons := make([]network.ConnInfo, len(network.OpenCons))
+	netCons := make([]network.ConnInfo, len(network.OpenCons))
 	tmp, _, _ := network.GetSortedConnections()
-	i := len(net_cons)
+	i := len(netCons)
 	for _, v := range tmp {
 		i--
-		v.Conn.GetStats(&net_cons[i])
-		net_cons[i].HasImmunity = v.MinutesOnline < network.OnlineImmunityMinutes
+		v.Conn.GetStats(&netCons[i])
+		netCons[i].HasImmunity = v.MinutesOnline < network.OnlineImmunityMinutes
 	}
 
-	bx, er := json.Marshal(net_cons)
+	bx, er := json.Marshal(netCons)
 	if er == nil {
 		w.Header()["Content-Type"] = []string{"application/json"}
 		w.Write(bx)
@@ -74,7 +74,7 @@ func json_netcon(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func json_peerst(w http.ResponseWriter, r *http.Request) {
+func jsonPeersT(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -111,13 +111,13 @@ func json_peerst(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func json_bwidth(w http.ResponseWriter, r *http.Request) {
+func jsonBandwidth(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
-	type one_ext_ip struct {
-		Ip               string
+	type oneExtIP struct {
+		IP               string
 		Count, Timestamp uint
 	}
 
@@ -131,7 +131,7 @@ func json_bwidth(w http.ResponseWriter, r *http.Request) {
 		Ul_speed_now     uint64
 		Ul_speed_max     uint64
 		Ul_total         uint64
-		ExternalIP       []one_ext_ip
+		ExternalIP       []oneExtIP
 		GetMPInProgress  bool
 	}
 
@@ -154,8 +154,8 @@ func json_bwidth(w http.ResponseWriter, r *http.Request) {
 
 	arr := network.GetExternalIPs()
 	for _, rec := range arr {
-		out.ExternalIP = append(out.ExternalIP, one_ext_ip{
-			Ip:    fmt.Sprintf("%d.%d.%d.%d", byte(rec.IP>>24), byte(rec.IP>>16), byte(rec.IP>>8), byte(rec.IP)),
+		out.ExternalIP = append(out.ExternalIP, oneExtIP{
+			IP:    fmt.Sprintf("%d.%d.%d.%d", byte(rec.IP>>24), byte(rec.IP>>16), byte(rec.IP>>8), byte(rec.IP)),
 			Count: rec.Cnt, Timestamp: rec.Tim})
 	}
 

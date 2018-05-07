@@ -43,7 +43,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if b2g, ok = BlocksToGet[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderFresh")
-		//fmt.Println(c.PeerAddr.Ip(), "block", bl.Hash.String(), " not new but get it")
+		//fmt.Println(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
 		return PHstatusFresh, b2g
 	}
 
@@ -88,7 +88,7 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 	b := bytes.NewReader(pl)
 	cnt, e := btc.ReadVLen(b)
 	if e != nil {
-		println("HandleHeaders:", e.Error(), c.PeerAddr.Ip())
+		println("HandleHeaders:", e.Error(), c.PeerAddr.IP())
 		return
 	}
 
@@ -101,13 +101,13 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 
 			n, _ := b.Read(hdr[:])
 			if n != 81 {
-				println("HandleHeaders: pl too short", c.PeerAddr.Ip())
+				println("HandleHeaders: pl too short", c.PeerAddr.IP())
 				c.DoS("HdrErr1")
 				return
 			}
 
 			if hdr[80] != 0 {
-				fmt.Println("Unexpected value of txn_count from", c.PeerAddr.Ip())
+				fmt.Println("Unexpected value of txn_count from", c.PeerAddr.IP())
 				c.DoS("HdrErr2")
 				return
 			}
@@ -169,7 +169,7 @@ func (c *OneConnection) ReceiveHeadersNow() {
 func (c *OneConnection) GetHeaders(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 	if e != nil || hashstop == nil {
-		println("GetHeaders: error parsing payload from", c.PeerAddr.Ip())
+		println("GetHeaders: error parsing payload from", c.PeerAddr.IP())
 		c.DoS("BadGetHdrs")
 		return
 	}

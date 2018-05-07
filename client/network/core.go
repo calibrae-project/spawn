@@ -300,7 +300,7 @@ func (c *OneConnection) BytesToSent() int {
 func (c *OneConnection) GetStats(res *ConnInfo) {
 	c.Mutex.Lock()
 	res.ID = c.ConnID
-	res.PeerIP = c.PeerAddr.Ip()
+	res.PeerIP = c.PeerAddr.IP()
 	if c.Conn != nil {
 		res.LocalAddr = c.Conn.LocalAddr().String()
 		res.RemoteAddr = c.Conn.RemoteAddr().String()
@@ -331,7 +331,7 @@ func (c *OneConnection) SendRawMsg(cmd string, pl []byte) (e error) {
 		// we never allow the buffer to be totally full because then producer would be equal consumer
 		if bytesLeft := SendBufSize - c.BytesToSent(); bytesLeft <= len(pl)+24 {
 			c.Mutex.Unlock()
-			/*println(c.PeerAddr.Ip(), c.Node.Version, c.Node.Agent, "Peer Send Buffer Overflow @",
+			/*println(c.PeerAddr.IP(), c.Node.Version, c.Node.Agent, "Peer Send Buffer Overflow @",
 			cmd, bytesLeft, len(pl)+24, c.SendBufProd, c.SendBufCons, c.BytesToSent())*/
 			c.Disconnect("SendBufferOverflow")
 			common.CountSafe("PeerSendOverflow")
@@ -388,7 +388,7 @@ func (c *OneConnection) appendToSendBuffer(d []byte) {
 func (c *OneConnection) Disconnect(why string) {
 	c.Mutex.Lock()
 	/*if c.X.IsSpecial {
-		print("Disconnect " + c.PeerAddr.Ip() + " (" + c.Node.Agent + ") because " + why + "\n> ")
+		print("Disconnect " + c.PeerAddr.IP() + " (" + c.Node.Agent + ") because " + why + "\n> ")
 	}*/
 	c.broken = true
 	c.Mutex.Unlock()
@@ -407,7 +407,7 @@ func (c *OneConnection) DoS(why string) {
 	common.CountSafe("Ban" + why)
 	c.Mutex.Lock()
 	if c.X.IsSpecial {
-		print("BAN " + c.PeerAddr.Ip() + " (" + c.Node.Agent + ") because " + why + "\n> ")
+		print("BAN " + c.PeerAddr.IP() + " (" + c.Node.Agent + ") because " + why + "\n> ")
 	}
 	c.banit = true
 	c.broken = true
@@ -418,7 +418,7 @@ func (c *OneConnection) DoS(why string) {
 func (c *OneConnection) Misbehave(why string, howMuch int) (res bool) {
 	c.Mutex.Lock()
 	if c.X.IsSpecial {
-		print("Misbehave " + c.PeerAddr.Ip() + " (" + c.Node.Agent + ") because " + why + "\n> ")
+		print("Misbehave " + c.PeerAddr.IP() + " (" + c.Node.Agent + ") because " + why + "\n> ")
 	}
 	if !c.banit {
 		common.CountSafe("Bad" + why)
@@ -428,7 +428,7 @@ func (c *OneConnection) Misbehave(why string, howMuch int) (res bool) {
 			res = true
 			c.banit = true
 			c.broken = true
-			//print("Ban " + c.PeerAddr.Ip() + " (" + c.Node.Agent + ") because " + why + "\n> ")
+			//print("Ban " + c.PeerAddr.IP() + " (" + c.Node.Agent + ") because " + why + "\n> ")
 		}
 	}
 	c.Mutex.Unlock()
@@ -472,7 +472,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 		}
 		if c.recv.hdrLen >= 4 && !bytes.Equal(c.recv.hdr[:4], common.Magic[:]) {
 			if c.X.IsSpecial {
-				fmt.Printf("BadMagic from %s %s \n hdr:%s  n:%d\n R: %s %d / S: %s %d\n> ", c.PeerAddr.Ip(), c.Node.Agent,
+				fmt.Printf("BadMagic from %s %s \n hdr:%s  n:%d\n R: %s %d / S: %s %d\n> ", c.PeerAddr.IP(), c.Node.Agent,
 					hex.EncodeToString(c.recv.hdr[:c.recv.hdrLen]), n,
 					c.X.LastCmdRcvd, c.X.LastBtsRcvd, c.X.LastCmdSent, c.X.LastBtsSent)
 			}
@@ -523,7 +523,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 				c.recv.datlen += uint32(n)
 				c.Mutex.Unlock()
 				if c.recv.datlen > c.recv.plLen {
-					println(c.PeerAddr.Ip(), "is sending more of", c.recv.cmd, "then it should have", c.recv.datlen, c.recv.plLen)
+					println(c.PeerAddr.IP(), "is sending more of", c.recv.cmd, "then it should have", c.recv.datlen, c.recv.plLen)
 					c.DoS("MsgSizeMismatch")
 					return
 				}
@@ -540,7 +540,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 
 	sh := btc.Sha2Sum(c.recv.dat)
 	if !bytes.Equal(c.recv.hdr[20:24], sh[:4]) {
-		//println(c.PeerAddr.Ip(), "Msg checksum error")
+		//println(c.PeerAddr.IP(), "Msg checksum error")
 		c.DoS("MsgBadChksum")
 		return
 	}
@@ -697,7 +697,7 @@ func DropPeer(conid uint32) {
 	for _, v := range OpenCons {
 		if uint32(conid) == v.ConnID {
 			v.DoS("FromUI")
-			//fmt.Println("The connection with", v.PeerAddr.Ip(), "is being dropped and the peer is banned")
+			//fmt.Println("The connection with", v.PeerAddr.IP(), "is being dropped and the peer is banned")
 			return
 		}
 	}

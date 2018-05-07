@@ -104,7 +104,7 @@ func NewPeerFromString(ipstr string, force_default_port bool) (p *PeerAddr, e er
 	}
 
 	if dbp := PeerDB.Get(qdb.KeyType(p.UniqID())); dbp != nil && NewPeer(dbp).Banned != 0 {
-		e = errors.New(p.Ip() + " is banned")
+		e = errors.New(p.IP() + " is banned")
 		p = nil
 	} else {
 		p.Time = uint32(time.Now().Unix())
@@ -138,7 +138,7 @@ func ExpirePeers() {
 
 func (p *PeerAddr) Save() {
 	if p.Time > 0x80000000 {
-		println("saving dupa", int32(p.Time), p.Ip())
+		println("saving dupa", int32(p.Time), p.IP())
 	}
 	PeerDB.Put(qdb.KeyType(p.UniqID()), p.Bytes())
 	PeerDB.Sync()
@@ -163,12 +163,12 @@ func (p *PeerAddr) Dead() {
 	p.Save()
 }
 
-func (p *PeerAddr) Ip() string {
+func (p *PeerAddr) IP() string {
 	return fmt.Sprintf("%d.%d.%d.%d:%d", p.Ip4[0], p.Ip4[1], p.Ip4[2], p.Ip4[3], p.Port)
 }
 
 func (p *PeerAddr) String() (s string) {
-	s = fmt.Sprintf("%21s  srv:%16x", p.Ip(), p.Services)
+	s = fmt.Sprintf("%21s  srv:%16x", p.IP(), p.Services)
 
 	now := uint32(time.Now().Unix())
 	if p.Banned != 0 {

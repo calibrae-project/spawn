@@ -253,7 +253,7 @@ func tcp_server() {
 					ti, ok := RecentlyDisconencted[ad.NetAddr.Ip4]
 					HammeringMutex.Unlock()
 					if ok && time.Now().Sub(ti) < HammeringMinReconnect {
-						//println(ad.Ip(), "is hammering within", time.Now().Sub(ti).String())
+						//println(ad.IP(), "is hammering within", time.Now().Sub(ti).String())
 						common.CountSafe("BanHammerIn")
 						ad.Ban()
 						terminate = true
@@ -267,7 +267,7 @@ func tcp_server() {
 						conn.Conn = tc
 						MutexNet.Lock()
 						if _, ok := OpenCons[ad.UniqID()]; ok {
-							//fmt.Println(ad.Ip(), "already connected")
+							//fmt.Println(ad.IP(), "already connected")
 							common.CountSafe("SameIpReconnect")
 							MutexNet.Unlock()
 							terminate = true
@@ -335,7 +335,7 @@ func ConnectFriends() {
 				curr, _ := OpenCons[ad.UniqID()]
 				MutexNet.Unlock()
 				if curr == nil {
-					//print("Connecting friend ", ad.Ip(), " ...\n> ")
+					//print("Connecting friend ", ad.IP(), " ...\n> ")
 					ad.Friend = true
 					DoNetwork(ad)
 				} else {
@@ -609,7 +609,7 @@ func (c *OneConnection) Run() {
 
 		if cmd.cmd == "version" {
 			if c.X.VersionReceived {
-				println("VersionAgain from", c.ConnID, c.PeerAddr.Ip(), c.Node.Agent)
+				println("VersionAgain from", c.ConnID, c.PeerAddr.IP(), c.Node.Agent)
 				c.Misbehave("VersionAgain", 1000/10)
 				break
 			}
@@ -624,7 +624,7 @@ func (c *OneConnection) Run() {
 				if f != nil {
 					fmt.Fprintf(f, "%s: New connection. ID:%d  Incomming:%t  Addr:%s  Version:%d  Services:0x%x  Agent:%s\n",
 						time.Now().Format("2006-01-02 15:04:05"), c.ConnID, c.X.Incomming,
-						c.PeerAddr.Ip(), c.Node.Version, c.Node.Services, c.Node.Agent)
+						c.PeerAddr.IP(), c.Node.Version, c.Node.Services, c.Node.Agent)
 					f.Close()
 				}
 			}
@@ -729,7 +729,7 @@ func (c *OneConnection) Run() {
 		case "feefilter":
 			if len(cmd.pl) >= 8 {
 				c.X.MinFeeSPKB = int64(binary.LittleEndian.Uint64(cmd.pl[:8]))
-				//println(c.PeerAddr.Ip(), c.Node.Agent, "feefilter", c.X.MinFeeSPKB)
+				//println(c.PeerAddr.IP(), c.Node.Agent, "feefilter", c.X.MinFeeSPKB)
 			}
 
 		case "sendcmpct":
@@ -747,7 +747,7 @@ func (c *OneConnection) Run() {
 			} else {
 				common.CountSafe("SendCmpctErr")
 				if len(cmd.pl) != 5 {
-					println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "sendcmpct", hex.EncodeToString(cmd.pl))
+					println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "sendcmpct", hex.EncodeToString(cmd.pl))
 				}
 			}
 
@@ -756,11 +756,11 @@ func (c *OneConnection) Run() {
 
 		case "getblocktxn":
 			c.ProcessGetBlockTx(cmd.pl)
-			//println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "getblocktxn", hex.EncodeToString(cmd.pl))
+			//println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "getblocktxn", hex.EncodeToString(cmd.pl))
 
 		case "blocktxn":
 			c.ProcessBlockTx(cmd.pl)
-			//println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "blocktxn", hex.EncodeToString(cmd.pl))
+			//println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn", hex.EncodeToString(cmd.pl))
 
 		case "getmp":
 			if c.X.Authorized {

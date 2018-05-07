@@ -67,8 +67,8 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				if yes {
 					MutexNet.Unlock()
 					v.Mutex.Lock()
-					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.Ip(),
-					"already connected as ", v.ConnID, "from ", v.PeerAddr.Ip(), v.Node.Agent)*/
+					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
+					"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)*/
 					v.Mutex.Unlock()
 					common.CountSafe("VerNonceSame")
 					return errors.New("Peer already connected")
@@ -117,7 +117,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					if f != nil {
 						fmt.Fprintf(f, "%s: OWN IP from %s @ %s - %d\n",
 							time.Now().Format("2006-01-02 15:04:05"),
-							c.Node.Agent, c.PeerAddr.Ip(), c.ConnID)
+							c.Node.Agent, c.PeerAddr.IP(), c.ConnID)
 						f.Close()
 					}
 					ExternalIPmutex.Unlock()
@@ -132,7 +132,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					if f != nil {
 						fmt.Fprintf(f, "%s: BAD IP=%d.%d.%d.%d from %s @ %s - %d\n",
 							time.Now().Format("2006-01-02 15:04:05"),
-							pl[66], pl[67], pl[68], pl[69], c.Node.Agent, c.PeerAddr.Ip(), c.ConnID)
+							pl[66], pl[67], pl[68], pl[69], c.Node.Agent, c.PeerAddr.IP(), c.ConnID)
 						f.Close()
 					}
 					ExternalIPmutex.Unlock()

@@ -59,7 +59,7 @@ func (c *OneConnection) InvStore(typ uint32, hash []byte) {
 // ProcessInv -
 func (c *OneConnection) ProcessInv(pl []byte) {
 	if len(pl) < 37 {
-		//println(c.PeerAddr.Ip(), "inv payload too short", len(pl))
+		//println(c.PeerAddr.IP(), "inv payload too short", len(pl))
 		c.DoS("InvEmpty")
 		return
 	}
@@ -91,12 +91,12 @@ func (c *OneConnection) ProcessInv(pl []byte) {
 							c.Node.Height = b2g.Block.Height
 						}
 						common.CountSafe("InvBlockFresh")
-						//println(c.PeerAddr.Ip(), c.Node.Version, "also knows the block", b2g.Block.Height, bhash.String())
+						//println(c.PeerAddr.IP(), c.Node.Version, "also knows the block", b2g.Block.Height, bhash.String())
 						c.MutexSetBool(&c.X.GetBlocksDataNow, true)
 					} else {
 						common.CountSafe("InvBlockNew")
 						c.ReceiveHeadersNow()
-						//println(c.PeerAddr.Ip(), c.Node.Version, "possibly new block", bhash.String())
+						//println(c.PeerAddr.IP(), c.Node.Version, "possibly new block", bhash.String())
 					}
 					MutexRcv.Unlock()
 				} else {
@@ -199,7 +199,7 @@ func (c *OneConnection) GetBlocks(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 
 	if e != nil || len(h2get) < 1 || hashstop == nil {
-		println("GetBlocks: error parsing payload from", c.PeerAddr.Ip())
+		println("GetBlocks: error parsing payload from", c.PeerAddr.IP())
 		c.DoS("BadGetBlks")
 		return
 	}

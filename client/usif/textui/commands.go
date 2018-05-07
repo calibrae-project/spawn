@@ -437,7 +437,7 @@ func unbanPeer(par string) {
 			fmt.Println(par, er.Error())
 			return
 		}
-		fmt.Println("Unban", ad.Ip(), "...")
+		fmt.Println("Unban", ad.IP(), "...")
 	} else {
 		fmt.Println("Unban all peers ...")
 	}
@@ -447,7 +447,7 @@ func unbanPeer(par string) {
 	peersdb.PeerDB.Browse(func(k qdb.KeyType, v []byte) uint32 {
 		peer := peersdb.NewPeer(v)
 		if peer.Banned != 0 {
-			if ad == nil || peer.Ip() == ad.Ip() {
+			if ad == nil || peer.IP() == ad.IP() {
 				fmt.Println(" -", peer.NetAddr.String())
 				peer.Banned = 0
 				keys = append(keys, k)
@@ -536,7 +536,7 @@ func analyzeBIP9(par string) {
 	}
 }
 
-func switch_trust(par string) {
+func switchTrust(par string) {
 	if par == "0" {
 		common.FLAG.TrustAll = false
 	} else if par == "1" {
@@ -545,12 +545,12 @@ func switch_trust(par string) {
 	fmt.Println("Assume blocks trusted:", common.FLAG.TrustAll)
 }
 
-func save_utxo(par string) {
+func saveUXTO(par string) {
 	common.BlockChain.Unspent.DirtyDB.Set()
 	common.BlockChain.Idle()
 }
 
-func purge_utxo(par string) {
+func purgeUXTO(par string) {
 	common.BlockChain.Unspent.PurgeUnspendable(par == "all")
 }
 
@@ -569,11 +569,11 @@ func init() {
 	newUI("mem", false, showMem, "Show detailed memory stats (optionally free, gc or a numeric param)")
 	newUI("peers", false, showAddresses, "Dump pers database (specify number)")
 	newUI("pend", false, showPending, "Show pending blocks, to be fetched")
-	newUI("purge", true, purge_utxo, "Purge unspendable outputs from UTXO database (add 'all' to purge everything)")
+	newUI("purge", true, purgeUXTO, "Purge unspendable outputs from UTXO database (add 'all' to purge everything)")
 	newUI("quit q", false, uiQuit, "Quit the node")
 	newUI("savebl", false, dumpBlock, "Saves a block with a given hash to a binary file")
-	newUI("saveutxo s", true, save_utxo, "Save UTXO database now")
-	newUI("trust t", true, switch_trust, "Assume all donwloaded blocks trusted (1) or un-trusted (0)")
+	newUI("saveutxo s", true, saveUXTO, "Save UTXO database now")
+	newUI("trust t", true, switchTrust, "Assume all donwloaded blocks trusted (1) or un-trusted (0)")
 	newUI("ulimit ul", false, setULmax, "Set maximum upload speed. The value is in KB/second - 0 for unlimited")
 	newUI("unban", false, unbanPeer, "Unban a peer specified by IP[:port] (or 'unban all')")
 	newUI("utxo u", true, blockchainUTXOdb, "Display UTXO-db statistics")

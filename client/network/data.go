@@ -16,11 +16,11 @@ import (
 func (c *OneConnection) ProcessGetData(pl []byte) {
 	//var notfound []byte
 
-	//println(c.PeerAddr.Ip(), "getdata")
+	//println(c.PeerAddr.IP(), "getdata")
 	b := bytes.NewReader(pl)
 	cnt, e := btc.ReadVLen(b)
 	if e != nil {
-		println("ProcessGetData:", e.Error(), c.PeerAddr.Ip())
+		println("ProcessGetData:", e.Error(), c.PeerAddr.IP())
 		return
 	}
 	for i := 0; i < int(cnt); i++ {
@@ -29,7 +29,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 
 		n, _ := b.Read(h[:])
 		if n != 36 {
-			println("ProcessGetData: pl too short", c.PeerAddr.Ip())
+			println("ProcessGetData: pl too short", c.PeerAddr.IP())
 			return
 		}
 
@@ -79,7 +79,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 			}
 		} else if typ == MsgCompactBlock {
 			if !c.SendCompactBlock(btc.NewUint256(h[4:])) {
-				println(c.ConnID, c.PeerAddr.Ip(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
+				println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
 				if c.Misbehave("GetCmpctBlk", 100) {
 					break
 				}
@@ -128,7 +128,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 	// remove from BlocksToGet:
 	b2g := BlocksToGet[idx]
 	if b2g == nil {
-		//println("Block", hash.String(), " from", conn.PeerAddr.Ip(), conn.Node.Agent, " was not expected")
+		//println("Block", hash.String(), " from", conn.PeerAddr.IP(), conn.Node.Agent, " was not expected")
 
 		var hdr [81]byte
 		var sta int
@@ -136,7 +136,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 		sta, b2g = conn.ProcessNewHeader(hdr[:])
 		if b2g == nil {
 			if sta == PHstatusFatal {
-				println("Unrequested Block: FAIL - Ban", conn.PeerAddr.Ip(), conn.Node.Agent)
+				println("Unrequested Block: FAIL - Ban", conn.PeerAddr.IP(), conn.Node.Agent)
 				conn.DoS("BadUnreqBlock")
 			} else {
 				common.CountSafe("ErrUnreqBlock")
@@ -152,7 +152,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 		common.CountSafe("UnxpectedBlockNEW")
 	}
 
-	//println("block", b2g.BlockTreeNode.Height," len", len(b), " got from", conn.PeerAddr.Ip(), b2g.InProgress)
+	//println("block", b2g.BlockTreeNode.Height," len", len(b), " got from", conn.PeerAddr.IP(), b2g.InProgress)
 	b2g.Block.Raw = b
 	if conn.X.Authorized {
 		b2g.Block.Trusted = true
@@ -161,7 +161,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 	er := common.BlockChain.PostCheckBlock(b2g.Block)
 	if er != nil {
 		b2g.InProgress--
-		println("Corrupt block received from", conn.PeerAddr.Ip(), er.Error())
+		println("Corrupt block received from", conn.PeerAddr.IP(), er.Error())
 		//ioutil.WriteFile(hash.String() + ".bin", b, 0700)
 		conn.DoS("BadBlock")
 

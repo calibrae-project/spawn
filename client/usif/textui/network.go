@@ -101,7 +101,7 @@ func net_conn(par string) {
 		fmt.Println(par, er.Error())
 		return
 	}
-	fmt.Println("Connecting to", ad.Ip())
+	fmt.Println("Connecting to", ad.IP())
 	ad.Manual = true
 	network.DoNetwork(ad)
 }
@@ -135,7 +135,7 @@ func net_stats(par string) {
 		} else {
 			fmt.Print(" ->")
 		}
-		fmt.Printf(" %21s %5dms %7d : %-16s %7d : %-16s", v.PeerAddr.Ip(),
+		fmt.Printf(" %21s %5dms %7d : %-16s %7d : %-16s", v.PeerAddr.IP(),
 			v.GetAveragePing(), v.X.LastBtsRcvd, v.X.LastCmdRcvd, v.X.LastBtsSent, v.X.LastCmdSent)
 		fmt.Printf("%9s %9s", common.BytesToString(v.X.Counters["BytesReceived"]), common.BytesToString(v.X.Counters["BytesSent"]))
 		fmt.Print("  ", v.Node.Agent)
