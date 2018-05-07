@@ -112,7 +112,7 @@ Mined by <b id="stat_mined_by"></b>
 		<td align="right" class="nw"><b id="bw_ul_total"></b> tot
 	<tr><td>External IP:
 		<td colspan="1" align="right" id="external_ip0" style="font-weight:bold">
-		<td colspan="2" align="right" id="external_others" style="font-size:70%;font-style:italic;overlay-x:">
+		<td colspan="2" align="right" id="external_others" style="font-size:70%;font-style:italic">
 	</table>
 <td valign="top">
 	<h2>Others</h2>
@@ -341,6 +341,7 @@ blno.addEventListener("lastblock", function(e) {
 		last_block_version.innerText = '0x' + leftpad(stat.Version.toString(16),  '0',  8)
 		draw_chart()
 	}
+
 	var ago = stat.Time_now - stat.Received
 	if (ago<120) {
 		last_block_received.innerText = ago + ' sec ago'
@@ -360,19 +361,19 @@ function refreshsysinfo() {
 	aj.onload=function() {
 		try {
 			var si = JSON.parse(aj.responseText)
-			si_known_peers.innerText = si.Known_peers
-			si_total_mem.innerText = ((si.Heap_size+si.Qdb_extramem)/0x100000).toFixed(0)
-			el_free_mem.title = (si.Heap_sysmem/0x100000).toFixed(0)
-			si_heap_size.innerText = (si.Heap_size/0x100000).toFixed(0)
-			si_qdb_extramem.innerText = (si.Qdb_extramem/0x100000).toFixed(0)
-			si_net_block_qsize.innerText = si.Net_block_qsize
-			si_net_tx_qsize.innerText = si.Net_tx_qsize
-			si_ecdsa_verify_cnt.innerText = si.Ecdsa_verify_cnt
-			si_avg_block_size.innerText = (si.Average_block_size/1000).toFixed(1) + ' kB'
-			si_avg_fee_spb.innerText = si.Average_fee.toFixed(0)
-			si_blocks_cached.innerText = si.Blocks_cached
+			si_known_peers.innerText = si.KnownPeers
+			si_total_mem.innerText = ((si.HeapSize+si.QdbExtramem)/0x100000).toFixed(0)
+			el_free_mem.title = (si.HeapSysmem/0x100000).toFixed(0)
+			si_heap_size.innerText = (si.HeapSize/0x100000).toFixed(0)
+			si_qdb_extramem.innerText = (si.QdbExtramem/0x100000).toFixed(0)
+			si_net_block_qsize.innerText = si.NetBlockQsize
+			si_net_tx_qsize.innerText = si.NetTxQsize
+			si_ecdsa_verify_cnt.innerText = si.EcdsaVerifyCount
+			si_avg_block_size.innerText = (si.AverageBlockSize/1000).toFixed(1) + ' kB'
+			si_avg_fee_spb.innerText = si.AverageFee.toFixed(0)
+			si_blocks_cached.innerText = si.BlocksCached
 			si_blocks_to_get.innerText = si.BlocksToGet
-			si_node_uptime.innerText = period2str(si.Node_uptime)
+			si_node_uptime.innerText = period2str(si.NodeUptime)
 			si_last_hdr_height.innerText = si.LastHeaderHeight
 			si_network_hashrate.innerText = bignum(si.NetworkHashRate) +'H/s'
 			si_saving.style.display = si.SavingUTXO ? "block" : "none"

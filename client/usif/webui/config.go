@@ -17,7 +17,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
-func p_cfg(w http.ResponseWriter, r *http.Request) {
+func pCfg(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}

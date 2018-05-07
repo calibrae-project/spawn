@@ -175,7 +175,7 @@ func net_stats(par string) {
 }
 
 func init() {
-	newUi("net n", false, net_stats, "Show network statistics. Specify ID to see its details.")
-	newUi("drop", false, net_drop, "Disconenct from node with a given IP")
-	newUi("conn", false, net_conn, "Connect to the given node (specify IP and optionally a port)")
+	newUI("net n", false, net_stats, "Show network statistics. Specify ID to see its details.")
+	newUI("drop", false, net_drop, "Disconenct from node with a given IP")
+	newUI("conn", false, net_conn, "Connect to the given node (specify IP and optionally a port)")
 }

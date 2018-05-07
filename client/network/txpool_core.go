@@ -242,7 +242,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 	common.CountSafe("HandleNetTx")
 
 	tx := ntx.Tx
-	start_time := time.Now()
+	startTime := time.Now()
 	var final bool // set to true if any of the inpits has a final sequence
 
 	var totinp, totout uint64
@@ -502,7 +502,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 
 	rec := &OneTxToSend{Spent: spent, Volume: totinp, Local: ntx.local,
 		Fee: fee, Firstseen: time.Now(), Tx: tx, MemInputs: frommem, MemInputCnt: frommemcnt,
-		SigopsCost: uint64(sigops), Final: final, VerifyTime: time.Now().Sub(start_time)}
+		SigopsCost: uint64(sigops), Final: final, VerifyTime: time.Now().Sub(startTime)}
 
 	TransactionsToSend[tx.Hash.BIdx()] = rec
 

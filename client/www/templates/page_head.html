@@ -132,12 +132,12 @@ function refreshblock() {
 				apply_wallet_on()
 			}
 
-			blno.title = "Last block received " + ((stat.Time_now-stat.Received)/60).toFixed(1) + " min ago"
+			blno.title = "Last block received " + ((stat.TimeNow-stat.Received)/60).toFixed(1) + " min ago"
 			// dispatch event..
 			var e = document.createEvent("Event")
 			e.initEvent("lastblock", false, false)
 			e.block = stat
-			time_now = stat.Time_now
+			time_now = stat.TimeNow
 			blno.dispatchEvent(e)
 
 			if (blno.innerText != stat.Height) {

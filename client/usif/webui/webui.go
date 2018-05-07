@@ -15,7 +15,7 @@ import (
 	"github.com/calibrae-project/spawn/client/usif"
 )
 
-var start_time time.Time
+var startTime time.Time
 
 func ipchecker(r *http.Request) bool {
 	if common.NetworkClosed.Get() || usif.Exit_now.Get() {
@@ -98,7 +98,7 @@ func new_session_id(w http.ResponseWriter) (sessid string) {
 }
 
 func write_html_head(w http.ResponseWriter, r *http.Request) {
-	start_time = time.Now()
+	startTime = time.Now()
 
 	sessid := sid(r)
 	if sessid == "" {
@@ -131,7 +131,7 @@ func write_html_head(w http.ResponseWriter, r *http.Request) {
 
 func write_html_tail(w http.ResponseWriter) {
 	s := load_template("page_tail.html")
-	s = strings.Replace(s, "<!--LOAD_TIME-->", time.Now().Sub(start_time).String(), 1)
+	s = strings.Replace(s, "<!--LOAD_TIME-->", time.Now().Sub(startTime).String(), 1)
 	w.Write([]byte(s))
 }
 
@@ -175,10 +175,10 @@ func ServerThread(iface string) {
 
 	http.HandleFunc("/net", p_net)
 	http.HandleFunc("/txs", p_txs)
-	http.HandleFunc("/blocks", p_blocks)
-	http.HandleFunc("/miners", p_miners)
-	http.HandleFunc("/counts", p_counts)
-	http.HandleFunc("/cfg", p_cfg)
+	http.HandleFunc("/blocks", pBlocks)
+	http.HandleFunc("/miners", pMiners)
+	http.HandleFunc("/counts", pCounts)
+	http.HandleFunc("/cfg", pCfg)
 	http.HandleFunc("/help", p_help)
 
 	http.HandleFunc("/txs2s.xml", xml_txs2s)
@@ -186,21 +186,21 @@ func ServerThread(iface string) {
 	http.HandleFunc("/txw4i.xml", xml_txw4i)
 	http.HandleFunc("/rawTx", rawTx)
 
-	http.HandleFunc("/", p_home)
-	http.HandleFunc("/status.json", json_status)
-	http.HandleFunc("/counts.json", json_counts)
-	http.HandleFunc("/system.json", json_system)
+	http.HandleFunc("/", pHome)
+	http.HandleFunc("/status.json", jsonStatus)
+	http.HandleFunc("/counts.json", jsonCounts)
+	http.HandleFunc("/system.json", jsonSystem)
 	http.HandleFunc("/bwidth.json", json_bwidth)
 	http.HandleFunc("/txstat.json", json_txstat)
 	http.HandleFunc("/netcon.json", json_netcon)
-	http.HandleFunc("/blocks.json", json_blocks)
+	http.HandleFunc("/blocks.json", jsonBlocks)
 	http.HandleFunc("/peerst.json", json_peerst)
 	http.HandleFunc("/bwchar.json", json_bwchar)
 	http.HandleFunc("/mempool_stats.json", json_mempool_stats)
 	http.HandleFunc("/mempool_fees.json", json_mempool_fees)
-	http.HandleFunc("/blkver.json", json_blkver)
-	http.HandleFunc("/miners.json", json_miners)
-	http.HandleFunc("/blfees.json", json_blfees)
+	http.HandleFunc("/blkver.json", jsonBlkVer)
+	http.HandleFunc("/miners.json", jsonMiners)
+	http.HandleFunc("/blfees.json", jsonBlockFees)
 	http.HandleFunc("/walsta.json", json_wallet_status)
 
 	http.HandleFunc("/mempool_fees.txt", txt_mempool_fees)

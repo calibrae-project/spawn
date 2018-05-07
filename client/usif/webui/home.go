@@ -1,34 +1,34 @@
 package webui
 
 import (
-	"time"
-	"sync"
-	"strings"
-	"net/http"
 	"encoding/json"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/utxo"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/client/usif"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/peersdb"
+	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
 var (
 	mutexHrate sync.Mutex
-	lastHrate float64
-	nextHrate time.Time
+	lastHrate  float64
+	nextHrate  time.Time
 )
 
-
-func p_home(w http.ResponseWriter, r *http.Request) {
+func pHome(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
 	// The handler also gets called for /favicon.ico
-	if r.URL.Path!="/" {
+	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
@@ -49,35 +49,34 @@ func p_home(w http.ResponseWriter, r *http.Request) {
 	write_html_tail(w)
 }
 
-
-func json_status(w http.ResponseWriter, r *http.Request) {
+func jsonStatus(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
 	var out struct {
-		Height uint32
-		Hash string
-		Timestamp uint32
-		Received int64
-		Time_now int64
-		Diff float64
-		Median uint32
-		Version uint32
-		MinValue uint64
-		WalletON bool
+		Height                 uint32
+		Hash                   string
+		Timestamp              uint32
+		Received               int64
+		TimeNow                int64
+		Diff                   float64
+		Median                 uint32
+		Version                uint32
+		MinValue               uint64
+		WalletON               bool
 		LastTrustedBlockHeight uint32
-		LastHeaderHeight uint32
+		LastHeaderHeight       uint32
 		BlockChainSynchronized bool
 	}
 	common.Last.Mutex.Lock()
 	out.Height = common.Last.Block.Height
-	out.Hash =  common.Last.Block.BlockHash.String()
-	out.Timestamp =  common.Last.Block.Timestamp()
-	out.Received =  common.Last.Time.Unix()
-	out.Time_now =  time.Now().Unix()
-	out.Diff =  btc.GetDifficulty(common.Last.Block.Bits())
-	out.Median =  common.Last.Block.GetMedianTimePast()
+	out.Hash = common.Last.Block.BlockHash.String()
+	out.Timestamp = common.Last.Block.Timestamp()
+	out.Received = common.Last.Time.Unix()
+	out.TimeNow = time.Now().Unix()
+	out.Diff = btc.GetDifficulty(common.Last.Block.Bits())
+	out.Median = common.Last.Block.GetMedianTimePast()
 	out.Version = common.Last.Block.BlockVersion()
 	common.Last.Mutex.Unlock()
 	out.MinValue = common.AllBalMinVal()
@@ -97,43 +96,42 @@ func json_status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-func json_system(w http.ResponseWriter, r *http.Request) {
+func jsonSystem(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
 	var out struct {
-		Blocks_cached int
-		BlocksToGet int
-		Known_peers int
-		Node_uptime uint64
-		Net_block_qsize int
-		Net_tx_qsize int
-		Heap_size uint64
-		Heap_sysmem uint64
-		Qdb_extramem int64
-		Ecdsa_verify_cnt uint64
-		Average_block_size int
-		Average_fee float64
+		BlocksCached     int
+		BlocksToGet      int
+		KnownPeers       int
+		NodeUptime       uint64
+		NetBlockQsize    int
+		NetTxQsize       int
+		HeapSize         uint64
+		HeapSysmem       uint64
+		QdbExtramem      int64
+		EcdsaVerifyCount uint64
+		AverageBlockSize int
+		AverageFee       float64
 		LastHeaderHeight uint32
-		NetworkHashRate float64
-		SavingUTXO bool
+		NetworkHashRate  float64
+		SavingUTXO       bool
 	}
 
-	out.Blocks_cached = network.CachedBlocksLen.Get()
+	out.BlocksCached = network.CachedBlocksLen.Get()
 	network.MutexRcv.Lock()
 	out.BlocksToGet = len(network.BlocksToGet)
 	network.MutexRcv.Unlock()
-	out.Known_peers = peersdb.PeerDB.Count()
-	out.Node_uptime = uint64(time.Now().Sub(common.StartTime).Seconds())
-	out.Net_block_qsize = len(network.NetBlocks)
-	out.Net_tx_qsize = len(network.NetTxs)
-	out.Heap_size, out.Heap_sysmem = sys.MemUsed()
-	out.Qdb_extramem = utxo.ExtraMemoryConsumed()
-	out.Ecdsa_verify_cnt = btc.EcdsaVerifyCnt()
-	out.Average_block_size = common.AverageBlockSize.Get()
-	out.Average_fee = common.GetAverageFee()
+	out.KnownPeers = peersdb.PeerDB.Count()
+	out.NodeUptime = uint64(time.Now().Sub(common.StartTime).Seconds())
+	out.NetBlockQsize = len(network.NetBlocks)
+	out.NetTxQsize = len(network.NetTxs)
+	out.HeapSize, out.HeapSysmem = sys.MemUsed()
+	out.QdbExtramem = utxo.ExtraMemoryConsumed()
+	out.EcdsaVerifyCount = btc.EcdsaVerifyCnt()
+	out.AverageBlockSize = common.AverageBlockSize.Get()
+	out.AverageFee = common.GetAverageFee()
 	network.MutexRcv.Lock()
 	out.LastHeaderHeight = network.LastCommitedHeader.Height
 	network.MutexRcv.Unlock()

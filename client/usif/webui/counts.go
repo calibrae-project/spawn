@@ -1,34 +1,35 @@
 package webui
 
 import (
-//	"os"
+	//	"os"
 	"fmt"
 	"sort"
-//	"strings"
+	//	"strings"
 	"net/http"
+
 	"github.com/calibrae-project/spawn/client/common"
 )
 
-type many_counters []one_counter
+type manyCounters []oneCounter
 
-type one_counter struct {
+type oneCounter struct {
 	key string
 	cnt uint64
 }
 
-func (c many_counters) Len() int {
+func (c manyCounters) Len() int {
 	return len(c)
 }
 
-func (c many_counters) Less(i, j int) bool {
+func (c manyCounters) Less(i, j int) bool {
 	return c[i].key < c[j].key
 }
 
-func (c many_counters) Swap(i, j int) {
+func (c manyCounters) Swap(i, j int) {
 	c[i], c[j] = c[j], c[i]
 }
 
-func p_counts(w http.ResponseWriter, r *http.Request) {
+func pCounts(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -38,29 +39,28 @@ func p_counts(w http.ResponseWriter, r *http.Request) {
 	write_html_tail(w)
 }
 
-
-func json_counts(w http.ResponseWriter, r *http.Request) {
+func jsonCounts(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 	var net []string
-	var gen, txs many_counters
+	var gen, txs manyCounters
 	common.CounterMutex.Lock()
 	for k, v := range common.Counter {
-		if k[4]=='_' {
+		if k[4] == '_' {
 			var i int
-			for i=0; i<len(net); i++ {
-				if net[i]==k[5:] {
+			for i = 0; i < len(net); i++ {
+				if net[i] == k[5:] {
 					break
 				}
 			}
-			if i==len(net) {
+			if i == len(net) {
 				net = append(net, k[5:])
 			}
-		} else if k[:2]=="Tx" {
-			txs = append(txs, one_counter{key:k[2:], cnt:v})
+		} else if k[:2] == "Tx" {
+			txs = append(txs, oneCounter{key: k[2:], cnt: v})
 		} else {
-			gen = append(gen, one_counter{key:k, cnt:v})
+			gen = append(gen, oneCounter{key: k, cnt: v})
 		}
 	}
 	common.CounterMutex.Unlock()
@@ -74,7 +74,7 @@ func json_counts(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(" \"gen\":["))
 	for i := range gen {
 		w.Write([]byte(fmt.Sprint("{\"var\":\"", gen[i].key, "\",\"cnt\":", gen[i].cnt, "}")))
-		if i<len(gen)-1 {
+		if i < len(gen)-1 {
 			w.Write([]byte(","))
 		}
 	}
@@ -82,14 +82,14 @@ func json_counts(w http.ResponseWriter, r *http.Request) {
 
 	for i := range txs {
 		w.Write([]byte(fmt.Sprint("{\"var\":\"", txs[i].key, "\",\"cnt\":", txs[i].cnt, "}")))
-		if i<len(txs)-1 {
+		if i < len(txs)-1 {
 			w.Write([]byte(","))
 		}
 	}
 	w.Write([]byte("],\n \"net\":["))
 
 	for i := range net {
-		fin := "_"+net[i]
+		fin := "_" + net[i]
 		w.Write([]byte("{\"var\":\"" + net[i] + "\","))
 		common.CounterMutex.Lock()
 		w.Write([]byte(fmt.Sprint("\"rcvd\":", common.Counter["rcvd"+fin], ",")))
@@ -97,7 +97,7 @@ func json_counts(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprint("\"sent\":", common.Counter["sent"+fin], ",")))
 		w.Write([]byte(fmt.Sprint("\"sbts\":", common.Counter["sbts"+fin], "}")))
 		common.CounterMutex.Unlock()
-		if i<len(net)-1 {
+		if i < len(net)-1 {
 			w.Write([]byte(","))
 		}
 	}

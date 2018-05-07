@@ -8,13 +8,14 @@ package textui
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
 	"sync"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/script"
 )
 
 const (
@@ -131,5 +132,5 @@ func init() {
 	r1, _, _ := syscall.Syscall(bitcoinconsensus_version.Addr(), 0, 0, 0, 0)
 	common.Log.Println("Using", DllName, "version", r1, "to cross-check consensus rules")
 	script.VerifyConsensus = check_consensus
-	newUi("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
+	newUI("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
 }

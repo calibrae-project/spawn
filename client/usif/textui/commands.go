@@ -24,7 +24,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
-type oneUiCmd struct {
+type oneUIcmd struct {
 	cmds    []string // command name
 	help    string   // a helf for this command
 	sync    bool     // shall be executed in the blochcina therad
@@ -32,15 +32,15 @@ type oneUiCmd struct {
 }
 
 var (
-	uiCmds      []*oneUiCmd
-	show_prompt bool = true
+	uiCmds     []*oneUIcmd
+	showPrompt = true
 )
 
 // add a new UI commend handler
-func newUi(cmds string, sync bool, hn func(string), help string) {
+func newUI(cmds string, sync bool, hn func(string), help string) {
 	cs := strings.Split(cmds, " ")
 	if len(cs[0]) > 0 {
-		var c = new(oneUiCmd)
+		var c = new(oneUIcmd)
 		for i := range cs {
 			c.cmds = append(c.cmds, cs[i])
 		}
@@ -54,13 +54,13 @@ func newUi(cmds string, sync bool, hn func(string), help string) {
 					break // lets have them sorted
 				}
 			}
-			tmp := make([]*oneUiCmd, len(uiCmds)+1)
+			tmp := make([]*oneUIcmd, len(uiCmds)+1)
 			copy(tmp[:i], uiCmds[:i])
 			tmp[i] = c
 			copy(tmp[i+1:], uiCmds[i:])
 			uiCmds = tmp
 		} else {
-			uiCmds = []*oneUiCmd{c}
+			uiCmds = []*oneUIcmd{c}
 		}
 	} else {
 		panic("empty command string")
@@ -72,6 +72,7 @@ func readline() string {
 	return string(li)
 }
 
+// AskYesNo -
 func AskYesNo(msg string) bool {
 	for {
 		fmt.Print(msg, " (y/n) : ")
@@ -82,20 +83,21 @@ func AskYesNo(msg string) bool {
 			return false
 		}
 	}
-	return false
 }
 
+// ShowPrompt -
 func ShowPrompt() {
 	fmt.Print("> ")
 }
 
+// MainThread -
 func MainThread() {
-	time.Sleep(1e9) // hold on for 1 sencond before showing the show_prompt
+	time.Sleep(1e9) // hold on for 1 sencond before showing the showPrompt
 	for !usif.Exit_now.Get() {
-		if show_prompt {
+		if showPrompt {
 			ShowPrompt()
 		}
-		show_prompt = true
+		showPrompt = true
 		li := strings.Trim(readline(), " \n\t\r")
 		if len(li) > 0 {
 			cmdpar := strings.SplitN(li, " ", 2)
@@ -111,7 +113,7 @@ func MainThread() {
 						found = true
 						if uiCmds[i].sync {
 							usif.ExecUiReq(&usif.OneUiReq{Param: param, Handler: uiCmds[i].handler})
-							show_prompt = false
+							showPrompt = false
 						} else {
 							uiCmds[i].handler(param)
 						}
@@ -125,14 +127,14 @@ func MainThread() {
 	}
 }
 
-func show_info(par string) {
+func showInfo(par string) {
 	fmt.Println("main.go last seen in line:", common.BusyIn())
 
 	network.MutexRcv.Lock()
 	discarded := len(network.DiscardedBlocks)
 	cached := network.CachedBlocksLen.Get()
-	b2g_len := len(network.BlocksToGet)
-	b2g_idx_len := len(network.IndexToBlocksToGet)
+	b2gLen := len(network.BlocksToGet)
+	b2gIdxLen := len(network.IndexToBlocksToGet)
 	network.MutexRcv.Unlock()
 
 	fmt.Printf("Spawn: %s,  Synced: %t,  Uptime %s,  Peers: %d,  ECDSAs: %d\n",
@@ -158,19 +160,19 @@ func show_info(par string) {
 
 	network.MutexNet.Lock()
 	fmt.Printf("Blocks Queued: %d,  Cached: %d,  Discarded: %d,  To Get: %d/%d\n", len(network.NetBlocks),
-		cached, discarded, b2g_len, b2g_idx_len)
+		cached, discarded, b2gLen, b2gIdxLen)
 	network.MutexNet.Unlock()
 
 	network.TxMutex.Lock()
-	var sw_cnt, sw_bts uint64
+	var swCnt, swBts uint64
 	for _, v := range network.TransactionsToSend {
 		if v.SegWit != nil {
-			sw_cnt++
-			sw_bts += uint64(v.Size)
+			swCnt++
+			swBts += uint64(v.Size)
 		}
 	}
 	fmt.Printf("Txs in mem pool: %d (%dMB),  SegWit: %d (%dMB),  Rejected: %d (%dMB),  Pending:%d/%d\n",
-		len(network.TransactionsToSend), network.TransactionsToSendSize>>20, sw_cnt, sw_bts>>20,
+		len(network.TransactionsToSend), network.TransactionsToSendSize>>20, swCnt, swBts>>20,
 		len(network.TransactionsRejected), network.TransactionsRejectedSize>>20,
 		len(network.TransactionsPending), len(network.NetTxs))
 	fmt.Printf(" WaitingForInputs: %d (%d KB),  SpentOutputs: %d,  AverageFee: %.1f SpB\n",
@@ -186,10 +188,10 @@ func show_info(par string) {
 	usif.BlockFeesMutex.Unlock()
 }
 
-func show_counters(par string) {
+func showCounters(par string) {
 	common.CounterMutex.Lock()
 	ck := make([]string, 0)
-	for k, _ := range common.Counter {
+	for k := range common.Counter {
 		if par == "" || strings.HasPrefix(k, par) {
 			ck = append(ck, k)
 		}
@@ -215,7 +217,7 @@ func show_counters(par string) {
 	common.CounterMutex.Unlock()
 }
 
-func show_pending(par string) {
+func showPending(par string) {
 	network.MutexRcv.Lock()
 	for _, v := range network.BlocksToGet {
 		fmt.Printf(" * %d / %s / %d in progress\n", v.Block.Height, v.Block.Hash.String(), v.InProgress)
@@ -223,7 +225,7 @@ func show_pending(par string) {
 	network.MutexRcv.Unlock()
 }
 
-func show_help(par string) {
+func showHelp(par string) {
 	fmt.Println("The following", len(uiCmds), "commands are supported:")
 	for i := range uiCmds {
 		fmt.Print("   ")
@@ -238,7 +240,7 @@ func show_help(par string) {
 	fmt.Println("All the commands are case sensitive.")
 }
 
-func show_mem(p string) {
+func showMem(p string) {
 	al, sy := sys.MemUsed()
 
 	fmt.Println("Allocated:", al>>20, "MB")
@@ -250,7 +252,7 @@ func show_mem(p string) {
 	if p == "free" {
 		fmt.Println("Freeing the mem...")
 		sys.FreeMem()
-		show_mem("")
+		showMem("")
 		return
 	}
 	if p == "gc" {
@@ -268,7 +270,7 @@ func show_mem(p string) {
 	fmt.Println("GC treshold set to", i, "percent")
 }
 
-func dump_block(s string) {
+func dumpBlock(s string) {
 	h := btc.NewUint256FromString(s)
 	if h == nil {
 		println("Specify block's hash")
@@ -298,19 +300,19 @@ func dump_block(s string) {
 
 }
 
-func ui_quit(par string) {
+func uiQuit(par string) {
 	usif.Exit_now.Set()
 }
 
-func blchain_stats(par string) {
+func blockchainStats(par string) {
 	fmt.Println(common.BlockChain.Stats())
 }
 
-func blchain_utxodb(par string) {
+func blockchainUTXOdb(par string) {
 	fmt.Println(common.BlockChain.Unspent.UTXOStats())
 }
 
-func set_ulmax(par string) {
+func setULmax(par string) {
 	v, e := strconv.ParseUint(par, 10, 64)
 	if e == nil {
 		common.SetUploadLimit(v << 10)
@@ -322,7 +324,7 @@ func set_ulmax(par string) {
 	}
 }
 
-func set_dlmax(par string) {
+func setDLmax(par string) {
 	v, e := strconv.ParseUint(par, 10, 64)
 	if e == nil {
 		common.SetDownloadLimit(v << 10)
@@ -334,7 +336,7 @@ func set_dlmax(par string) {
 	}
 }
 
-func set_config(s string) {
+func setConfig(s string) {
 	common.LockCfg()
 	defer common.UnlockCfg()
 	if s != "" {
@@ -352,7 +354,7 @@ func set_config(s string) {
 	fmt.Println(string(dat))
 }
 
-func load_config(s string) {
+func loadConfig(s string) {
 	d, e := ioutil.ReadFile(common.ConfigFile)
 	if e != nil {
 		println(e.Error())
@@ -369,7 +371,7 @@ func load_config(s string) {
 	fmt.Println("Config reloaded")
 }
 
-func save_config(s string) {
+func saveConfig(s string) {
 	common.LockCfg()
 	if common.SaveConfig() {
 		fmt.Println("Current settings saved to", common.ConfigFile)
@@ -377,7 +379,7 @@ func save_config(s string) {
 	common.UnlockCfg()
 }
 
-func show_addresses(par string) {
+func showAddresses(par string) {
 	fmt.Println(peersdb.PeerDB.Count(), "peers in the database")
 	if par == "list" {
 		cnt := 0
@@ -420,7 +422,7 @@ func show_addresses(par string) {
 	}
 }
 
-func unban_peer(par string) {
+func unbanPeer(par string) {
 	if par == "" {
 		fmt.Println("Specify IP of the peer to unban or use 'unban all'")
 		return
@@ -461,7 +463,7 @@ func unban_peer(par string) {
 	fmt.Println(len(keys), "peer(s) un-baned")
 }
 
-func show_cached(par string) {
+func showCached(par string) {
 	var hi, lo uint32
 	for _, v := range network.CachedBlocks {
 		//fmt.Printf(" * %s -> %s\n", v.Hash.String(), btc.NewUint256(v.ParentHash()).String())
@@ -497,13 +499,13 @@ func sendInv(par string) {
 	fmt.Println("Inv sent to all peers")
 }
 
-func analyze_bip9(par string) {
+func analyzeBIP9(par string) {
 	all := par == "all"
 	n := common.BlockChain.BlockTreeRoot
 	for n != nil {
 		var i uint
-		start_block := uint(n.Height)
-		start_time := n.Timestamp()
+		startBlock := uint(n.Height)
+		startTime := n.Timestamp()
 		bits := make(map[byte]uint32)
 		for i = 0; i < 2016 && n != nil; i++ {
 			ver := n.BlockVersion()
@@ -527,8 +529,8 @@ func analyze_bip9(par string) {
 				}
 			}
 			if s != "" {
-				fmt.Println("Period from", time.Unix(int64(start_time), 0).Format("2006/01/02 15:04"),
-					" block #", start_block, "-", start_block+i-1, ":", s, " - active from", start_block+2*2016)
+				fmt.Println("Period from", time.Unix(int64(startTime), 0).Format("2006/01/02 15:04"),
+					" block #", startBlock, "-", startBlock+i-1, ":", s, " - active from", startBlock+2*2016)
 			}
 		}
 	}
@@ -553,26 +555,26 @@ func purge_utxo(par string) {
 }
 
 func init() {
-	newUi("bchain b", true, blchain_stats, "Display blockchain statistics")
-	newUi("bip9", true, analyze_bip9, "Analyze current blockchain for BIP9 bits (add 'all' to see more)")
-	newUi("cache", true, show_cached, "Show blocks cached in memory")
-	newUi("configload cl", false, load_config, "Re-load settings from the common file")
-	newUi("configsave cs", false, save_config, "Save current settings to a common file")
-	newUi("configset cfg", false, set_config, "Set a specific common value - use JSON, omit top {}")
-	newUi("counters c", false, show_counters, "Show all kind of debug counters")
-	newUi("dlimit dl", false, set_dlmax, "Set maximum download speed. The value is in KB/second - 0 for unlimited")
-	newUi("help h ?", false, show_help, "Shows this help")
-	newUi("info i", false, show_info, "Shows general info about the node")
-	newUi("inv", false, sendInv, "Send inv message to all the peers - specify type & hash")
-	newUi("mem", false, show_mem, "Show detailed memory stats (optionally free, gc or a numeric param)")
-	newUi("peers", false, show_addresses, "Dump pers database (specify number)")
-	newUi("pend", false, show_pending, "Show pending blocks, to be fetched")
-	newUi("purge", true, purge_utxo, "Purge unspendable outputs from UTXO database (add 'all' to purge everything)")
-	newUi("quit q", false, ui_quit, "Quit the node")
-	newUi("savebl", false, dump_block, "Saves a block with a given hash to a binary file")
-	newUi("saveutxo s", true, save_utxo, "Save UTXO database now")
-	newUi("trust t", true, switch_trust, "Assume all donwloaded blocks trusted (1) or un-trusted (0)")
-	newUi("ulimit ul", false, set_ulmax, "Set maximum upload speed. The value is in KB/second - 0 for unlimited")
-	newUi("unban", false, unban_peer, "Unban a peer specified by IP[:port] (or 'unban all')")
-	newUi("utxo u", true, blchain_utxodb, "Display UTXO-db statistics")
+	newUI("bchain b", true, blockchainStats, "Display blockchain statistics")
+	newUI("bip9", true, analyzeBIP9, "Analyze current blockchain for BIP9 bits (add 'all' to see more)")
+	newUI("cache", true, showCached, "Show blocks cached in memory")
+	newUI("configload cl", false, loadConfig, "Re-load settings from the common file")
+	newUI("configsave cs", false, saveConfig, "Save current settings to a common file")
+	newUI("configset cfg", false, setConfig, "Set a specific common value - use JSON, omit top {}")
+	newUI("counters c", false, showCounters, "Show all kind of debug counters")
+	newUI("dlimit dl", false, setDLmax, "Set maximum download speed. The value is in KB/second - 0 for unlimited")
+	newUI("help h ?", false, showHelp, "Shows this help")
+	newUI("info i", false, showInfo, "Shows general info about the node")
+	newUI("inv", false, sendInv, "Send inv message to all the peers - specify type & hash")
+	newUI("mem", false, showMem, "Show detailed memory stats (optionally free, gc or a numeric param)")
+	newUI("peers", false, showAddresses, "Dump pers database (specify number)")
+	newUI("pend", false, showPending, "Show pending blocks, to be fetched")
+	newUI("purge", true, purge_utxo, "Purge unspendable outputs from UTXO database (add 'all' to purge everything)")
+	newUI("quit q", false, uiQuit, "Quit the node")
+	newUI("savebl", false, dumpBlock, "Saves a block with a given hash to a binary file")
+	newUI("saveutxo s", true, save_utxo, "Save UTXO database now")
+	newUI("trust t", true, switch_trust, "Assume all donwloaded blocks trusted (1) or un-trusted (0)")
+	newUI("ulimit ul", false, setULmax, "Set maximum upload speed. The value is in KB/second - 0 for unlimited")
+	newUI("unban", false, unbanPeer, "Unban a peer specified by IP[:port] (or 'unban all')")
+	newUI("utxo u", true, blockchainUTXOdb, "Display UTXO-db statistics")
 }

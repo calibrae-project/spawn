@@ -2,17 +2,18 @@ package webui
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/client/network"
 	"github.com/calibrae-project/spawn/client/usif"
 	"github.com/calibrae-project/spawn/lib/btc"
-	"net/http"
-//	"regexp"
+	//	"regexp"
 	"strconv"
 	"time"
 )
 
-func p_blocks(w http.ResponseWriter, r *http.Request) {
+func pBlocks(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -22,12 +23,12 @@ func p_blocks(w http.ResponseWriter, r *http.Request) {
 	write_html_tail(w)
 }
 
-func json_blocks(w http.ResponseWriter, r *http.Request) {
+func jsonBlocks(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
-	type one_block struct {
+	type oneBlock struct {
 		Height    uint32
 		Timestamp uint32
 		Hash      string
@@ -52,7 +53,7 @@ func json_blocks(w http.ResponseWriter, r *http.Request) {
 		HaveFeeStats bool
 	}
 
-	var blks []*one_block
+	var blks []*oneBlock
 
 	common.Last.Mutex.Lock()
 	end := common.Last.Block
@@ -70,7 +71,7 @@ func json_blocks(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		b := new(one_block)
+		b := new(oneBlock)
 		b.Height = end.Height
 		b.Timestamp = block.BlockTime()
 		b.Hash = end.BlockHash.String()
@@ -152,7 +153,7 @@ func json_blocks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func json_blfees(w http.ResponseWriter, r *http.Request) {
+func jsonBlockFees(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}

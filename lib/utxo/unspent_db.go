@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/sys"
 	"io/ioutil"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
 const (
@@ -199,7 +200,7 @@ func (db *UnspentDB) save() {
 	data_channel := make(chan []byte, 100)
 	exit_channel := make(chan bool, 1)
 
-	start_time := time.Now()
+	startTime := time.Now()
 
 	db.RWMutex.RLock()
 
@@ -259,7 +260,7 @@ func (db *UnspentDB) save() {
 		if check_time {
 			check_time = false
 			data_progress = int64((current_record << 20) / total_records)
-			time_progress = int64((time.Now().Sub(start_time) << 20) / UTXO_WRITING_TIME_TARGET)
+			time_progress = int64((time.Now().Sub(startTime) << 20) / UTXO_WRITING_TIME_TARGET)
 			if data_progress > time_progress {
 				select {
 				case <-db.abortwritingnow:
@@ -283,7 +284,7 @@ func (db *UnspentDB) save() {
 			}
 		}
 
-		btc.WriteVlen(buf, uint64(UtxoIdxLen + len(v)))
+		btc.WriteVlen(buf, uint64(UtxoIdxLen+len(v)))
 		buf.Write(k[:])
 		buf.Write(v)
 		if buf.Len() > 0x10000 {
@@ -308,7 +309,7 @@ finito:
 
 	if !abort {
 		db.DirtyDB.Clr()
-		//println("utxo written OK in", time.Now().Sub(start_time).String(), timewaits)
+		//println("utxo written OK in", time.Now().Sub(startTime).String(), timewaits)
 		db.CurrentHeightOnDisk = db.LastBlockHeight
 	}
 	db.WritingInProgress.Clr()

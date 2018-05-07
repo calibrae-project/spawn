@@ -73,6 +73,6 @@ func getTxChildren(par string) {
 }
 
 func init() {
-	newUi("newblock nb", true, newBlock, "build a new block")
-	newUi("txchild ch", true, getTxChildren, "show all the children fo the given tx")
+	newUI("newblock nb", true, newBlock, "build a new block")
+	newUI("txchild ch", true, getTxChildren, "show all the children fo the given tx")
 }

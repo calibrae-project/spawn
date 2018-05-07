@@ -2,14 +2,15 @@ package textui
 
 import (
 	"fmt"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/lib/btc"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 func load_tx(par string) {
@@ -241,20 +242,19 @@ func get_mempool(par string) {
 	network.GetMP(uint32(conid))
 }
 
-
 func init() {
-	newUi("txload tx", true, load_tx, "Load transaction data from the given file, decode it and store in memory")
-	newUi("txsend stx", true, send_tx, "Broadcast transaction from memory pool (identified by a given <txid>)")
-	newUi("tx1send stx1", true, send1_tx, "Broadcast transaction to a single random peer (identified by a given <txid>)")
-	newUi("txsendall stxa", true, send_all_tx, "Broadcast all the transactions (what you see after ltx)")
-	newUi("txdel dtx", true, del_tx, "Remove a transaction from memory pool (identified by a given <txid>)")
-	newUi("txdecode td", true, dec_tx, "Decode a transaction from memory pool (identified by a given <txid>)")
-	newUi("txlist ltx", true, list_txs, "List all the transaction loaded into memory pool up to 1MB space <max_size>")
-	newUi("txlistban ltxb", true, baned_txs, "List the transaction that we have rejected")
-	newUi("mempool mp", true, mempool_stats, "Show the mempool statistics")
-	newUi("txsave", true, save_tx, "Save raw transaction from memory pool to disk")
-	newUi("txmpsave mps", true, save_mempool, "Save memory pool to disk")
-	newUi("txcheck txc", true, check_txs, "Verify consistency of mempool")
-	newUi("txmpload mpl", true, load_mempool, "Load transaction from the given file (must be in mempool.dmp format)")
-	newUi("getmp mpg", true, get_mempool, "Get getmp message to the peer with teh given ID")
+	newUI("txload tx", true, load_tx, "Load transaction data from the given file, decode it and store in memory")
+	newUI("txsend stx", true, send_tx, "Broadcast transaction from memory pool (identified by a given <txid>)")
+	newUI("tx1send stx1", true, send1_tx, "Broadcast transaction to a single random peer (identified by a given <txid>)")
+	newUI("txsendall stxa", true, send_all_tx, "Broadcast all the transactions (what you see after ltx)")
+	newUI("txdel dtx", true, del_tx, "Remove a transaction from memory pool (identified by a given <txid>)")
+	newUI("txdecode td", true, dec_tx, "Decode a transaction from memory pool (identified by a given <txid>)")
+	newUI("txlist ltx", true, list_txs, "List all the transaction loaded into memory pool up to 1MB space <max_size>")
+	newUI("txlistban ltxb", true, baned_txs, "List the transaction that we have rejected")
+	newUI("mempool mp", true, mempool_stats, "Show the mempool statistics")
+	newUI("txsave", true, save_tx, "Save raw transaction from memory pool to disk")
+	newUI("txmpsave mps", true, save_mempool, "Save memory pool to disk")
+	newUI("txcheck txc", true, check_txs, "Verify consistency of mempool")
+	newUI("txmpload mpl", true, load_mempool, "Load transaction from the given file (must be in mempool.dmp format)")
+	newUI("getmp mpg", true, get_mempool, "Get getmp message to the peer with teh given ID")
 }

@@ -2,22 +2,23 @@ package webui
 
 import (
 	"fmt"
-	"time"
 	"sort"
-//	"bytes"
-//	"regexp"
-	"net/http"
-	"encoding/json"
+	"time"
+	//	"bytes"
+	//	"regexp"
 	"encoding/binary"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"encoding/json"
+	"net/http"
+
 	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 type omv struct {
-	unknown_miner bool
-	cnt int
-	bts uint64
-	fees uint64
+	unknownMiner bool
+	cnt          int
+	bts          uint64
+	fees         uint64
 	//ebad_cnt int
 	//nya_cnt int
 }
@@ -42,7 +43,7 @@ func (x onemiernstat) Swap(i, j int) {
 	x[i], x[j] = x[j], x[i]
 }
 
-func p_miners(w http.ResponseWriter, r *http.Request) {
+func pMiners(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -52,8 +53,7 @@ func p_miners(w http.ResponseWriter, r *http.Request) {
 	write_html_tail(w)
 }
 
-
-func json_blkver(w http.ResponseWriter, r *http.Request) {
+func jsonBlkVer(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -65,49 +65,48 @@ func json_blkver(w http.ResponseWriter, r *http.Request) {
 	common.Last.Mutex.Unlock()
 
 	w.Write([]byte("["))
-	if end!=nil {
-		max_cnt := 2*2016 //common.BlockChain.Consensus.Window
+	if end != nil {
+		MaxCount := 2 * 2016 //common.BlockChain.Consensus.Window
 		for {
 			w.Write([]byte(fmt.Sprint("[", end.Height, ",", binary.LittleEndian.Uint32(end.BlockHeader[0:4]), "]")))
 			end = end.Parent
-			if end==nil || max_cnt<=1 {
+			if end == nil || MaxCount <= 1 {
 				break
 			}
-			max_cnt--
+			MaxCount--
 			w.Write([]byte(","))
 		}
 	}
 	w.Write([]byte("]"))
 }
 
-
-func json_miners(w http.ResponseWriter, r *http.Request) {
+func jsonMiners(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
-	type one_miner_row struct {
-		Unknown bool
-		Name string
-		Blocks int
+	type oneMinerRow struct {
+		Unknown               bool
+		Name                  string
+		Blocks                int
 		TotalFees, TotalBytes uint64
 		//BUcnt, NYAcnt int
 	}
 
-	type the_mining_stats struct {
-		MiningStatHours uint
-		BlockCount uint
-		FirstBlockTime int64
+	type theMiningStats struct {
+		MiningStatHours  uint
+		BlockCount       uint
+		FirstBlockTime   int64
 		AvgBlocksPerHour float64
-		AvgDifficulty float64
-		AvgHashrate float64
-		NextDiffChange uint32
-		Miners []one_miner_row
+		AvgDifficulty    float64
+		AvgHashrate      float64
+		NextDiffChange   uint32
+		Miners           []oneMinerRow
 	}
 
 	common.ReloadMiners()
 
-	m := make(map[string] omv, 20)
+	m := make(map[string]omv, 20)
 	var om omv
 	cnt := uint(0)
 	common.Last.Mutex.Lock()
@@ -117,11 +116,11 @@ func json_miners(w http.ResponseWriter, r *http.Request) {
 	var diff float64
 	now := time.Now().Unix()
 
-	next_diff_change := 2016-end.Height%2016
+	nextDiffChange := 2016 - end.Height%2016
 
 	//eb_ad_x := regexp.MustCompile("/EB[0-9]+/AD[0-9]+/")
 
-	for ; end!=nil; cnt++ {
+	for ; end != nil; cnt++ {
 		if now-int64(end.Timestamp()) > int64(common.CFG.Stat.MiningHrs)*3600 {
 			break
 		}
@@ -142,8 +141,8 @@ func json_miners(w http.ResponseWriter, r *http.Request) {
 		miner, mid := common.TxMiner(cbasetx)
 		om = m[miner]
 		om.cnt++
-		om.bts+= uint64(len(bl))
-		om.unknown_miner = (mid==-1)
+		om.bts += uint64(len(bl))
+		om.unknownMiner = (mid == -1)
 
 		// Blocks reward
 		var rew uint64
@@ -168,11 +167,10 @@ func json_miners(w http.ResponseWriter, r *http.Request) {
 		end = end.Parent
 	}
 
-	if cnt==0 {
+	if cnt == 0 {
 		w.Write([]byte("{}"))
 		return
 	}
-
 
 	srt := make(onemiernstat, len(m))
 	i := 0
@@ -183,11 +181,11 @@ func json_miners(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(srt)
 
-	var stats the_mining_stats
+	var stats theMiningStats
 
 	diff /= float64(cnt)
-	bph := float64(cnt)/float64(common.CFG.Stat.MiningHrs)
-	hrate := bph/6 * diff * 7158278.826667
+	bph := float64(cnt) / float64(common.CFG.Stat.MiningHrs)
+	hrate := bph / 6 * diff * 7158278.826667
 
 	stats.MiningStatHours = common.CFG.Stat.MiningHrs
 	stats.BlockCount = cnt
@@ -195,11 +193,11 @@ func json_miners(w http.ResponseWriter, r *http.Request) {
 	stats.AvgBlocksPerHour = bph
 	stats.AvgDifficulty = diff
 	stats.AvgHashrate = hrate
-	stats.NextDiffChange = next_diff_change
+	stats.NextDiffChange = nextDiffChange
 
-	stats.Miners = make([]one_miner_row, len(srt))
+	stats.Miners = make([]oneMinerRow, len(srt))
 	for i := range srt {
-		stats.Miners[i].Unknown = srt[i].unknown_miner
+		stats.Miners[i].Unknown = srt[i].unknownMiner
 		stats.Miners[i].Name = srt[i].name
 		stats.Miners[i].Blocks = srt[i].cnt
 		stats.Miners[i].TotalFees = srt[i].fees

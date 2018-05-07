@@ -54,12 +54,13 @@ import "C"
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/script"
 )
 
 var (
@@ -139,5 +140,5 @@ func init() {
 	}
 	common.Log.Println("Using libbitcoinconsensus.so version", C.bitcoinconsensus_version(), "to cross-check consensus")
 	script.VerifyConsensus = check_consensus
-	newUi("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
+	newUI("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
 }
