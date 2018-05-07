@@ -200,15 +200,15 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 
 	if b2g == nil {
 		common.CountSafe("CmpctBlockHdrNo")
-		if sta == PH_STATUS_ERROR {
+		if sta == PHstatusError {
 			c.ReceiveHeadersNow()       // block doesn't connect so ask for the headers
 			c.Misbehave("BadCmpct", 50) // do it 20 times and you are banned
-		} else if sta == PH_STATUS_FATAL {
+		} else if sta == PHstatusFatal {
 			c.DoS("BadCmpct")
 		}
 		return
 	}
-	if sta == PH_STATUS_NEW {
+	if sta == PHstatusNew {
 		b2g.SendInvs = true
 	}
 

@@ -87,8 +87,8 @@ var (
 	RecentlyDisconencted = make(map[[4]byte]time.Time)
 )
 
-// NetworkNodeStruct -
-type NetworkNodeStruct struct {
+// NodeStruct -
+type NodeStruct struct {
 	Version       uint32
 	Services      uint64
 	Timestamp     uint64
@@ -155,7 +155,7 @@ type ConnInfo struct {
 	ID     uint32
 	PeerIP string
 
-	NetworkNodeStruct
+	NodeStruct
 	ConnectionStatus
 
 	BytesToSend      int
@@ -189,7 +189,7 @@ type OneConnection struct {
 	// TCP connection data:
 	X ConnectionStatus
 
-	Node NetworkNodeStruct // Data from the version message
+	Node NodeStruct // Data from the version message
 
 	// Messages reception state machine:
 	recv struct {
@@ -292,9 +292,8 @@ func (c *OneConnection) MutexGetBool(addr *bool) (val bool) {
 func (c *OneConnection) BytesToSent() int {
 	if c.SendBufProd >= c.SendBufCons {
 		return c.SendBufProd - c.SendBufCons
-	} else {
-		return c.SendBufProd + SendBufSize - c.SendBufCons
 	}
+	return c.SendBufProd + SendBufSize - c.SendBufCons
 }
 
 // GetStats -
@@ -306,7 +305,7 @@ func (c *OneConnection) GetStats(res *ConnInfo) {
 		res.LocalAddr = c.Conn.LocalAddr().String()
 		res.RemoteAddr = c.Conn.RemoteAddr().String()
 	}
-	res.NetworkNodeStruct = c.Node
+	res.NodeStruct = c.Node
 	res.ConnectionStatus = c.X
 	res.BytesToSend = c.BytesToSent()
 	res.BlocksInProgress = len(c.GetBlockInProgress)
@@ -587,17 +586,17 @@ func (c *OneConnection) writingThread() {
 			continue
 		}
 
-		bytes_to_send := c.SendBufProd - c.SendBufCons
+		bytesToSend := c.SendBufProd - c.SendBufCons
 		c.Mutex.Unlock() // unprotect access to c.SendBufProd
 
-		if bytes_to_send < 0 {
-			bytes_to_send += SendBufSize
+		if bytesToSend < 0 {
+			bytesToSend += SendBufSize
 		}
-		if c.SendBufCons+bytes_to_send > SendBufSize {
-			bytes_to_send = SendBufSize - c.SendBufCons
+		if c.SendBufCons+bytesToSend > SendBufSize {
+			bytesToSend = SendBufSize - c.SendBufCons
 		}
 
-		n, e := common.SockWrite(c.Conn, c.sendBuf[c.SendBufCons:c.SendBufCons+bytes_to_send])
+		n, e := common.SockWrite(c.Conn, c.sendBuf[c.SendBufCons:c.SendBufCons+bytesToSend])
 		if n > 0 {
 			c.Mutex.Lock()
 			c.X.LastSent = time.Now()

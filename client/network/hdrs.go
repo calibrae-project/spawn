@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -13,13 +13,19 @@ import (
 )
 
 const (
-	PH_STATUS_NEW   = 1
-	PH_STATUS_FRESH = 2
-	PH_STATUS_OLD   = 3
-	PH_STATUS_ERROR = 4
-	PH_STATUS_FATAL = 5
+	// PHstatusNew -
+	PHstatusNew = iota
+	// PHstatusFresh -
+	PHstatusFresh
+	// PHstatusOld -
+	PHstatusOld
+	// PHstatusError -
+	PHstatusError
+	// PHstatusFatal -
+	PHstatusFatal
 )
 
+// ProcessNewHeader -
 func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 	var ok bool
 	var b2g *OneBlockToGet
@@ -32,13 +38,13 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 	if _, ok = ReceivedBlocks[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderOld")
 		//fmt.Println("", i, bl.Hash.String(), "-already received")
-		return PH_STATUS_OLD, nil
+		return PHstatusOld, nil
 	}
 
 	if b2g, ok = BlocksToGet[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderFresh")
 		//fmt.Println(c.PeerAddr.Ip(), "block", bl.Hash.String(), " not new but get it")
-		return PH_STATUS_FRESH, b2g
+		return PHstatusFresh, b2g
 	}
 
 	common.CountSafe("HeaderNew")
@@ -51,10 +57,9 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 		common.CountSafe("PreCheckBlockFail")
 		//println("PreCheckBlock err", dos, er.Error())
 		if dos {
-			return PH_STATUS_FATAL, nil
-		} else {
-			return PH_STATUS_ERROR, nil
+			return PHstatusFatal, nil
 		}
+		return PHstatusError, nil
 	}
 
 	node := common.BlockChain.AcceptHeader(bl)
@@ -71,11 +76,12 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 	}
 	b2g.Block.Trusted = b2g.BlockTreeNode.Trusted
 
-	return PH_STATUS_NEW, b2g
+	return PHstatusNew, b2g
 }
 
-func (c *OneConnection) HandleHeaders(pl []byte) (new_headers_got int) {
-	var highest_block_found uint32
+// HandleHeaders -
+func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
+	var highestBlockFound uint32
 
 	c.MutexSetBool(&c.X.GetHeadersInProgress, false)
 
@@ -108,23 +114,23 @@ func (c *OneConnection) HandleHeaders(pl []byte) (new_headers_got int) {
 
 			sta, b2g := c.ProcessNewHeader(hdr[:])
 			if b2g == nil {
-				if sta == PH_STATUS_FATAL {
+				if sta == PHstatusFatal {
 					//println("c.DoS(BadHeader)")
 					c.DoS("BadHeader")
 					return
-				} else if sta == PH_STATUS_ERROR {
+				} else if sta == PHstatusError {
 					//println("c.Misbehave(BadHeader)")
 					c.Misbehave("BadHeader", 50) // do it 20 times and you are banned
 				}
 			} else {
-				if sta == PH_STATUS_NEW {
+				if sta == PHstatusNew {
 					if cnt == 1 {
 						b2g.SendInvs = true
 					}
-					new_headers_got++
+					newHeadersGot++
 				}
-				if b2g.Block.Height > highest_block_found {
-					highest_block_found = b2g.Block.Height
+				if b2g.Block.Height > highestBlockFound {
+					highestBlockFound = b2g.Block.Height
 				}
 				if c.Node.Height < b2g.Block.Height {
 					c.Mutex.Lock()
@@ -132,7 +138,7 @@ func (c *OneConnection) HandleHeaders(pl []byte) (new_headers_got int) {
 					c.Mutex.Unlock()
 				}
 				c.MutexSetBool(&c.X.GetBlocksDataNow, true)
-				if b2g.TmPreproc.IsZero() { // do not overwrite TmPreproc (in case of PH_STATUS_FRESH)
+				if b2g.TmPreproc.IsZero() { // do not overwrite TmPreproc (in case of PHstatusFresh)
 					b2g.TmPreproc = time.Now()
 				}
 			}
@@ -140,9 +146,9 @@ func (c *OneConnection) HandleHeaders(pl []byte) (new_headers_got int) {
 	}
 
 	c.Mutex.Lock()
-	c.X.LastHeadersEmpty = highest_block_found <= c.X.LastHeadersHeightAsk
-	c.X.TotalNewHeadersCount += new_headers_got
-	if new_headers_got == 0 {
+	c.X.LastHeadersEmpty = highestBlockFound <= c.X.LastHeadersHeightAsk
+	c.X.TotalNewHeadersCount += newHeadersGot
+	if newHeadersGot == 0 {
 		c.X.AllHeadersReceived = true
 	}
 	c.Mutex.Unlock()
@@ -150,12 +156,14 @@ func (c *OneConnection) HandleHeaders(pl []byte) (new_headers_got int) {
 	return
 }
 
+// ReceiveHeadersNow -
 func (c *OneConnection) ReceiveHeadersNow() {
 	c.Mutex.Lock()
 	c.X.AllHeadersReceived = false
 	c.Mutex.Unlock()
 }
 
+// GetHeaders -
 // Handle getheaders protocol command
 // https://en.bitcoin.it/wiki/Protocol_specification#getheaders
 func (c *OneConnection) GetHeaders(pl []byte) {
@@ -166,11 +174,11 @@ func (c *OneConnection) GetHeaders(pl []byte) {
 		return
 	}
 
-	var best_block, last_block *chain.BlockTreeNode
+	var bestBlock, lastBlock *chain.BlockTreeNode
 
 	//common.Last.Mutex.Lock()
 	MutexRcv.Lock()
-	last_block = LastCommitedHeader
+	lastBlock = LastCommitedHeader
 	MutexRcv.Unlock()
 	//common.Last.Mutex.Unlock()
 
@@ -180,19 +188,19 @@ func (c *OneConnection) GetHeaders(pl []byte) {
 	if len(h2get) > 0 {
 		for i := range h2get {
 			if bl, ok := common.BlockChain.BlockIndex[h2get[i].BIdx()]; ok {
-				if best_block == nil || bl.Height > best_block.Height {
+				if bestBlock == nil || bl.Height > bestBlock.Height {
 					//println(" ... bbl", i, bl.Height, bl.BlockHash.String())
-					best_block = bl
+					bestBlock = bl
 				}
 			}
 		}
 	} else {
-		best_block = common.BlockChain.BlockIndex[hashstop.BIdx()]
+		bestBlock = common.BlockChain.BlockIndex[hashstop.BIdx()]
 	}
 
-	if best_block == nil {
+	if bestBlock == nil {
 		common.CountSafe("GetHeadersBadBlock")
-		best_block = common.BlockChain.BlockTreeRoot
+		bestBlock = common.BlockChain.BlockTreeRoot
 	}
 
 	var resp []byte
@@ -214,14 +222,14 @@ func (c *OneConnection) GetHeaders(pl []byte) {
 	}()
 
 	for cnt < 2000 {
-		if last_block.Height <= best_block.Height {
+		if lastBlock.Height <= bestBlock.Height {
 			break
 		}
-		best_block = best_block.FindPathTo(last_block)
-		if best_block == nil {
+		bestBlock = bestBlock.FindPathTo(lastBlock)
+		if bestBlock == nil {
 			break
 		}
-		resp = append(resp, append(best_block.BlockHeader[:], 0)...) // 81st byte is always zero
+		resp = append(resp, append(bestBlock.BlockHeader[:], 0)...) // 81st byte is always zero
 		cnt++
 	}
 
@@ -234,9 +242,9 @@ func (c *OneConnection) sendGetHeaders() {
 	MutexRcv.Lock()
 	lb := LastCommitedHeader
 	MutexRcv.Unlock()
-	min_height := int(lb.Height) - chain.MovingCheckopintDepth
-	if min_height < 0 {
-		min_height = 0
+	minHeight := int(lb.Height) - chain.MovingCheckopintDepth
+	if minHeight < 0 {
+		minHeight = 0
 	}
 
 	blks := new(bytes.Buffer)
@@ -247,10 +255,10 @@ func (c *OneConnection) sendGetHeaders() {
 		blks.Write(lb.BlockHash.Hash[:])
 		cnt++
 		//println(" geth", cnt, "height", lb.Height, lb.BlockHash.String())
-		if int(lb.Height) <= min_height {
+		if int(lb.Height) <= minHeight {
 			break
 		}
-		for tmp := 0; tmp < step && lb != nil && int(lb.Height) > min_height; tmp++ {
+		for tmp := 0; tmp < step && lb != nil && int(lb.Height) > minHeight; tmp++ {
 			lb = lb.Parent
 		}
 		if lb == nil {
@@ -260,8 +268,8 @@ func (c *OneConnection) sendGetHeaders() {
 			step = step * 2
 		}
 	}
-	var null_stop [32]byte
-	blks.Write(null_stop[:])
+	var nullStop [32]byte
+	blks.Write(nullStop[:])
 
 	bhdr := new(bytes.Buffer)
 	binary.Write(bhdr, binary.LittleEndian, common.Version)
