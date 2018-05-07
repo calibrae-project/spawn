@@ -5,8 +5,8 @@ import (
 	"time"
 	"regexp"
 	"strconv"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 

@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"encoding/hex"
 	"encoding/base64"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/others/ltc"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/ltc"
 )
 
 

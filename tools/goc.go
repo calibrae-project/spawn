@@ -11,8 +11,8 @@ import (
 	"archive/zip"
 	"encoding/xml"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
 var (

@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"errors"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/script"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/script"
 )
 
 // Make sure to call this function with ch.BlockIndexAccess locked

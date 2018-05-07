@@ -2,10 +2,10 @@ package textui
 
 import (
 	"fmt"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/client/network"
-	"github.com/piotrnar/gocoin/client/usif"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"io/ioutil"
 	"os"
 	"strconv"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"bytes"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 // hex dump with max 32 bytes per line

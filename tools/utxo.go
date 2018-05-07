@@ -4,7 +4,7 @@ import (
 	"os"
 	"fmt"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/others/cgo/openssl"
+	"github.com/calibrae-project/spawn/lib/others/cgo/openssl"
 )
 
 var CNT int = 15*250

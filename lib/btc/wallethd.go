@@ -10,7 +10,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 	"errors"
-	"github.com/piotrnar/gocoin/lib/secp256k1"
+	"github.com/calibrae-project/spawn/lib/secp256k1"
 	"encoding/binary"
 )
 

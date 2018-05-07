@@ -3,10 +3,10 @@ package textui
 import (
 	"bytes"
 	"fmt"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/client/network"
-	"github.com/piotrnar/gocoin/client/wallet"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/client/wallet"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"sort"
 	"strconv"
 )

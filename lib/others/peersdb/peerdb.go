@@ -11,9 +11,9 @@ import (
 	"strings"
 	"strconv"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/others/qdb"
-	"github.com/piotrnar/gocoin/lib/others/sys"
-	"github.com/piotrnar/gocoin/lib/others/utils"
+	"github.com/calibrae-project/spawn/lib/others/qdb"
+	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/others/utils"
 )
 
 const (

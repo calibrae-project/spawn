@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"crypto/sha256"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 type witness_ctx struct {

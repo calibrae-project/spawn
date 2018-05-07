@@ -5,9 +5,9 @@ import (
 	"time"
 	"encoding/hex"
 	"fmt"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/client/network"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
 )
 
 const MAX_TXS_LEN = 999e3 // 999KB, with 1KB margin to not exceed 1MB with conibase

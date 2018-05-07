@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 type RpcError struct {

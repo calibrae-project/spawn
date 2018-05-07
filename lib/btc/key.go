@@ -3,7 +3,7 @@ package btc
 import (
 	"errors"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/secp256k1"
+	"github.com/calibrae-project/spawn/lib/secp256k1"
 )
 
 type PublicKey struct {

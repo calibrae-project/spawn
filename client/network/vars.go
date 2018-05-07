@@ -3,9 +3,9 @@ package network
 import (
 	"sync"
 	"time"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/chain"
-	"github.com/piotrnar/gocoin/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/chain"
+	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
 type OneReceivedBlock struct {

@@ -3,7 +3,7 @@ package utxo
 import (
 	"fmt"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 type AllUnspentTx []*OneUnspentTx

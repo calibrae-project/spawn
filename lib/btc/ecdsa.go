@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"crypto/rand"
 	"crypto/sha256"
-	"github.com/piotrnar/gocoin/lib/secp256k1"
+	"github.com/calibrae-project/spawn/lib/secp256k1"
 )
 
 var (

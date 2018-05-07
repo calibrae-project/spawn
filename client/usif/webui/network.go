@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"runtime/debug"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/client/network"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
 )
 
 

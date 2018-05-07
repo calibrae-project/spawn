@@ -12,12 +12,12 @@ import (
 	"archive/zip"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/utxo"
-	"github.com/piotrnar/gocoin/client/usif"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/client/network"
-	"github.com/piotrnar/gocoin/client/wallet"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/client/wallet"
 )
 
 

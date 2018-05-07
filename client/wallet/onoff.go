@@ -3,8 +3,8 @@ package wallet
 import (
 	"bytes"
 	"encoding/gob"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/lib/utxo"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/utxo"
 	"io/ioutil"
 )
 

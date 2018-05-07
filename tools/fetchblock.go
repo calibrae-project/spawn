@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"io/ioutil"
-	"github.com/piotrnar/gocoin/lib/others/utils"
-	"github.com/piotrnar/gocoin"
+	"github.com/calibrae-project/spawn/lib/others/utils"
+	"github.com/calibrae-project/spawn"
 	"os"
 )
 

@@ -8,9 +8,9 @@ import (
 	"errors"
 	"strings"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/others/sys"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 var IgnoreExternalIpFrom = []string{}

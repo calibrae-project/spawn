@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 /*

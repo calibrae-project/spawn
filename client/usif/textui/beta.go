@@ -2,8 +2,8 @@ package textui
 
 import (
 	"fmt"
-	"github.com/piotrnar/gocoin/client/network"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/client/network"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"time"
 )
 

@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"archive/zip"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/utxo"
-	"github.com/piotrnar/gocoin/client/usif"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 

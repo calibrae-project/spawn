@@ -5,12 +5,12 @@ import (
 	"sync"
 	"strings"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/client/network"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/client/network"
 	"encoding/json"
 	"io/ioutil"
 	"fmt"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 type BlockSubmited struct {

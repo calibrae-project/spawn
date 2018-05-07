@@ -11,9 +11,9 @@ package main
 */
 
 import (
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/others/cgo/sipasec"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
 )
 
 func EC_Verify(k, s, h []byte) bool {

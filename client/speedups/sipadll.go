@@ -10,8 +10,8 @@ package main
 
 import (
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/client/common"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
 	"os"
 	"syscall"
 	"unsafe"

@@ -6,7 +6,7 @@ import (
 	"sort"
 //	"strings"
 	"net/http"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 type many_counters []one_counter

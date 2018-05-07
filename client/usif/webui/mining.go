@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 type omv struct {

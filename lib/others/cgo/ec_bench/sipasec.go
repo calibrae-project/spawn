@@ -5,7 +5,7 @@ import (
 	"time"
 	"runtime"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/others/cgo/sipasec"
+	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
 )
 
 var CNT int = 250*60

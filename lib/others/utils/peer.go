@@ -3,7 +3,7 @@ package utils
 import (
 	"hash/crc64"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 type OnePeer struct {

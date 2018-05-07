@@ -5,8 +5,8 @@ import (
 	"unsafe"
 	"syscall"
 	"encoding/hex"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/script"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/script"
 )
 
 const (

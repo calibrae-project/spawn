@@ -5,9 +5,9 @@ import (
 	//"time"
 	"bytes"
 	"encoding/binary"
-	"github.com/piotrnar/gocoin/lib/btc"
-	"github.com/piotrnar/gocoin/lib/chain"
-	"github.com/piotrnar/gocoin/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/chain"
+	"github.com/calibrae-project/spawn/client/common"
 )
 
 
