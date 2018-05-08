@@ -59,17 +59,17 @@ func LoadBalance() {
 	defer common.BlockChain.Unspent.RWMutex.RUnlock()
 
 	countDownFrom := (len(common.BlockChain.Unspent.HashMap) + 999) / 1000
-	cnt_dwn := countDownFrom
+	countDown := countDownFrom
 	perc := uint32(1)
 
 	for k, v := range common.BlockChain.Unspent.HashMap {
 		NewUTXO(utxo.NewUtxoRecStatic(k, v))
-		if cnt_dwn == 0 {
+		if countDown == 0 {
 			perc++
 			common.SetUint32(&common.WalletProgress, perc)
-			cnt_dwn = countDownFrom
+			countDown = countDownFrom
 		} else {
-			cnt_dwn--
+			countDown--
 		}
 		if FetchingBalanceTick != nil && FetchingBalanceTick() {
 			aborted = true
@@ -86,6 +86,7 @@ func LoadBalance() {
 	common.SetUint32(&common.WalletProgress, 0)
 }
 
+// Disable -
 func Disable() {
 	if !common.GetBool(&common.WalletON) {
 		//fmt.Println("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
@@ -99,24 +100,28 @@ func Disable() {
 }
 
 const (
-	MAPSIZ_FILE_NAME = "mapsize.gob"
+	// MapSizeFileName -
+	MapSizeFileName = "mapsize.gob"
 )
 
 var (
-	WalletAddrsCount map[uint64][4]int = make(map[uint64][4]int) //index:MinValue, [0]-P2KH, [1]-P2SH, [2]-P2WSH, [3]-P2WKH
+	// WalletAddrsCount -
+	WalletAddrsCount = make(map[uint64][4]int) //index:MinValue, [0]-P2KH, [1]-P2SH, [2]-P2WSH, [3]-P2WKH
 )
 
+// UpdateMapSizes -
 func UpdateMapSizes() {
 	WalletAddrsCount[common.AllBalMinVal()] = [4]int{len(AllBalancesP2KH),
 		len(AllBalancesP2SH), len(AllBalancesP2WKH), len(AllBalancesP2WSH)}
 
 	buf := new(bytes.Buffer)
 	gob.NewEncoder(buf).Encode(WalletAddrsCount)
-	ioutil.WriteFile(common.SpawnHomeDir+MAPSIZ_FILE_NAME, buf.Bytes(), 0600)
+	ioutil.WriteFile(common.SpawnHomeDir+MapSizeFileName, buf.Bytes(), 0600)
 }
 
+// LoadMapSizes -
 func LoadMapSizes() {
-	d, er := ioutil.ReadFile(common.SpawnHomeDir + MAPSIZ_FILE_NAME)
+	d, er := ioutil.ReadFile(common.SpawnHomeDir + MapSizeFileName)
 	if er != nil {
 		println("LoadMapSizes:", er.Error())
 		return

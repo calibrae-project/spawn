@@ -95,7 +95,7 @@ func NewUnspentDb(opts *NewUnspentOpts) (db *UnspentDB) {
 
 	// Load data form disk
 	var k UtxoKeyType
-	var cnt_dwn, countDownFrom, perc int
+	var countDown, countDownFrom, perc int
 	var le uint64
 	var u64, tot_recs uint64
 	var info string
@@ -158,12 +158,12 @@ redo:
 		// we don't lock RWMutex here as this code is only used during init phase, when no other routines are running
 		db.HashMap[k] = b
 
-		if cnt_dwn == 0 {
+		if countDown == 0 {
 			fmt.Print(info, perc, "% complete ... ")
 			perc++
-			cnt_dwn = countDownFrom
+			countDown = countDownFrom
 		} else {
-			cnt_dwn--
+			countDown--
 		}
 	}
 	of.Close()
@@ -192,7 +192,7 @@ fatal_error:
 }
 
 func (db *UnspentDB) save() {
-	//var cnt_dwn, countDownFrom, perc int
+	//var countDown, countDownFrom, perc int
 	var abort, hurryup, check_time bool
 	var total_records, current_record, data_progress, time_progress int64
 

@@ -79,7 +79,7 @@ func load_lastBlock() {
 }
 
 func save_map(ndb map[qdb.KeyType][]byte) {
-	var cnt_dwn, countDownFrom, perc int
+	var countDown, countDownFrom, perc int
 	of, er := os.Create("UTXO.db")
 	if er != nil {
 		fmt.Println("Create file:", er.Error())
@@ -100,12 +100,12 @@ func save_map(ndb map[qdb.KeyType][]byte) {
 			fmt.Println("\n\007Fatal error:", er.Error())
 			break
 		}
-		if cnt_dwn == 0 {
+		if countDown == 0 {
 			fmt.Print("\rSaving UTXO.db - ", perc, "% complete ... ")
-			cnt_dwn = countDownFrom
+			countDown = countDownFrom
 			perc++
 		} else {
-			cnt_dwn--
+			countDown--
 		}
 	}
 	wr.Flush()
