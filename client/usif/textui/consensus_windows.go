@@ -46,7 +46,7 @@ var (
 	mut sync.Mutex
 )
 
-func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32, result bool) {
+func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32, result bool) {
 	var tmp []byte
 	if len(pkScr) != 0 {
 		tmp = make([]byte, len(pkScr))
@@ -56,7 +56,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 	if tx_raw == nil {
 		tx_raw = tx.Serialize()
 	}
-	go func(pkScr []byte, txTo []byte, i int, ver_flags uint32, result bool) {
+	go func(pkScr []byte, txTo []byte, i int, verFlags uint32, result bool) {
 		var pkscr_ptr, pkscr_len uintptr // default to 0/null
 		if pkScr != nil {
 			pkscr_ptr = uintptr(unsafe.Pointer(&pkScr[0]))
@@ -65,7 +65,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 		r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
 			pkscr_ptr, pkscr_len, uintptr(amount),
 			uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
-			uintptr(i), uintptr(ver_flags), 0, 0)
+			uintptr(i), uintptr(verFlags), 0, 0)
 
 		res := r1 == 1
 		atomic.AddUint64(&ConsensusChecks, 1)
@@ -80,14 +80,14 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 			println("Spawn:", result, "   ConsLIB:", res)
 			println("pkScr", hex.EncodeToString(pkScr))
 			println("txTo", hex.EncodeToString(txTo))
-			println("amount:", amount, "  input_idx:", i, "  ver_flags:", ver_flags)
+			println("amount:", amount, "  input_idx:", i, "  verFlags:", verFlags)
 			println()
 			mut.Unlock()
 		}
-	}(tmp, tx_raw, i, ver_flags, result)
+	}(tmp, tx_raw, i, verFlags, result)
 }
 
-func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32) (result bool) {
+func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) (result bool) {
 	var pkscr_ptr, pkscr_len uintptr // default to 0/null
 	txTo := tx.Raw
 	if txTo == nil {
@@ -100,7 +100,7 @@ func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, v
 	r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
 		pkscr_ptr, pkscr_len, uintptr(amount),
 		uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
-		uintptr(i), uintptr(ver_flags), 0, 0)
+		uintptr(i), uintptr(verFlags), 0, 0)
 
 	result = (r1 == 1)
 	return

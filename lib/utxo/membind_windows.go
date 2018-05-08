@@ -8,7 +8,6 @@ import (
 	"unsafe"
 )
 
-
 func init() {
 	MembindInit = func() {
 		var (
@@ -45,7 +44,7 @@ func init() {
 			syscall.Syscall(funcHeapFreeAddr, 3, hHeap, 0, uintptr(unsafe.Pointer(&ptr[0]))-24)
 		}
 
-		malloc_and_copy = func(v []byte) []byte {
+		mallocAndCopy = func(v []byte) []byte {
 			ptr := malloc(uint32(len(v)))
 			copy(ptr, v)
 			return ptr

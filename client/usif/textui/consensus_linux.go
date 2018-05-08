@@ -70,7 +70,7 @@ var (
 	mut             sync.Mutex
 )
 
-func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32, result bool) {
+func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32, result bool) {
 	var tmp []byte
 	if len(pkScr) != 0 {
 		tmp = make([]byte, len(pkScr))
@@ -80,7 +80,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 	if tx_raw == nil {
 		tx_raw = tx.Serialize()
 	}
-	go func(pkScr []byte, txTo []byte, amount uint64, i int, ver_flags uint32, result bool) {
+	go func(pkScr []byte, txTo []byte, amount uint64, i int, verFlags uint32, result bool) {
 		var pkscr_ptr *C.uchar // default to null
 		var pkscr_len C.uint   // default to 0
 		if pkScr != nil {
@@ -88,7 +88,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 			pkscr_len = C.uint(len(pkScr))
 		}
 		r1 := int(C.bitcoinconsensus_verify_script_with_amount(pkscr_ptr, pkscr_len, C.int64_t(amount),
-			(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(ver_flags)))
+			(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(verFlags)))
 		res := r1 == 1
 		atomic.AddUint64(&ConsensusChecks, 1)
 		if !result {
@@ -102,14 +102,14 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags u
 			println("Spawn:", result, "   ConsLIB:", res)
 			println("pkScr", hex.EncodeToString(pkScr))
 			println("txTo", hex.EncodeToString(txTo))
-			println("amount:", amount, "  input_idx:", i, "  ver_flags:", ver_flags)
+			println("amount:", amount, "  input_idx:", i, "  verFlags:", verFlags)
 			println()
 			mut.Unlock()
 		}
-	}(tmp, tx_raw, amount, i, ver_flags, result)
+	}(tmp, tx_raw, amount, i, verFlags, result)
 }
 
-func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32) (result bool) {
+func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) (result bool) {
 	txTo := tx.Raw
 	if txTo == nil {
 		txTo = tx.Serialize()
@@ -121,7 +121,7 @@ func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, v
 		pkscr_len = C.uint(len(pkScr))
 	}
 	r1 := int(C.bitcoinconsensus_verify_script_with_amount(pkscr_ptr, pkscr_len, C.int64_t(amount),
-		(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(ver_flags)))
+		(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(verFlags)))
 
 	result = (r1 == 1)
 	return

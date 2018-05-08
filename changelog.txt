@@ -238,7 +238,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 1.6.4 - 2016-06-27
 * Use trully volatile, quickly switachable wallets from WebUI (requires 1.5GB more RAM)
 * Changed the first parameter to NotifyTxDel() to be more descriptive (than just TxID)
-* Do not use VER_LOW_S for now (to verify mempool txs) as it is baning some peers
+* Do not use VerLowS for now (to verify mempool txs) as it is baning some peers
 * Enforce CVS verification for blocks height 417312 or higher (not for testnet)
 * Implemented BIP113 (Median time-past as endpoint for lock-time calculations)
 * New TextUI command "bip9" - extracts BIP9 relevant info from the current chain
@@ -253,7 +253,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * Client: Implemented Replace-By-Fee for the memory pool
 * Removed support for "alert" messages
 * Tools/fetchtx: updated to the latest block explorers API
-* Lib/script: added support for OP_CHECKSEQUENCEVERIFY opcode (enabled by VER_CSV flag) - BIP-112
+* Lib/script: added support for OP_CHECKSEQUENCEVERIFY opcode (enabled by VerCSV flag) - BIP-112
 * Lib/script: added support for all core's verification flags and updated the test suite to the latest one
 * New tool "verify_tx.go", usefull for debugging scripts
 

@@ -9,19 +9,20 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-type witness_ctx struct {
+type witnessCtx struct {
 	stack scrStack
 }
 
-func (w *witness_ctx) IsNull() bool {
+func (w *witnessCtx) IsNull() bool {
 	return w.stack.size() == 0
 }
 
-func VerifyWitnessProgram(witness *witness_ctx, amount uint64, tx *btc.Tx, inp int, witversion int, program []byte, flags uint32) bool {
+// VerifyWitnessProgram -
+func VerifyWitnessProgram(witness *witnessCtx, amount uint64, tx *btc.Tx, inp int, witversion int, program []byte, flags uint32) bool {
 	var stack scrStack
 	var scriptPubKey []byte
 
-	if DBG_SCR {
+	if DebugScr {
 		fmt.Println("*****************VerifyWitnessProgram", len(tx.SegWit), witversion, flags, witness.stack.size(), len(program))
 	}
 
@@ -47,7 +48,7 @@ func VerifyWitnessProgram(witness *witness_ctx, amount uint64, tx *btc.Tx, inp i
 				}
 				return false
 			}
-			stack.copy_from(&witness.stack)
+			stack.copyFrom(&witness.stack)
 			witness.stack.push(scriptPubKey)
 		} else if len(program) == 20 {
 			// Special case for pay-to-pubkeyhash; signature + pubkey in witness
@@ -65,14 +66,14 @@ func VerifyWitnessProgram(witness *witness_ctx, amount uint64, tx *btc.Tx, inp i
 			copy(scriptPubKey[3:23], program)
 			scriptPubKey[23] = 0x88
 			scriptPubKey[24] = 0xac
-			stack.copy_from(&witness.stack)
+			stack.copyFrom(&witness.stack)
 		} else {
 			if DebugError {
 				fmt.Println("SCRIPT_ERR_WITNESS_PROGRAM_WRONG_LENGTH")
 			}
 			return false
 		}
-	} else if (flags & VER_WITNESS_PROG) != 0 {
+	} else if (flags & VerWitnessProg) != 0 {
 		if DebugError {
 			fmt.Println("SCRIPT_ERR_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM")
 		}
@@ -82,7 +83,7 @@ func VerifyWitnessProgram(witness *witness_ctx, amount uint64, tx *btc.Tx, inp i
 		return true
 	}
 
-	if DBG_SCR {
+	if DebugScr {
 		fmt.Println("*****************", stack.size())
 	}
 	// Disallow stack item size > MaxScriptElementSize in witness stack
@@ -95,7 +96,7 @@ func VerifyWitnessProgram(witness *witness_ctx, amount uint64, tx *btc.Tx, inp i
 		}
 	}
 
-	if !evalScript(scriptPubKey, amount, &stack, tx, inp, flags, SIGVERSION_WITNESS_V0) {
+	if !evalScript(scriptPubKey, amount, &stack, tx, inp, flags, SigVersionWitnessV0) {
 		return false
 	}
 

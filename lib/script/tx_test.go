@@ -19,13 +19,13 @@ type oneinp struct {
 }
 
 type testvector struct {
-	inps      []oneinp
-	tx        string
-	ver_flags uint32
-	skip      string
+	inps     []oneinp
+	tx       string
+	verFlags uint32
+	skip     string
 }
 
-var last_descr string
+var lastDescr string
 
 func (tv *testvector) String() (s string) {
 	s += fmt.Sprintf("Tx with %d inputs:\n", len(tv.inps))
@@ -33,7 +33,7 @@ func (tv *testvector) String() (s string) {
 		s += fmt.Sprintf(" %3d) %s-%03d\n", i, tv.inps[i].txid, tv.inps[i].vout)
 		s += fmt.Sprintf("      %s\n", tv.inps[i].pkscr)
 	}
-	s += fmt.Sprintf(" tx_len:%d   flags:0x%x\n", len(tv.tx), tv.ver_flags)
+	s += fmt.Sprintf(" tx_len:%d   flags:0x%x\n", len(tv.tx), tv.verFlags)
 	return
 }
 
@@ -55,7 +55,7 @@ func parserec(vv []interface{}) (ret *testvector) {
 	ret.tx = vv[1].(string)
 	params := vv[2].(string)
 	var e error
-	ret.ver_flags, e = decodeFlags(params) // deifned in script_test.go
+	ret.verFlags, e = decodeFlags(params) // deifned in script_test.go
 	if e != nil {
 		println("skip", params)
 		ret.skip = e.Error()
@@ -65,7 +65,7 @@ func parserec(vv []interface{}) (ret *testvector) {
 
 // Some tests from the satoshi's json files are not applicable
 // ... for our architectre so lets just fake them.
-func skip_broken_tests(tx *btc.Tx) bool {
+func skipBrokenTests(tx *btc.Tx) bool {
 	// No inputs
 	if len(tx.TxIn) == 0 {
 		return true
@@ -102,7 +102,7 @@ func skip_broken_tests(tx *btc.Tx) bool {
 	return false
 }
 
-func execute_test_tx(t *testing.T, tv *testvector) bool {
+func executeTestTx(t *testing.T, tv *testvector) bool {
 	if len(tv.inps) == 0 {
 		t.Error("Vector has no inputs")
 		return false
@@ -120,7 +120,7 @@ func execute_test_tx(t *testing.T, tv *testvector) bool {
 	tx.Size = uint32(len(rd))
 	tx.SetHash(rd)
 
-	if skip_broken_tests(tx) {
+	if skipBrokenTests(tx) {
 		return false
 	}
 
@@ -152,7 +152,7 @@ func execute_test_tx(t *testing.T, tv *testvector) bool {
 			continue
 		}
 
-		if VerifyTxScript(pk, tv.inps[j].value, i, tx, tv.ver_flags) {
+		if VerifyTxScript(pk, tv.inps[j].value, i, tx, tv.verFlags) {
 			oks++
 		}
 	}
@@ -182,11 +182,11 @@ func TestValidTransactions(t *testing.T) {
 				tv := parserec(vv)
 				if tv.skip != "" {
 					//println(tv.skip)
-				} else if !execute_test_tx(t, tv) {
-					t.Error(cnt, "Failed transaction:", last_descr)
+				} else if !executeTestTx(t, tv) {
+					t.Error(cnt, "Failed transaction:", lastDescr)
 				}
 			} else if len(vv) == 1 {
-				last_descr = vv[0].(string)
+				lastDescr = vv[0].(string)
 			}
 		}
 	}
@@ -213,24 +213,24 @@ func TestInvalidTransactions(t *testing.T) {
 			if len(vv) == 3 {
 				cnt++
 				if cnt == 64000 {
-					DBG_SCR = true
+					DebugScr = true
 				}
 				tv := parserec(vv)
 				if tv.skip != "" {
 					//println(tv.skip)
-				} else if execute_test_tx(t, tv) {
-					t.Error(cnt, "NOT failed transaction:", last_descr)
+				} else if executeTestTx(t, tv) {
+					t.Error(cnt, "NOT failed transaction:", lastDescr)
 					return
 				}
-				last_descr = ""
+				lastDescr = ""
 				if cnt == 64000 {
 					return
 				}
 			} else if len(vv) == 1 {
-				if last_descr == "" {
-					last_descr = vv[0].(string)
+				if lastDescr == "" {
+					lastDescr = vv[0].(string)
 				} else {
-					last_descr += "\n" + vv[0].(string)
+					lastDescr += "\n" + vv[0].(string)
 				}
 			}
 		}

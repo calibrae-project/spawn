@@ -110,25 +110,25 @@ func (ch *Chain) PreCheckBlock(bl *btc.Block) (dos bool, maybelater bool, err er
 // ApplyBlockFlags -
 func (ch *Chain) ApplyBlockFlags(bl *btc.Block) {
 	if bl.BlockTime() >= BIP16SwitchTime {
-		bl.VerifyFlags = script.VER_P2SH
+		bl.VerifyFlags = script.VerP2sh
 	} else {
 		bl.VerifyFlags = 0
 	}
 
 	if bl.Height >= ch.Consensus.BIP66Height {
-		bl.VerifyFlags |= script.VER_DERSIG
+		bl.VerifyFlags |= script.VerDerSig
 	}
 
 	if bl.Height >= ch.Consensus.BIP65Height {
-		bl.VerifyFlags |= script.VER_CLTV
+		bl.VerifyFlags |= script.VerCLTV
 	}
 
 	if ch.Consensus.EnforceCSV != 0 && bl.Height >= ch.Consensus.EnforceCSV {
-		bl.VerifyFlags |= script.VER_CSV
+		bl.VerifyFlags |= script.VerCSV
 	}
 
 	if ch.Consensus.EnforceSegwit != 0 && bl.Height >= ch.Consensus.EnforceSegwit {
-		bl.VerifyFlags |= script.VER_WITNESS | script.VER_NULLDUMMY
+		bl.VerifyFlags |= script.VerWitness | script.VerNullDummy
 	}
 
 }
@@ -206,14 +206,14 @@ func (ch *Chain) PostCheckBlock(bl *btc.Block) (err error) {
 		var blockTime uint32
 		var hadWitness bool
 
-		if (bl.VerifyFlags & script.VER_CSV) != 0 {
+		if (bl.VerifyFlags & script.VerCSV) != 0 {
 			blockTime = bl.MedianPastTime
 		} else {
 			blockTime = bl.BlockTime()
 		}
 
 		// Verify merkle root of witness data
-		if (bl.VerifyFlags & script.VER_WITNESS) != 0 {
+		if (bl.VerifyFlags & script.VerWitness) != 0 {
 			var i int
 			for i = len(bl.Txs[0].TxOut) - 1; i >= 0; i-- {
 				o := bl.Txs[0].TxOut[i]

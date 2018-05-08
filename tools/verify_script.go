@@ -19,7 +19,7 @@ var (
 	bitcoinconsensus_verify_script_with_amount *syscall.Proc
 )
 
-func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32) bool {
+func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) bool {
 	var tmp []byte
 	if len(pkScr) != 0 {
 		tmp = make([]byte, len(pkScr))
@@ -34,7 +34,7 @@ func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flag
 	r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
 		pkscr_ptr, pkscr_len, uintptr(amount),
 		uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
-		uintptr(i), uintptr(ver_flags), 0, 0)
+		uintptr(i), uintptr(verFlags), 0, 0)
 
 	return r1 == 1
 }
@@ -65,9 +65,9 @@ func main() {
 	tx.Hash = btc.NewSha2Hash(d)
 	println("txid", tx.Hash.String())
 	i := 0
-	flags := uint32(script.STANDARD_VERIFY_FLAGS) //& ^uint32(script.VER_MINDATA)
+	flags := uint32(script.StandardVerifyFlags) //& ^uint32(script.VerMinData)
 	amount := uint64(1000000)
-	//script.DBG_SCR = true
+	//script.DebugScr = true
 	//script.DebugError = true
 	res := script.VerifyTxScript(pkscript, amount, i, tx, flags)
 	if bitcoinconsensus_verify_script_with_amount != nil {

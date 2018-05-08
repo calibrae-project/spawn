@@ -85,7 +85,7 @@ func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewC
 
 	ch.Blocks = NewBlockDBExt(dbrootdir, bdbopts)
 
-	ch.Unspent = utxo.NewUnspentDb(&utxo.NewUnspentOpts{
+	ch.Unspent = utxo.NewUnspentDB(&utxo.NewUnspentOpts{
 		Dir: dbrootdir, Rescan: rescan, VolatimeMode: opts.UTXOVolatileMode,
 		CB: opts.UTXOCallbacks, AbortNow: &AbortNow})
 

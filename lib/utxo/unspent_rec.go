@@ -20,9 +20,11 @@ Eech value is variable length:
 */
 
 const (
+	// UtxoIdxLen -
 	UtxoIdxLen = 8
 )
 
+// UtxoKeyType -
 type UtxoKeyType [UtxoIdxLen]byte
 
 type UtxoRec struct {

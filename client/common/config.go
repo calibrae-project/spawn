@@ -283,7 +283,7 @@ func Reset() {
 	ListenTCP = CFG.Net.ListenTCP
 
 	if CFG.UTXOSaveSec != 0 {
-		utxo.UTXO_WRITING_TIME_TARGET = time.Second * time.Duration(CFG.UTXOSaveSec)
+		utxo.UXTOWritingTimeTarget = time.Second * time.Duration(CFG.UTXOSaveSec)
 	}
 
 	if CFG.UserAgent != "" {

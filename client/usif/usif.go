@@ -65,7 +65,7 @@ func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64,
 			}
 		}
 		if po != nil {
-			ok := script.VerifyTxScript(po.PkScript, po.Value, i, tx, script.VER_P2SH|script.VER_DERSIG|script.VER_CLTV)
+			ok := script.VerifyTxScript(po.PkScript, po.Value, i, tx, script.VerP2sh|script.VerDerSig|script.VerCLTV)
 			if !ok {
 				s += fmt.Sprintln("\nERROR: The transacion does not have a valid signature.")
 				e = errors.New("Invalid signature")

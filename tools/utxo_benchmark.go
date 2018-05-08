@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/binary"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
 	"os"
 	"time"
+
+	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 	}
 
 	sta := time.Now()
-	db := utxo.NewUnspentDb(&utxo.NewUnspentOpts{Dir:dir})
+	db := utxo.NewUnspentDB(&utxo.NewUnspentOpts{Dir: dir})
 	if db == nil {
 		println("place UTXO.db or UTXO.old in the current folder")
 		return

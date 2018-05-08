@@ -126,20 +126,20 @@ func TestScritps(t *testing.T) {
 
 		/*
 			if tot==114400 {
-				DBG_SCR = true
+				DebugScr = true
 				DebugError = true
 			}*/
 
 		flags := v.flags
-		if (flags & VER_CLEANSTACK) != 0 {
-			flags |= VER_P2SH
-			flags |= VER_WITNESS
+		if (flags & VerCleanStack) != 0 {
+			flags |= VerP2sh
+			flags |= VerWitness
 		}
 
 		creditTx := mkCreditTx(v.pkscr, v.value)
 		spendTx := mkSpendTx(creditTx, v.sigscr, v.witness)
 
-		if DBG_SCR {
+		if DebugScr {
 			println("desc:", v, tot, v.desc)
 			println("pkscr:", hex.EncodeToString(v.pkscr))
 			println("sigscr:", hex.EncodeToString(v.sigscr))
@@ -152,10 +152,9 @@ func TestScritps(t *testing.T) {
 		if res != v.expRes {
 			t.Error(tot, "TestScritps failed. Got:", res, "   exp:", v.expRes, v.desc)
 			return
-		} else {
-			if DBG_SCR {
-				println(tot, "ok:", res, v.desc)
-			}
+		}
+		if DebugScr {
+			println(tot, "ok:", res, v.desc)
 		}
 
 		if tot == 114400 {
@@ -172,37 +171,37 @@ func decodeFlags(s string) (fl uint32, e error) {
 		case "NONE": // ignore
 			break
 		case "P2SH":
-			fl |= VER_P2SH
+			fl |= VerP2sh
 		case "STRICTENC":
-			fl |= VER_STRICTENC
+			fl |= VerStrictEnc
 		case "DERSIG":
-			fl |= VER_DERSIG
+			fl |= VerDerSig
 		case "LOW_S":
-			fl |= VER_LOW_S
+			fl |= VerLowS
 		case "NULLDUMMY":
-			fl |= VER_NULLDUMMY
+			fl |= VerNullDummy
 		case "SIGPUSHONLY":
-			fl |= VER_SIGPUSHONLY
+			fl |= VerSigPushOnly
 		case "MINIMALDATA":
-			fl |= VER_MINDATA
+			fl |= VerMinData
 		case "DISCOURAGE_UPGRADABLE_NOPS":
-			fl |= VER_BLOCK_OPS
+			fl |= VerBlockOps
 		case "CLEANSTACK":
-			fl |= VER_CLEANSTACK
+			fl |= VerCleanStack
 		case "CHECKLOCKTIMEVERIFY":
-			fl |= VER_CLTV
+			fl |= VerCLTV
 		case "CHECKSEQUENCEVERIFY":
-			fl |= VER_CSV
+			fl |= VerCSV
 		case "WITNESS":
-			fl |= VER_WITNESS
+			fl |= VerWitness
 		case "DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM":
-			fl |= VER_WITNESS_PROG
+			fl |= VerWitnessProg
 		case "MINIMALIF":
-			fl |= VER_MINIMALIF
+			fl |= VerMinimalIf
 		case "NULLFAIL":
-			fl |= VER_NULLFAIL
+			fl |= VerNullFail
 		case "WITNESS_PUBKEYTYPE":
-			fl |= VER_WITNESS_PUBKEY
+			fl |= VerWitnessPubKey
 		default:
 			e = errors.New("Unsupported flag " + ss[i])
 			return
@@ -234,7 +233,7 @@ func mkSpendTx(inputTx *btc.Tx, sigScr []byte, witness [][]byte) (outputTx *btc.
 	if len(witness) > 0 {
 		outputTx.SegWit = make([][][]byte, 1)
 		outputTx.SegWit[0] = witness
-		if DBG_SCR {
+		if DebugScr {
 			println("tx has", len(witness), "ws")
 			for xx := range witness {
 				println("", xx, hex.EncodeToString(witness[xx]))

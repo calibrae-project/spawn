@@ -34,7 +34,7 @@ func init() {
 			C.free(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) - 24))
 		}
 
-		malloc_and_copy = func (v []byte) []byte {
+		mallocAndCopy = func(v []byte) []byte {
 			sl := malloc(uint32(len(v)))
 			copy(sl, v)
 			return sl

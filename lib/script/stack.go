@@ -1,8 +1,8 @@
 package script
 
 import (
-	"fmt"
 	"encoding/hex"
+	"fmt"
 )
 
 const nMaxNumSize = 4
@@ -11,7 +11,7 @@ type scrStack struct {
 	data [][]byte
 }
 
-func (s *scrStack) copy_from(x *scrStack) {
+func (s *scrStack) copyFrom(x *scrStack) {
 	s.data = make([][]byte, len(x.data))
 	for i := range x.data {
 		s.data[i] = x.data[i]
@@ -33,25 +33,25 @@ func (s *scrStack) pushBool(v bool) {
 func (s *scrStack) pushInt(val int64) {
 	var negative bool
 
-	if val<0 {
+	if val < 0 {
 		negative = true
 		val = -val
 	}
 	var d []byte
 
-	if val!=0 {
-		for val!=0 {
+	if val != 0 {
+		for val != 0 {
 			d = append(d, byte(val))
 			val >>= 8
 		}
 
 		if negative {
-			if (d[len(d)-1]&0x80) != 0 {
+			if (d[len(d)-1] & 0x80) != 0 {
 				d = append(d, 0x80)
 			} else {
 				d[len(d)-1] |= 0x80
 			}
-		} else if (d[len(d)-1]&0x80) != 0 {
+		} else if (d[len(d)-1] & 0x80) != 0 {
 			d = append(d, 0x00)
 		}
 	}
@@ -59,24 +59,23 @@ func (s *scrStack) pushInt(val int64) {
 	s.data = append(s.data, d)
 }
 
-
 func bts2int(d []byte) (res int64) {
 	if len(d) > nMaxNumSize {
 		panic("Int on the stack is too long")
 		// Make sure this panic is captured in evalScript (cause the script to fail, not crash)
 	}
 
-	if len(d)==0 {
+	if len(d) == 0 {
 		return
 	}
 
 	var i int
-	for i<len(d)-1 {
+	for i < len(d)-1 {
 		res |= int64(d[i]) << uint(i*8)
 		i++
 	}
 
-	if (d[i]&0x80)!=0 {
+	if (d[i] & 0x80) != 0 {
 		res |= int64(d[i]&0x7f) << uint(i*8)
 		res = -res
 	} else {
@@ -86,28 +85,27 @@ func bts2int(d []byte) (res int64) {
 	return
 }
 
-
-func bts2int_ext(d []byte, max_bytes int, forcemin bool) (res int64) {
-	if len(d) > max_bytes {
-		panic("bts2int_ext: Int on the stack is too long")
+func bts2intExt(d []byte, maxBytes int, forcemin bool) (res int64) {
+	if len(d) > maxBytes {
+		panic("bts2intExt: Int on the stack is too long")
 		// Make sure this panic is captured in evalScript (cause the script to fail, not crash)
 	}
 
-	if len(d)==0 {
+	if len(d) == 0 {
 		return
 	}
 
-	if forcemin && !is_minimal(d) {
-		panic("bts2int_ext: Not a minimal length")
+	if forcemin && !isMinimal(d) {
+		panic("bts2intExt: Not a minimal length")
 	}
 
 	var i int
-	for i<len(d)-1 {
+	for i < len(d)-1 {
 		res |= int64(d[i]) << uint(i*8)
 		i++
 	}
 
-	if (d[i]&0x80)!=0 {
+	if (d[i] & 0x80) != 0 {
 		res |= int64(d[i]&0x7f) << uint(i*8)
 		res = -res
 	} else {
@@ -117,24 +115,22 @@ func bts2int_ext(d []byte, max_bytes int, forcemin bool) (res int64) {
 	return
 }
 
-
 func bts2bool(d []byte) bool {
-	if len(d)==0 {
+	if len(d) == 0 {
 		return false
 	}
-	for i:=0; i<len(d)-1; i++ {
-		if d[i]!=0 {
+	for i := 0; i < len(d)-1; i++ {
+		if d[i] != 0 {
 			return true
 		}
 	}
-	return (d[len(d)-1]&0x7f) != 0 // -0 (0x80) is also false (I hope..)
+	return (d[len(d)-1] & 0x7f) != 0 // -0 (0x80) is also false (I hope..)
 }
 
-
-func is_minimal(d []byte) bool {
+func isMinimal(d []byte) bool {
 	// Check that the number is encoded with the minimum possible
 	// number of bytes.
-	if len(d)>0 {
+	if len(d) > 0 {
 		// If the most-significant-byte - excluding the sign bit - is zero
 		// then we're not minimal. Note how this test also rejects the
 		// negative-zero encoding, 0x80.
@@ -144,7 +140,7 @@ func is_minimal(d []byte) bool {
 			// it would conflict with the sign bit. An example of this case
 			// is +-255, which encode to 0xff00 and 0xff80 respectively.
 			// (big-endian).
-			if len(d)<=1 || (d[len(d)-2]&0x80) == 0 {
+			if len(d) <= 1 || (d[len(d)-2]&0x80) == 0 {
 				return false
 			}
 		}
@@ -152,9 +148,9 @@ func is_minimal(d []byte) bool {
 	return true
 }
 
-func (s *scrStack) popInt(check_for_min bool) int64 {
+func (s *scrStack) popInt(checkForMin bool) int64 {
 	d := s.pop()
-	if check_for_min && !is_minimal(d) {
+	if checkForMin && !isMinimal(d) {
 		panic("Not minimal value")
 	}
 	return bts2int(d)
@@ -172,9 +168,9 @@ func (s *scrStack) at(idx int) (d []byte) {
 	return s.data[idx]
 }
 
-func (s *scrStack) topInt(idx int, check_for_min bool) int64 {
+func (s *scrStack) topInt(idx int, checkForMin bool) int64 {
 	d := s.data[len(s.data)+idx]
-	if check_for_min && !is_minimal(d) {
+	if checkForMin && !isMinimal(d) {
 		panic("Not minimal value")
 	}
 	return bts2int(d)
@@ -186,7 +182,7 @@ func (s *scrStack) topBool(idx int) bool {
 
 func (s *scrStack) pop() (d []byte) {
 	l := len(s.data)
-	if l==0 {
+	if l == 0 {
 		panic("stack is empty")
 	}
 	d = s.data[l-1]
