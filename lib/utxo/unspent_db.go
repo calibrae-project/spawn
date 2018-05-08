@@ -591,7 +591,7 @@ func (db *UnspentDB) UTXOStats() (s string) {
 	s = fmt.Sprintf("UNSPENT: %.8f BTC in %d outs from %d txs. %.8f BTC in coinbase.\n",
 		float64(sum)/1e8, outcnt, lele, float64(sumcb)/1e8)
 	s += fmt.Sprintf(" TotalData:%.1fMB  MaxTxOutCnt:%d  DirtyDB:%t  Writing:%t  Abort:%t\n",
-		float64(totdatasize)/1e6, len(rec_outs), db.DirtyDB.Get(), db.WritingInProgress.Get(), len(db.abortwritingnow) > 0)
+		float64(totdatasize)/1e6, len(recOuts), db.DirtyDB.Get(), db.WritingInProgress.Get(), len(db.abortwritingnow) > 0)
 	s += fmt.Sprintf(" Last Block : %s @ %d\n", btc.NewUint256(db.LastBlockHash).String(),
 		db.LastBlockHeight)
 	s += fmt.Sprintf(" Unspendable outputs: %d (%dKB)  txs:%d\n",
@@ -607,7 +607,7 @@ func (db *UnspentDB) GetStats() (s string) {
 	db.RWMutex.RUnlock()
 
 	s = fmt.Sprintf("UNSPENT: %d records. MaxTxOutCnt:%d  DirtyDB:%t  Writing:%t  Abort:%t\n",
-		hml, len(rec_outs), db.DirtyDB.Get(), db.WritingInProgress.Get(), len(db.abortwritingnow) > 0)
+		hml, len(recOuts), db.DirtyDB.Get(), db.WritingInProgress.Get(), len(db.abortwritingnow) > 0)
 	s += fmt.Sprintf(" Last Block : %s @ %d\n", btc.NewUint256(db.LastBlockHash).String(),
 		db.LastBlockHeight)
 	return

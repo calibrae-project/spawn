@@ -192,10 +192,10 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 							urec.TxID = inp.Hash
 							urec.Coinbase = tout.WasCoinbase
 							urec.InBlock = tout.BlockHeight
-							urec.Outs = make([]*utxo.UtxoTxOut, tout.VoutCount)
+							urec.Outs = make([]*utxo.TxOut, tout.VoutCount)
 							changes.UndoData[inp.Hash] = urec
 						}
-						tmp := new(utxo.UtxoTxOut)
+						tmp := new(utxo.TxOut)
 						tmp.Value = tout.Value
 						tmp.PKScr = make([]byte, len(tout.PkScript))
 						copy(tmp.PKScr, tout.PkScript)
@@ -283,9 +283,9 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 					rec.TxID = k
 					rec.Coinbase = v[i].WasCoinbase
 					rec.InBlock = changes.Height
-					rec.Outs = make([]*utxo.UtxoTxOut, len(v))
+					rec.Outs = make([]*utxo.TxOut, len(v))
 				}
-				rec.Outs[i] = &utxo.UtxoTxOut{Value: v[i].Value, PKScr: v[i].PkScript}
+				rec.Outs[i] = &utxo.TxOut{Value: v[i].Value, PKScr: v[i].PkScript}
 			}
 		}
 		if rec != nil {

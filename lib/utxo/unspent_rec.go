@@ -27,18 +27,21 @@ const (
 // KeyType -
 type KeyType [UtxoIdxLen]byte
 
+// Rec -
 type Rec struct {
 	TxID     [32]byte
 	Coinbase bool
 	InBlock  uint32
-	Outs     []*UtxoTxOut
+	Outs     []*TxOut
 }
 
-type UtxoTxOut struct {
+// TxOut -
+type TxOut struct {
 	Value uint64
 	PKScr []byte
 }
 
+// FullUtxoRec -
 func FullUtxoRec(dat []byte) *Rec {
 	var key KeyType
 	copy(key[:], dat[:UtxoIdxLen])
@@ -46,9 +49,9 @@ func FullUtxoRec(dat []byte) *Rec {
 }
 
 var (
-	sta_rec  Rec
-	rec_outs = make([]*UtxoTxOut, 30001)
-	rec_pool = make([]UtxoTxOut, 30001)
+	staRec  Rec
+	recOuts = make([]*TxOut, 30001)
+	recPool = make([]TxOut, 30001)
 )
 
 func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
@@ -56,46 +59,46 @@ func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
 	var u64, idx uint64
 
 	off = 32 - UtxoIdxLen
-	copy(sta_rec.TxID[:UtxoIdxLen], key[:])
-	copy(sta_rec.TxID[UtxoIdxLen:], dat[:off])
+	copy(staRec.TxID[:UtxoIdxLen], key[:])
+	copy(staRec.TxID[UtxoIdxLen:], dat[:off])
 
 	u64, n = btc.VULe(dat[off:])
 	off += n
-	sta_rec.InBlock = uint32(u64)
+	staRec.InBlock = uint32(u64)
 
 	u64, n = btc.VULe(dat[off:])
 	off += n
 
-	sta_rec.Coinbase = (u64 & 1) != 0
+	staRec.Coinbase = (u64 & 1) != 0
 	u64 >>= 1
-	if len(rec_outs) < int(u64) {
-		rec_outs = make([]*UtxoTxOut, u64)
-		rec_pool = make([]UtxoTxOut, u64)
+	if len(recOuts) < int(u64) {
+		recOuts = make([]*TxOut, u64)
+		recPool = make([]TxOut, u64)
 	}
-	sta_rec.Outs = rec_outs[:u64]
-	for i := range sta_rec.Outs {
-		sta_rec.Outs[i] = nil
+	staRec.Outs = recOuts[:u64]
+	for i := range staRec.Outs {
+		staRec.Outs[i] = nil
 	}
 
 	for off < len(dat) {
 		idx, n = btc.VULe(dat[off:])
 		off += n
 
-		sta_rec.Outs[idx] = &rec_pool[rec_idx]
+		staRec.Outs[idx] = &recPool[rec_idx]
 		rec_idx++
 
 		u64, n = btc.VULe(dat[off:])
 		off += n
-		sta_rec.Outs[idx].Value = uint64(u64)
+		staRec.Outs[idx].Value = uint64(u64)
 
 		i, n = btc.VLen(dat[off:])
 		off += n
 
-		sta_rec.Outs[idx].PKScr = dat[off : off+i]
+		staRec.Outs[idx].PKScr = dat[off : off+i]
 		off += i
 	}
 
-	return &sta_rec
+	return &staRec
 }
 
 func NewUtxoRec(key KeyType, dat []byte) *Rec {
@@ -115,12 +118,12 @@ func NewUtxoRec(key KeyType, dat []byte) *Rec {
 	off += n
 
 	rec.Coinbase = (u64 & 1) != 0
-	rec.Outs = make([]*UtxoTxOut, u64>>1)
+	rec.Outs = make([]*TxOut, u64>>1)
 
 	for off < len(dat) {
 		idx, n = btc.VULe(dat[off:])
 		off += n
-		rec.Outs[idx] = new(UtxoTxOut)
+		rec.Outs[idx] = new(TxOut)
 
 		u64, n = btc.VULe(dat[off:])
 		off += n
@@ -259,19 +262,19 @@ func (r *Rec) ToUnspent(idx uint32, ad *btc.Addr) (nr *OneUnspentTx) {
 	return
 }
 
-func (out *UtxoTxOut) IsP2KH() bool {
+func (out *TxOut) IsP2KH() bool {
 	return len(out.PKScr) == 25 && out.PKScr[0] == 0x76 && out.PKScr[1] == 0xa9 &&
 		out.PKScr[2] == 0x14 && out.PKScr[23] == 0x88 && out.PKScr[24] == 0xac
 }
 
-func (r *UtxoTxOut) IsP2SH() bool {
+func (r *TxOut) IsP2SH() bool {
 	return len(r.PKScr) == 23 && r.PKScr[0] == 0xa9 && r.PKScr[1] == 0x14 && r.PKScr[22] == 0x87
 }
 
-func (r *UtxoTxOut) IsP2WPKH() bool {
+func (r *TxOut) IsP2WPKH() bool {
 	return len(r.PKScr) == 22 && r.PKScr[0] == 0 && r.PKScr[1] == 20
 }
 
-func (r *UtxoTxOut) IsP2WSH() bool {
+func (r *TxOut) IsP2WSH() bool {
 	return len(r.PKScr) == 34 && r.PKScr[0] == 0 && r.PKScr[1] == 32
 }
