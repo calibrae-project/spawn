@@ -124,7 +124,7 @@ func LimitPoolSize(maxlen uint64) {
 			if common.SetMinFeePerKB(0) {
 				var cnt uint64
 				for k, v := range TransactionsRejected {
-					if v.Reason == TX_REJECTED_LOW_FEE {
+					if v.Reason == TxRejectedLowFee {
 						deleteRejected(k)
 						cnt++
 					}
@@ -158,7 +158,7 @@ func LimitPoolSize(maxlen uint64) {
 			// this has already been rmoved
 			continue
 		}
-		tx.Delete(true, TX_REJECTED_LOW_FEE)
+		tx.Delete(true, TxRejectedLowFee)
 	}
 
 	if cnt := len(sorted) - idx; cnt > 0 {

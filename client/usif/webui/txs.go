@@ -384,7 +384,7 @@ func xml_txsre(w http.ResponseWriter, r *http.Request) {
 	network.TxMutex.Lock()
 	for _, v := range network.TransactionsRejected {
 		w.Write([]byte("<tx>"))
-		fmt.Fprint(w, "<id>", v.Id.String(), "</id>")
+		fmt.Fprint(w, "<id>", v.ID.String(), "</id>")
 		fmt.Fprint(w, "<time>", v.Time.Unix(), "</time>")
 		fmt.Fprint(w, "<size>", v.Size, "</size>")
 		fmt.Fprint(w, "<reason>", network.ReasonToString(v.Reason), "</reason>")
@@ -408,7 +408,7 @@ func xml_txw4i(w http.ResponseWriter, r *http.Request) {
 		for x, t := range v.Ids {
 			w.Write([]byte("<tx>"))
 			if v, ok := network.TransactionsRejected[x]; ok {
-				fmt.Fprint(w, "<id>", v.Id.String(), "</id>")
+				fmt.Fprint(w, "<id>", v.ID.String(), "</id>")
 				fmt.Fprint(w, "<time>", t.Unix(), "</time>")
 			} else {
 				fmt.Fprint(w, "<id>FATAL ERROR!!! This should not happen! Please report</id>")

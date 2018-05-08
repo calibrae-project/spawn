@@ -397,15 +397,15 @@ function refreshbwinfo() {
 	aj.onload=function() {
 		try {
 			var bw = JSON.parse(aj.responseText)
-			bw_open_conns_total.innerText = bw.Open_conns_total
-			bw_open_conns_out.innerText = bw.Open_conns_out
-			bw_open_conns_in.innerText = bw.Open_conns_in
-			bw_dl_speed_now.innerText = bw.Dl_speed_now >> 10
-			bw_dl_speed_max.innerText = bw.Dl_speed_max >> 10
-			bw_dl_total.innerText = bignum(bw.Dl_total)+'B'
-			bw_ul_speed_now.innerText = bw.Ul_speed_now >> 10
-			bw_ul_speed_max.innerText = bw.Ul_speed_max >> 10
-			bw_ul_total.innerText = bignum(bw.Ul_total)+'B'
+			bw_open_conns_total.innerText = bw.OpenConnsTotal
+			bw_open_conns_out.innerText = bw.OpenConnsOut
+			bw_open_conns_in.innerText = bw.OpenConnsIn
+			bw_dl_speed_now.innerText = bw.DLSpeedNow >> 10
+			bw_dl_speed_max.innerText = bw.DLSpeedMax >> 10
+			bw_dl_total.innerText = bignum(bw.DLTotal)+'B'
+			bw_ul_speed_now.innerText = bw.ULSpeedNow >> 10
+			bw_ul_speed_max.innerText = bw.ULSpeedMax >> 10
+			bw_ul_total.innerText = bignum(bw.ULTotal)+'B'
 
 			// external IP
 			if (bw.ExternalIP.length==0) {

@@ -616,16 +616,16 @@ function refreshbwinfo() {
 		try {
 			var bw = JSON.parse(aj.responseText)
 
-			in_connections.innerText = bw.Open_conns_in
-			out_connections.innerText = bw.Open_conns_out
+			in_connections.innerText = bw.OpenConnsIn
+			out_connections.innerText = bw.OpenConnsOut
 
-			bw_dl_speed_now.innerText = bw.Dl_speed_now >> 10
-			var sl = bw.Dl_speed_max==0 ? "not limited" : "limited to " + (bw.Dl_speed_max >> 10) + "KB/s"
-			bw_dl_speed_now_span.title = "Total " + bignum(bw.Dl_total) + 'B / Download speed ' + sl
+			bw_dl_speed_now.innerText = bw.DLSpeedNow >> 10
+			var sl = bw.DLSpeedMax==0 ? "not limited" : "limited to " + (bw.DLSpeedMax >> 10) + "KB/s"
+			bw_dl_speed_now_span.title = "Total " + bignum(bw.DLTotal) + 'B / Download speed ' + sl
 
-			bw_ul_speed_now.innerText = bw.Ul_speed_now >> 10
-			sl = bw.Ul_speed_max==0 ? "not limited" : "limited to " + (bw.Ul_speed_max >> 10) + "KB/s"
-			bw_ul_speed_now_span.title = "Total " + bignum(bw.Ul_total) + 'B / Upload speed ' + sl
+			bw_ul_speed_now.innerText = bw.ULSpeedNow >> 10
+			sl = bw.ULSpeedMax==0 ? "not limited" : "limited to " + (bw.ULSpeedMax >> 10) + "KB/s"
+			bw_ul_speed_now_span.title = "Total " + bignum(bw.ULTotal) + 'B / Upload speed ' + sl
 
 			get_mp_in_progress.style.display = bw.GetMPInProgress ? "inline" : "none"
 		} catch(e) {

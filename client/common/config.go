@@ -136,7 +136,7 @@ func InitConfig() {
 	CFG.WebUI.ShowBlocks = 144
 	CFG.WebUI.AddrListLen = 15
 	CFG.WebUI.Title = "Spawn"
-	CFG.WebUI.PayCmdName = "pay_cmd.txt"
+	CFG.WebUI.PayCmdName = "payCmd.txt"
 
 	CFG.RPC.Username = "Spawnrpc"
 	CFG.RPC.Password = "Spawnpwd"

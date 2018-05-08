@@ -237,7 +237,7 @@ func HandleRPCblock(msg *rpcapi.BlockSubmited) {
 	common.BlockChain.Unspent.AbortWriting()
 	rb.TmQueue = time.Now()
 
-	e, _, _ := common.BlockChain.CheckBlock(msg.Block)
+	_, _, e := common.BlockChain.CheckBlock(msg.Block)
 	if e == nil {
 		e = common.BlockChain.AcceptBlock(msg.Block)
 		rb.TmAccepted = time.Now()
@@ -389,7 +389,7 @@ func main() {
 
 			case <-netTick:
 				common.CountSafe("DoMainNetTick")
-				network.NetworkTick()
+				network.Ticking()
 
 			case on := <-wallet.OnOff:
 				if !on {
@@ -474,7 +474,7 @@ func main() {
 			case <-netTick:
 				common.Busy()
 				common.CountSafe("MainNetTick")
-				network.NetworkTick()
+				network.Ticking()
 				if startupTicks > 0 {
 					startupTicks--
 					break

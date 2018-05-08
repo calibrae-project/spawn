@@ -168,9 +168,9 @@ func ServerThread(iface string) {
 	http.HandleFunc("/webui/", p_webui)
 
 	http.HandleFunc("/wal", p_wal)
-	http.HandleFunc("/snd", p_snd)
+	http.HandleFunc("/snd", pSnd)
 	http.HandleFunc("/balance.json", json_balance)
-	http.HandleFunc("/payment.zip", dl_payment)
+	http.HandleFunc("/payment.zip", dlPayment)
 	http.HandleFunc("/balance.zip", dl_balance)
 
 	http.HandleFunc("/net", pNet)
@@ -195,7 +195,7 @@ func ServerThread(iface string) {
 	http.HandleFunc("/netcon.json", jsonNetCon)
 	http.HandleFunc("/blocks.json", jsonBlocks)
 	http.HandleFunc("/peerst.json", jsonPeersT)
-	http.HandleFunc("/bwchar.json", json_bwchar)
+	http.HandleFunc("/bwchar.json", jsonBWChar)
 	http.HandleFunc("/mempoolStats.json", json_mempool_stats)
 	http.HandleFunc("/mempool_fees.json", json_mempool_fees)
 	http.HandleFunc("/blkver.json", jsonBlkVer)

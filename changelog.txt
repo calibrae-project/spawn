@@ -104,7 +104,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * Wallet: Fix: "-f" was substracting the fee from every output's value, not only the first one
 * Client: Changed/fixed the way how own txs are inserted into mempool (e.g. it wasn't updating SpentOutputs)
 * Client/WebUI/Wallet: Show unconfirmed transactions
-* Client/WebUI/MakeTx: pay_cmd inside will not apply changes to the balance folder
+* Client/WebUI/MakeTx: payCmd inside will not apply changes to the balance folder
 * Client: changed the way freshly mined txs are removed from mempool so it also works for reorgs
 * Client/WebUI/Network: Make some extra information about the nodes switchable on/off
 * Client: Show number of records (txs) while loading UTXO.db
@@ -183,7 +183,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 
 1.8.0 - 2017-02-06
 * Segregated Witness related functionality and many other changes here and there
-* Client: drop_worst_peer - do not drop peers that send new transactions
+* Client: dropWorstPeer - do not drop peers that send new transactions
 * Client: Requires new consensus lib (from bitcon-core 0.13.1)
 * Client: Added "-trust" switch, with which client should be as fast as downloader
 * Downloader: replaced by "client -trust" and removed from the source base
@@ -191,7 +191,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 
 1.7.4
 * Lib: Fixed rejecting of too big blocks
-* Client: Added TX_REJECTED_RBF_100 to the rejection reasons
+* Client: Added TxRejectedRBF100 to the rejection reasons
 * WebUI/Blocks: Show lowest fee's SPB in the recently processed blocks
 
 1.7.3 - 2016-10-18
@@ -203,7 +203,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * Client: Parameters for droping slowest peers are now configurable via gocoin.conf
 
 1.7.2 - 2016-09-27
-* Client: drop_slowest_peer changed to drop_worst_peer - do not drop peers that send new blocks
+* Client: drop_slowest_peer changed to dropWorstPeer - do not drop peers that send new blocks
 * WebUI: "Blocks" tab shows some new statistics
 * Client: Keep per-peer list of the last 500 invs, to avoid duplicate sending
 * "Version" moved from "github.com/calibrae-project/spawn/lib" to "github.com/calibrae-project/spawn"
@@ -521,7 +521,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 
 0.8.3 - 2013-11-28
 * Support for GOCOIN_WALLET_CONFIG env variable (enforces the wallet's config file)
-* Added CFG.PayCommandName so you could e.g. make it .bat or .sh (the default is "pay_cmd.txt")
+* Added CFG.PayCommandName so you could e.g. make it .bat or .sh (the default is "payCmd.txt")
 * The home tab shows time next to each unspent outputs
 * Cosmetic here and there...
 

@@ -122,34 +122,34 @@ func jsonBandwidth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var out struct {
-		Open_conns_total int
-		Open_conns_out   uint32
-		Open_conns_in    uint32
-		Dl_speed_now     uint64
-		Dl_speed_max     uint64
-		Dl_total         uint64
-		Ul_speed_now     uint64
-		Ul_speed_max     uint64
-		Ul_total         uint64
-		ExternalIP       []oneExtIP
-		GetMPInProgress  bool
+		OpenConnsTotal  int
+		OpenConnsOut    uint32
+		OpenConnsIn     uint32
+		DLSpeedNow      uint64
+		DLSpeedMax      uint64
+		DLTotal         uint64
+		ULSpeedNow      uint64
+		ULSpeedMax      uint64
+		ULTotal         uint64
+		ExternalIP      []oneExtIP
+		GetMPInProgress bool
 	}
 
 	common.LockBw()
 	common.TickRecv()
 	common.TickSent()
-	out.Dl_speed_now = common.GetAvgBW(common.DlBytesPrevSec[:], common.DlBytesPrevSecIdx, 5)
-	out.Dl_speed_max = common.DownloadLimit()
-	out.Dl_total = common.DlBytesTotal
-	out.Ul_speed_now = common.GetAvgBW(common.UlBytesPrevSec[:], common.UlBytesPrevSecIdx, 5)
-	out.Ul_speed_max = common.UploadLimit()
-	out.Ul_total = common.UlBytesTotal
+	out.DLSpeedNow = common.GetAvgBW(common.DlBytesPrevSec[:], common.DlBytesPrevSecIdx, 5)
+	out.DLSpeedMax = common.DownloadLimit()
+	out.DLTotal = common.DlBytesTotal
+	out.ULSpeedNow = common.GetAvgBW(common.UlBytesPrevSec[:], common.UlBytesPrevSecIdx, 5)
+	out.ULSpeedMax = common.UploadLimit()
+	out.ULTotal = common.UlBytesTotal
 	common.UnlockBw()
 
 	network.MutexNet.Lock()
-	out.Open_conns_total = len(network.OpenCons)
-	out.Open_conns_out = network.OutConsActive
-	out.Open_conns_in = network.InConsActive
+	out.OpenConnsTotal = len(network.OpenCons)
+	out.OpenConnsOut = network.OutConsActive
+	out.OpenConnsIn = network.InConsActive
 	network.MutexNet.Unlock()
 
 	arr := network.GetExternalIPs()
@@ -170,7 +170,8 @@ func jsonBandwidth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func json_bwchar(w http.ResponseWriter, r *http.Request) {
+// jsonBWChar -
+func jsonBWChar(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}

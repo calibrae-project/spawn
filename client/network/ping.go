@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -13,10 +13,13 @@ import (
 )
 
 const (
-	PingHistoryLength        = 20
+	// PingHistoryLength -
+	PingHistoryLength = 20
+	// PingAssumedIfUnsupported -
 	PingAssumedIfUnsupported = 4999 // ms
 )
 
+// HandlePong -
 func (c *OneConnection) HandlePong(pl []byte) {
 	if pl != nil {
 		if !bytes.Equal(pl, c.PingInProgress) {
@@ -40,6 +43,7 @@ func (c *OneConnection) HandlePong(pl []byte) {
 	c.Mutex.Unlock()
 }
 
+// GetAveragePing -
 // Returns (median) average ping
 // Make sure to called it within c.Mutex.Lock()
 func (c *OneConnection) GetAveragePing() int {
@@ -48,23 +52,23 @@ func (c *OneConnection) GetAveragePing() int {
 	}
 	if c.Node.Version > 60000 {
 		var pgs [PingHistoryLength]int
-		var act_len int
+		var actLen int
 		for _, p := range c.X.PingHistory {
 			if p != 0 {
-				pgs[act_len] = p
-				act_len++
+				pgs[actLen] = p
+				actLen++
 			}
 		}
-		if act_len == 0 {
+		if actLen == 0 {
 			return 0
 		}
-		sort.Ints(pgs[:act_len])
-		return pgs[act_len/2]
-	} else {
-		return PingAssumedIfUnsupported
+		sort.Ints(pgs[:actLen])
+		return pgs[actLen/2]
 	}
+	return PingAssumedIfUnsupported
 }
 
+// SortedConnections -
 type SortedConnections []struct {
 	Conn          *OneConnection
 	Ping          int
@@ -74,9 +78,10 @@ type SortedConnections []struct {
 	Special       bool
 }
 
+// GetSortedConnections -
 // Returns the slowest peers first
 // Make suure to call it with locked MutexNet
-func GetSortedConnections() (list SortedConnections, any_ping bool, segwitCount int) {
+func GetSortedConnections() (list SortedConnections, anyPing bool, segwitCount int) {
 	var cnt int
 	var now time.Time
 	var tlist SortedConnections
@@ -97,7 +102,7 @@ func GetSortedConnections() (list SortedConnections, any_ping bool, segwitCount 
 		v.Mutex.Unlock()
 
 		if tlist[cnt].Ping > 0 {
-			any_ping = true
+			anyPing = true
 		}
 		if (v.Node.Services & ServiceSegwit) != 0 {
 			segwitCount++
@@ -107,55 +112,55 @@ func GetSortedConnections() (list SortedConnections, any_ping bool, segwitCount 
 	}
 	if cnt > 0 {
 		list = make(SortedConnections, len(tlist))
-		var ignore_bcnt bool // otherwise count blocks
-		var idx, best_idx, bcnt, best_bcnt, best_tcnt, best_ping int
+		var ignoreBcnt bool // otherwise count blocks
+		var idx, bestIdx, bcnt, bestBcnt, bestTcnt, bestPing int
 
 		for idx = len(list) - 1; idx >= 0; idx-- {
-			best_idx = -1
+			bestIdx = -1
 			for i, v := range tlist {
 				if v.Conn == nil {
 					continue
 				}
-				if best_idx < 0 {
-					best_idx = i
-					best_tcnt = v.TxsCount
-					best_bcnt = v.BlockCount
-					best_ping = v.Ping
+				if bestIdx < 0 {
+					bestIdx = i
+					bestTcnt = v.TxsCount
+					bestBcnt = v.BlockCount
+					bestPing = v.Ping
 				} else {
-					if ignore_bcnt {
-						bcnt = best_bcnt
+					if ignoreBcnt {
+						bcnt = bestBcnt
 					} else {
 						bcnt = v.BlockCount
 					}
-					if best_bcnt < bcnt ||
-						best_bcnt == bcnt && best_tcnt < v.TxsCount ||
-						best_bcnt == bcnt && best_tcnt == v.TxsCount && best_ping > v.Ping {
-						best_bcnt = v.BlockCount
-						best_tcnt = v.TxsCount
-						best_ping = v.Ping
-						best_idx = i
+					if bestBcnt < bcnt ||
+						bestBcnt == bcnt && bestTcnt < v.TxsCount ||
+						bestBcnt == bcnt && bestTcnt == v.TxsCount && bestPing > v.Ping {
+						bestBcnt = v.BlockCount
+						bestTcnt = v.TxsCount
+						bestPing = v.Ping
+						bestIdx = i
 					}
 				}
 			}
-			list[idx] = tlist[best_idx]
-			tlist[best_idx].Conn = nil
-			ignore_bcnt = !ignore_bcnt
+			list[idx] = tlist[bestIdx]
+			tlist[bestIdx].Conn = nil
+			ignoreBcnt = !ignoreBcnt
 		}
 	}
 	return
 }
 
 // This function should be called only when OutConsActive >= MaxOutCons
-func drop_worst_peer() bool {
+func dropWorstPeer() bool {
 	var list SortedConnections
-	var any_ping bool
+	var anyPing bool
 	var segwitCount int
 
 	MutexNet.Lock()
 	defer MutexNet.Unlock()
 
-	list, any_ping, segwitCount = GetSortedConnections()
-	if !any_ping { // if "list" is empty "any_ping" will also be false
+	list, anyPing, segwitCount = GetSortedConnections()
+	if !anyPing { // if "list" is empty "anyPing" will also be false
 		return false
 	}
 
@@ -205,6 +210,7 @@ func drop_worst_peer() bool {
 	return false
 }
 
+// TryPing -
 func (c *OneConnection) TryPing() bool {
 	if common.GetDuration(&common.PingPeerEvery) == 0 {
 		return false // pinging disabled in global config

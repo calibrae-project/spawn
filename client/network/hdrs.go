@@ -53,7 +53,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 	common.BlockChain.BlockIndexAccess.Lock()
 	defer common.BlockChain.BlockIndexAccess.Unlock()
 
-	if er, dos, _ := common.BlockChain.PreCheckBlock(bl); er != nil {
+	if _, dos, er := common.BlockChain.PreCheckBlock(bl); er != nil {
 		common.CountSafe("PreCheckBlockFail")
 		//println("PreCheckBlock err", dos, er.Error())
 		if dos {

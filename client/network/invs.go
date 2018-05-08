@@ -195,6 +195,7 @@ func addInvBlockBranch(inv map[[32]byte]bool, bl *chain.BlockTreeNode, stop *btc
 	}
 }
 
+// GetBlocks -
 func (c *OneConnection) GetBlocks(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 
@@ -220,7 +221,7 @@ func (c *OneConnection) GetBlocks(pl []byte) {
 
 						inv := new(bytes.Buffer)
 						btc.WriteVlen(inv, uint64(len(invs)))
-						for k, _ := range invs {
+						for k := range invs {
 							binary.Write(inv, binary.LittleEndian, uint32(2))
 							inv.Write(k[:])
 						}
@@ -237,36 +238,37 @@ func (c *OneConnection) GetBlocks(pl []byte) {
 	return
 }
 
+// SendInvs -
 func (c *OneConnection) SendInvs() (res bool) {
-	b_txs := new(bytes.Buffer)
-	b_blk := new(bytes.Buffer)
-	var c_blk []*btc.Uint256
+	bTxs := new(bytes.Buffer)
+	bBlk := new(bytes.Buffer)
+	var cBlk []*btc.Uint256
 
 	c.Mutex.Lock()
 	if len(c.PendingInvs) > 0 {
 		for i := range c.PendingInvs {
-			var inv_sent_otherwise bool
+			var invSentOtherwise bool
 			typ := binary.LittleEndian.Uint32((*c.PendingInvs[i])[:4])
 			c.InvStore(typ, (*c.PendingInvs[i])[4:36])
 			if typ == MsgBlock {
 				if c.Node.SendCmpctVer >= 1 && c.Node.HighBandwidth {
-					c_blk = append(c_blk, btc.NewUint256((*c.PendingInvs[i])[4:]))
-					inv_sent_otherwise = true
+					cBlk = append(cBlk, btc.NewUint256((*c.PendingInvs[i])[4:]))
+					invSentOtherwise = true
 				} else if c.Node.SendHeaders {
 					// convert block inv to block header
 					common.BlockChain.BlockIndexAccess.Lock()
 					bl := common.BlockChain.BlockIndex[btc.NewUint256((*c.PendingInvs[i])[4:]).BIdx()]
 					if bl != nil {
-						b_blk.Write(bl.BlockHeader[:])
-						b_blk.Write([]byte{0}) // 0 txs
+						bBlk.Write(bl.BlockHeader[:])
+						bBlk.Write([]byte{0}) // 0 txs
 					}
 					common.BlockChain.BlockIndexAccess.Unlock()
-					inv_sent_otherwise = true
+					invSentOtherwise = true
 				}
 			}
 
-			if !inv_sent_otherwise {
-				b_txs.Write((*c.PendingInvs[i])[:])
+			if !invSentOtherwise {
+				bTxs.Write((*c.PendingInvs[i])[:])
 			}
 		}
 		res = true
@@ -274,24 +276,24 @@ func (c *OneConnection) SendInvs() (res bool) {
 	c.PendingInvs = nil
 	c.Mutex.Unlock()
 
-	if len(c_blk) > 0 {
-		for _, h := range c_blk {
+	if len(cBlk) > 0 {
+		for _, h := range cBlk {
 			c.SendCompactBlock(h)
 		}
 	}
 
-	if b_blk.Len() > 0 {
+	if bBlk.Len() > 0 {
 		common.CountSafe("InvSentAsHeader")
 		b := new(bytes.Buffer)
-		btc.WriteVlen(b, uint64(b_blk.Len()/81))
-		c.SendRawMsg("headers", append(b.Bytes(), b_blk.Bytes()...))
-		//println("sent block's header(s)", b_blk.Len(), uint64(b_blk.Len()/81))
+		btc.WriteVlen(b, uint64(bBlk.Len()/81))
+		c.SendRawMsg("headers", append(b.Bytes(), bBlk.Bytes()...))
+		//println("sent block's header(s)", bBlk.Len(), uint64(bBlk.Len()/81))
 	}
 
-	if b_txs.Len() > 0 {
+	if bTxs.Len() > 0 {
 		b := new(bytes.Buffer)
-		btc.WriteVlen(b, uint64(b_txs.Len()/36))
-		c.SendRawMsg("inv", append(b.Bytes(), b_txs.Bytes()...))
+		btc.WriteVlen(b, uint64(bTxs.Len()/36))
+		c.SendRawMsg("inv", append(b.Bytes(), bTxs.Bytes()...))
 	}
 
 	return
