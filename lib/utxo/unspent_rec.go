@@ -54,8 +54,9 @@ var (
 	recPool = make([]TxOut, 30001)
 )
 
+// NewUtxoRecStatic -
 func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
-	var off, n, i, rec_idx int
+	var off, n, i, recIdx int
 	var u64, idx uint64
 
 	off = 32 - UtxoIdxLen
@@ -84,8 +85,8 @@ func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
 		idx, n = btc.VULe(dat[off:])
 		off += n
 
-		staRec.Outs[idx] = &recPool[rec_idx]
-		rec_idx++
+		staRec.Outs[idx] = &recPool[recIdx]
+		recIdx++
 
 		u64, n = btc.VULe(dat[off:])
 		off += n
@@ -101,6 +102,7 @@ func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
 	return &staRec
 }
 
+// NewUtxoRec -
 func NewUtxoRec(key KeyType, dat []byte) *Rec {
 	var off, n, i int
 	var u64, idx uint64
@@ -138,6 +140,7 @@ func NewUtxoRec(key KeyType, dat []byte) *Rec {
 	return &rec
 }
 
+// OneUtxoRec -
 func OneUtxoRec(key KeyType, dat []byte, vout uint32) *btc.TxOut {
 	var off, n, i int
 	var u64, idx uint64
@@ -192,9 +195,10 @@ func vlen2size(uvl uint64) int {
 	return 9
 }
 
+// Serialize -
 func (rec *Rec) Serialize(full bool) (buf []byte) {
 	var le, of int
-	var any_out bool
+	var anyOut bool
 
 	outcnt := uint64(len(rec.Outs) << 1)
 	if rec.Coinbase {
@@ -216,10 +220,10 @@ func (rec *Rec) Serialize(full bool) (buf []byte) {
 			le += vlen2size(rec.Outs[i].Value)
 			le += vlen2size(uint64(len(rec.Outs[i].PKScr)))
 			le += len(rec.Outs[i].PKScr)
-			any_out = true
+			anyOut = true
 		}
 	}
-	if !any_out {
+	if !anyOut {
 		return
 	}
 
@@ -246,35 +250,41 @@ func (rec *Rec) Serialize(full bool) (buf []byte) {
 	return
 }
 
+// Bytes -
 func (rec *Rec) Bytes() []byte {
 	return rec.Serialize(false)
 }
 
-func (r *Rec) ToUnspent(idx uint32, ad *btc.Addr) (nr *OneUnspentTx) {
+// ToUnspent -
+func (rec *Rec) ToUnspent(idx uint32, ad *btc.Addr) (nr *OneUnspentTx) {
 	nr = new(OneUnspentTx)
-	nr.TxPrevOut.Hash = r.TxID
+	nr.TxPrevOut.Hash = rec.TxID
 	nr.TxPrevOut.Vout = idx
-	nr.Value = r.Outs[idx].Value
-	nr.Coinbase = r.Coinbase
-	nr.MinedAt = r.InBlock
+	nr.Value = rec.Outs[idx].Value
+	nr.Coinbase = rec.Coinbase
+	nr.MinedAt = rec.InBlock
 	nr.Addr = ad
 	nr.destString = ad.String()
 	return
 }
 
+// IsP2KH -
 func (out *TxOut) IsP2KH() bool {
 	return len(out.PKScr) == 25 && out.PKScr[0] == 0x76 && out.PKScr[1] == 0xa9 &&
 		out.PKScr[2] == 0x14 && out.PKScr[23] == 0x88 && out.PKScr[24] == 0xac
 }
 
-func (r *TxOut) IsP2SH() bool {
-	return len(r.PKScr) == 23 && r.PKScr[0] == 0xa9 && r.PKScr[1] == 0x14 && r.PKScr[22] == 0x87
+// IsP2SH -
+func (out *TxOut) IsP2SH() bool {
+	return len(out.PKScr) == 23 && out.PKScr[0] == 0xa9 && out.PKScr[1] == 0x14 && out.PKScr[22] == 0x87
 }
 
-func (r *TxOut) IsP2WPKH() bool {
-	return len(r.PKScr) == 22 && r.PKScr[0] == 0 && r.PKScr[1] == 20
+// IsP2WPKH -
+func (out *TxOut) IsP2WPKH() bool {
+	return len(out.PKScr) == 22 && out.PKScr[0] == 0 && out.PKScr[1] == 20
 }
 
-func (r *TxOut) IsP2WSH() bool {
-	return len(r.PKScr) == 34 && r.PKScr[0] == 0 && r.PKScr[1] == 32
+// IsP2WSH -
+func (out *TxOut) IsP2WSH() bool {
+	return len(out.PKScr) == 34 && out.PKScr[0] == 0 && out.PKScr[1] == 32
 }
