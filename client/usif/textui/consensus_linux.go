@@ -20,7 +20,7 @@ int (*_bitcoinconsensus_verify_script_with_amount)(const unsigned char *scriptPu
                                     const unsigned char *txTo        , unsigned int txToLen,
                                     unsigned int nIn, unsigned int flags, void* err);
 
-int bitcoinconsensus_verify_script_with_amount(const unsigned char *scriptPubKey, unsigned int scriptPubKeyLen, int64_t amount,
+int bitcoinConsensusVerifyScriptWithAmount(const unsigned char *scriptPubKey, unsigned int scriptPubKeyLen, int64_t amount,
                                     const unsigned char *txTo        , unsigned int txToLen,
                                     unsigned int nIn, unsigned int flags) {
 	return _bitcoinconsensus_verify_script_with_amount(scriptPubKey, scriptPubKeyLen, amount, txTo, txToLen, nIn, flags, NULL);
@@ -34,7 +34,7 @@ int init_bitcoinconsensus_so() {
 	void *so = dlopen("libbitcoinconsensus.so", RTLD_LAZY);
 	if (so) {
 		*(void **)(&_bitcoinconsensus_version) = dlsym(so, "bitcoinconsensus_version");
-		*(void **)(&_bitcoinconsensus_verify_script_with_amount) = dlsym(so, "bitcoinconsensus_verify_script_with_amount");
+		*(void **)(&_bitcoinconsensus_verify_script_with_amount) = dlsym(so, "bitcoinConsensusVerifyScriptWithAmount");
 		if (!_bitcoinconsensus_version) {
 			printf("libbitcoinconsensus.so not found\n");
 			return 0;
@@ -81,13 +81,13 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags ui
 		tx_raw = tx.Serialize()
 	}
 	go func(pkScr []byte, txTo []byte, amount uint64, i int, verFlags uint32, result bool) {
-		var pkscr_ptr *C.uchar // default to null
-		var pkscr_len C.uint   // default to 0
+		var pkscrPtr *C.uchar // default to null
+		var pkscrLen C.uint   // default to 0
 		if pkScr != nil {
-			pkscr_ptr = (*C.uchar)(unsafe.Pointer(&pkScr[0]))
-			pkscr_len = C.uint(len(pkScr))
+			pkscrPtr = (*C.uchar)(unsafe.Pointer(&pkScr[0]))
+			pkscrLen = C.uint(len(pkScr))
 		}
-		r1 := int(C.bitcoinconsensus_verify_script_with_amount(pkscr_ptr, pkscr_len, C.int64_t(amount),
+		r1 := int(C.bitcoinConsensusVerifyScriptWithAmount(pkscrPtr, pkscrLen, C.int64_t(amount),
 			(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(verFlags)))
 		res := r1 == 1
 		atomic.AddUint64(&ConsensusChecks, 1)
@@ -114,13 +114,13 @@ func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, v
 	if txTo == nil {
 		txTo = tx.Serialize()
 	}
-	var pkscr_ptr *C.uchar // default to null
-	var pkscr_len C.uint   // default to 0
+	var pkscrPtr *C.uchar // default to null
+	var pkscrLen C.uint   // default to 0
 	if pkScr != nil {
-		pkscr_ptr = (*C.uchar)(unsafe.Pointer(&pkScr[0]))
-		pkscr_len = C.uint(len(pkScr))
+		pkscrPtr = (*C.uchar)(unsafe.Pointer(&pkScr[0]))
+		pkscrLen = C.uint(len(pkScr))
 	}
-	r1 := int(C.bitcoinconsensus_verify_script_with_amount(pkscr_ptr, pkscr_len, C.int64_t(amount),
+	r1 := int(C.bitcoinConsensusVerifyScriptWithAmount(pkscrPtr, pkscrLen, C.int64_t(amount),
 		(*C.uchar)(unsafe.Pointer(&txTo[0])), C.uint(len(txTo)), C.uint(i), C.uint(verFlags)))
 
 	result = (r1 == 1)

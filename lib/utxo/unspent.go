@@ -7,9 +7,10 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
+// AllUnspentTx -
 type AllUnspentTx []*OneUnspentTx
 
-// Returned by GetUnspentFromPkScr
+// OneUnspentTx - Returned by GetUnspentFromPkScr
 type OneUnspentTx struct {
 	btc.TxPrevOut
 	Value   uint64
@@ -63,16 +64,19 @@ func (ou *OneUnspentTx) String() (s string) {
 	return
 }
 
+// FixDestString -
 func (ou *OneUnspentTx) FixDestString() {
 	ou.destString = ou.Addr.String()
 }
 
+// UnspentTextLine -
 func (ou *OneUnspentTx) UnspentTextLine() (s string) {
 	s = fmt.Sprintf("%s # %.8f BTC @ %s%s, block %d", ou.TxPrevOut.String(),
 		float64(ou.Value)/1e8, ou.DestAddr(), ou.Addr.Label(), ou.MinedAt)
 	return
 }
 
+// DestAddr -
 func (ou *OneUnspentTx) DestAddr() string {
 	if ou.destString == "" {
 		return ou.Addr.String()

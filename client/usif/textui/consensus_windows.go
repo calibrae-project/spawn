@@ -27,7 +27,7 @@ EXPORT_SYMBOL int bitcoinconsensus_verify_script(const unsigned char *scriptPubK
                                                  const unsigned char *txTo        , unsigned int txToLen,
                                                  unsigned int nIn, unsigned int flags, bitcoinconsensus_error* err);
 
-EXPORT_SYMBOL int bitcoinconsensus_verify_script_with_amount(const unsigned char *scriptPubKey, unsigned int scriptPubKeyLen, int64_t amount,
+EXPORT_SYMBOL int bitcoinConsensusVerifyScriptWithAmount(const unsigned char *scriptPubKey, unsigned int scriptPubKeyLen, int64_t amount,
                                     const unsigned char *txTo        , unsigned int txToLen,
                                     unsigned int nIn, unsigned int flags, bitcoinconsensus_error* err);
 
@@ -36,8 +36,8 @@ EXPORT_SYMBOL unsigned int bitcoinconsensus_version();
 */
 
 var (
-	bitcoinconsensus_verify_script_with_amount *syscall.Proc
-	bitcoinconsensus_version                   *syscall.Proc
+	bitcoinConsensusVerifyScriptWithAmount *syscall.Proc
+	bitcoinconsensus_version               *syscall.Proc
 
 	ConsensusChecks uint64
 	ConsensusExpErr uint64
@@ -57,13 +57,13 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags ui
 		tx_raw = tx.Serialize()
 	}
 	go func(pkScr []byte, txTo []byte, i int, verFlags uint32, result bool) {
-		var pkscr_ptr, pkscr_len uintptr // default to 0/null
+		var pkscrPtr, pkscrLen uintptr // default to 0/null
 		if pkScr != nil {
-			pkscr_ptr = uintptr(unsafe.Pointer(&pkScr[0]))
-			pkscr_len = uintptr(len(pkScr))
+			pkscrPtr = uintptr(unsafe.Pointer(&pkScr[0]))
+			pkscrLen = uintptr(len(pkScr))
 		}
-		r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
-			pkscr_ptr, pkscr_len, uintptr(amount),
+		r1, _, _ := syscall.Syscall9(bitcoinConsensusVerifyScriptWithAmount.Addr(), 8,
+			pkscrPtr, pkscrLen, uintptr(amount),
 			uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
 			uintptr(i), uintptr(verFlags), 0, 0)
 
@@ -88,17 +88,17 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags ui
 }
 
 func verify_script_with_amount(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) (result bool) {
-	var pkscr_ptr, pkscr_len uintptr // default to 0/null
+	var pkscrPtr, pkscrLen uintptr // default to 0/null
 	txTo := tx.Raw
 	if txTo == nil {
 		txTo = tx.Serialize()
 	}
 	if pkScr != nil {
-		pkscr_ptr = uintptr(unsafe.Pointer(&pkScr[0]))
-		pkscr_len = uintptr(len(pkScr))
+		pkscrPtr = uintptr(unsafe.Pointer(&pkScr[0]))
+		pkscrLen = uintptr(len(pkScr))
 	}
-	r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
-		pkscr_ptr, pkscr_len, uintptr(amount),
+	r1, _, _ := syscall.Syscall9(bitcoinConsensusVerifyScriptWithAmount.Addr(), 8,
+		pkscrPtr, pkscrLen, uintptr(amount),
 		uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
 		uintptr(i), uintptr(verFlags), 0, 0)
 
@@ -119,7 +119,7 @@ func init() {
 		common.Log.Println("Not using", DllName, "to cross-check consensus rules")
 		return
 	}
-	bitcoinconsensus_verify_script_with_amount, er = dll.FindProc("bitcoinconsensus_verify_script_with_amount")
+	bitcoinConsensusVerifyScriptWithAmount, er = dll.FindProc("bitcoinConsensusVerifyScriptWithAmount")
 	if er == nil {
 		bitcoinconsensus_version, er = dll.FindProc("bitcoinconsensus_version")
 	}

@@ -28,13 +28,13 @@ var (
 func consensus_verify_script(pkScr []byte, i int, tx *btc.Tx, verFlags uint32) bool {
 	txTo := tx.Serialize()
 
-	var pkscr_ptr, pkscr_len uintptr // default to 0/null
+	var pkscrPtr, pkscrLen uintptr // default to 0/null
 	if pkScr != nil {
-		pkscr_ptr = uintptr(unsafe.Pointer(&pkScr[0]))
-		pkscr_len = uintptr(len(pkScr))
+		pkscrPtr = uintptr(unsafe.Pointer(&pkScr[0]))
+		pkscrLen = uintptr(len(pkScr))
 	}
 	r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script.Addr(), 7,
-		pkscr_ptr, pkscr_len,
+		pkscrPtr, pkscrLen,
 		uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
 		uintptr(i), uintptr(verFlags), 0, 0, 0)
 

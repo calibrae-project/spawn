@@ -11,28 +11,30 @@ import (
 )
 
 const (
-	DllName  = "libbitcoinconsensus-0.dll"
-	ProcName = "bitcoinconsensus_verify_script_with_amount"
+	// DllName -
+	DllName = "libbitcoinconsensus-0.dll"
+	// ProcName -
+	ProcName = "bitcoinConsensusVerifyScriptWithAmount"
 )
 
 var (
-	bitcoinconsensus_verify_script_with_amount *syscall.Proc
+	bitcoinConsensusVerifyScriptWithAmount *syscall.Proc
 )
 
-func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) bool {
+func callConsensusLib(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags uint32) bool {
 	var tmp []byte
 	if len(pkScr) != 0 {
 		tmp = make([]byte, len(pkScr))
 		copy(tmp, pkScr)
 	}
 	txTo := tx.Serialize()
-	var pkscr_ptr, pkscr_len uintptr // default to 0/null
+	var pkscrPtr, pkscrLen uintptr // default to 0/null
 	if pkScr != nil {
-		pkscr_ptr = uintptr(unsafe.Pointer(&pkScr[0]))
-		pkscr_len = uintptr(len(pkScr))
+		pkscrPtr = uintptr(unsafe.Pointer(&pkScr[0]))
+		pkscrLen = uintptr(len(pkScr))
 	}
-	r1, _, _ := syscall.Syscall9(bitcoinconsensus_verify_script_with_amount.Addr(), 8,
-		pkscr_ptr, pkscr_len, uintptr(amount),
+	r1, _, _ := syscall.Syscall9(bitcoinConsensusVerifyScriptWithAmount.Addr(), 8,
+		pkscrPtr, pkscrLen, uintptr(amount),
 		uintptr(unsafe.Pointer(&txTo[0])), uintptr(len(txTo)),
 		uintptr(i), uintptr(verFlags), 0, 0)
 
@@ -46,7 +48,7 @@ func init() {
 		println("WARNING: Consensus verificatrion disabled")
 		return
 	}
-	bitcoinconsensus_verify_script_with_amount, er = dll.FindProc(ProcName)
+	bitcoinConsensusVerifyScriptWithAmount, er = dll.FindProc(ProcName)
 	if er != nil {
 		println(er.Error())
 		println("WARNING: Consensus verificatrion disabled")
@@ -70,8 +72,8 @@ func main() {
 	//script.DebugScr = true
 	//script.DebugError = true
 	res := script.VerifyTxScript(pkscript, amount, i, tx, flags)
-	if bitcoinconsensus_verify_script_with_amount != nil {
-		resc := call_consensus_lib(pkscript, amount, i, tx, flags)
+	if bitcoinConsensusVerifyScriptWithAmount != nil {
+		resc := callConsensusLib(pkscript, amount, i, tx, flags)
 		println(res, resc)
 	} else {
 		println(res)
