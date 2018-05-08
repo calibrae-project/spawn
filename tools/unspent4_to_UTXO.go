@@ -78,7 +78,7 @@ func loadLastBlock() {
 
 }
 
-func save_map(ndb map[qdb.KeyType][]byte) {
+func saveMap(ndb map[qdb.KeyType][]byte) {
 	var countDown, countDownFrom, perc int
 	of, er := os.Create("UTXO.db")
 	if er != nil {
@@ -135,6 +135,6 @@ func main() {
 	fmt.Println(len(ndb), "records loaded in", time.Now().Sub(sta).String())
 
 	sta = time.Now()
-	save_map(ndb)
+	saveMap(ndb)
 	fmt.Println("Saved in in", time.Now().Sub(sta).String())
 }
