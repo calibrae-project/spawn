@@ -6,14 +6,14 @@ import (
 )
 
 var (
-	valid_checksum = []string{
+	validChecksum = []string{
 		"A12UEL5L",
 		"an83characterlonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio1tt5tgs",
 		"abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw",
 		"11qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8247j",
 		"split1checkupstagehandshakeupstreamerranterredcaperred2y9e3w"}
 
-	invalid_checksum = []string{
+	invalidChecksum = []string{
 		" 1nwldj5",
 		"\x7f1axkwrx",
 		"an84characterslonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio1569pvx",
@@ -25,7 +25,7 @@ var (
 )
 
 func TestValidChecksum(t *testing.T) {
-	for _, s := range valid_checksum {
+	for _, s := range validChecksum {
 		hrp, data := Decode(s)
 		if data == nil || hrp == "" {
 			t.Error("Decode fails: ", s)
@@ -43,7 +43,7 @@ func TestValidChecksum(t *testing.T) {
 }
 
 func TestInvalidChecksum(t *testing.T) {
-	for _, s := range invalid_checksum {
+	for _, s := range invalidChecksum {
 		hrp, data := Decode(s)
 		if data != nil || hrp != "" {
 			t.Error("Decode succeeds on invalid string: ", s)

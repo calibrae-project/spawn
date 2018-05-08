@@ -6,18 +6,18 @@ import (
 	"testing"
 )
 
-type valid_address_data struct {
+type validAddressData struct {
 	address      string
 	scriptPubKey []byte
 }
 
-type invalid_address_data struct {
-	hrp            string
-	version        int
-	program_length int
+type invalidAddressData struct {
+	hrp           string
+	version       int
+	programLength int
 }
 
-var valid_address = []valid_address_data{
+var validAddress = []validAddressData{
 	{
 		address: "BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4",
 		scriptPubKey: []byte{
@@ -54,7 +54,7 @@ var valid_address = []valid_address_data{
 			0xe9, 0x1c, 0x6c, 0xe2, 0x4d, 0x16, 0x5d, 0xab, 0x93, 0xe8, 0x64,
 			0x33}}}
 
-var invalid_address = []string{
+var invalidAddress = []string{
 	"tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty",
 	"bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5",
 	"BC13W508D6QEJXTDG4Y5R3ZARVARY0C5XW7KN40WF2",
@@ -66,14 +66,14 @@ var invalid_address = []string{
 	"tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3pjxtptv",
 	"bc1gmk9yu"}
 
-var invalid_address_enc = []invalid_address_data{
-	{hrp: "BC", version: 0, program_length: 20},
-	{hrp: "bc", version: 0, program_length: 21},
-	{hrp: "bc", version: 17, program_length: 32},
-	{hrp: "bc", version: 1, program_length: 1},
-	{hrp: "bc", version: 16, program_length: 41}}
+var invalidAddressEnc = []invalidAddressData{
+	{hrp: "BC", version: 0, programLength: 20},
+	{hrp: "bc", version: 0, programLength: 21},
+	{hrp: "bc", version: 17, programLength: 32},
+	{hrp: "bc", version: 1, programLength: 1},
+	{hrp: "bc", version: 16, programLength: 41}}
 
-func segwit_scriptpubkey(witver int, witprog []byte) (scriptpubkey []byte) {
+func segwitScriptPubKey(witver int, witprog []byte) (scriptpubkey []byte) {
 	scriptpubkey = make([]byte, len(witprog)+2)
 	if witver != 0 {
 		scriptpubkey[0] = byte(0x50 + witver)
@@ -84,7 +84,7 @@ func segwit_scriptpubkey(witver int, witprog []byte) (scriptpubkey []byte) {
 }
 
 func TestValidAddress(t *testing.T) {
-	for _, rec := range valid_address {
+	for _, rec := range validAddress {
 		hrp := "bc"
 		witver, witprog := SegwitDecode(hrp, rec.address)
 		if witprog == nil {
@@ -95,7 +95,7 @@ func TestValidAddress(t *testing.T) {
 			t.Error("SegwitDecode fails: ", rec.address)
 			continue
 		}
-		scriptpubkey := segwit_scriptpubkey(witver, witprog)
+		scriptpubkey := segwitScriptPubKey(witver, witprog)
 		if !bytes.Equal(scriptpubkey, rec.scriptPubKey) {
 			t.Error("SegwitDecode produces wrong result: ", rec.address)
 			continue
@@ -112,7 +112,7 @@ func TestValidAddress(t *testing.T) {
 }
 
 func TestInvalidAddress(t *testing.T) {
-	for _, s := range invalid_address {
+	for _, s := range invalidAddress {
 		_, witprog := SegwitDecode("bc", s)
 		if witprog != nil {
 			t.Error("SegwitDecode succeeds on invalid address: ", s)
@@ -125,7 +125,7 @@ func TestInvalidAddress(t *testing.T) {
 }
 
 func TestInvalidAddressEnc(t *testing.T) {
-	for _, rec := range invalid_address_enc {
+	for _, rec := range invalidAddressEnc {
 		rebuild := SegwitEncode(rec.hrp, rec.version, []byte{0})
 		if rebuild != "" {
 			t.Error("SegwitEncode succeeds on invalid input: ", rebuild)

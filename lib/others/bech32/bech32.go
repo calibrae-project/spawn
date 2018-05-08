@@ -4,7 +4,7 @@ import (
 	"bytes"
 )
 
-func bech32_polymod_step(pre uint32) uint32 {
+func bech32PolymodStep(pre uint32) uint32 {
 	b := uint32(pre >> 25)
 	return ((pre & 0x1FFFFFF) << 5) ^
 		(-((b >> 0) & 1) & 0x3b6a57b2) ^
@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	charset_rev = [128]byte{
+	charsetRev = [128]byte{
 		99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
 		99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
 		99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
@@ -30,7 +30,7 @@ var (
 		1, 0, 3, 16, 11, 28, 12, 14, 6, 4, 2, 99, 99, 99, 99, 99}
 )
 
-// returns empty string on error
+// Encode - returns empty string on error
 func Encode(hrp string, data []byte) string {
 	var chk uint32 = 1
 	var i int
@@ -44,16 +44,16 @@ func Encode(hrp string, data []byte) string {
 		if ch >= 'A' && ch <= 'Z' {
 			return ""
 		}
-		chk = bech32_polymod_step(chk) ^ (uint32(ch) >> 5)
+		chk = bech32PolymodStep(chk) ^ (uint32(ch) >> 5)
 		i++
 	}
 	if i+7+len(data) > 90 {
 		return ""
 	}
-	chk = bech32_polymod_step(chk)
+	chk = bech32PolymodStep(chk)
 	for i := range hrp {
 		tmp := hrp[i]
-		chk = bech32_polymod_step(chk) ^ uint32(tmp&0x1f)
+		chk = bech32PolymodStep(chk) ^ uint32(tmp&0x1f)
 		output.WriteByte(tmp)
 	}
 	output.WriteByte('1')
@@ -62,11 +62,11 @@ func Encode(hrp string, data []byte) string {
 		if (data[i] >> 5) != 0 {
 			return ""
 		}
-		chk = bech32_polymod_step(chk) ^ uint32(data[i])
+		chk = bech32PolymodStep(chk) ^ uint32(data[i])
 		output.WriteByte(charset[data[i]])
 	}
 	for i = 0; i < 6; i++ {
-		chk = bech32_polymod_step(chk)
+		chk = bech32PolymodStep(chk)
 	}
 	chk ^= 1
 	for i = 0; i < 6; i++ {
@@ -75,69 +75,69 @@ func Encode(hrp string, data []byte) string {
 	return string(output.Bytes())
 }
 
-// returns ("", nil) on error
-func Decode(input string) (res_hrp string, res_data []byte) {
+// Decode -returns ("", nil) on error
+func Decode(input string) (resHrp string, resData []byte) {
 	var chk uint32 = 1
-	var i, data_len, hrp_len int
-	var have_lower, have_upper bool
+	var i, dataLen, hrpLen int
+	var haveLower, haveUpper bool
 	if len(input) < 8 || len(input) > 90 {
 		return
 	}
-	for data_len < len(input) && input[(len(input)-1)-data_len] != '1' {
-		data_len++
+	for dataLen < len(input) && input[(len(input)-1)-dataLen] != '1' {
+		dataLen++
 	}
-	hrp_len = len(input) - (1 + data_len)
-	if hrp_len < 1 || data_len < 6 {
+	hrpLen = len(input) - (1 + dataLen)
+	if hrpLen < 1 || dataLen < 6 {
 		return
 	}
-	data_len -= 6
-	hrp := make([]byte, hrp_len)
-	data := make([]byte, data_len)
-	for i = 0; i < hrp_len; i++ {
+	dataLen -= 6
+	hrp := make([]byte, hrpLen)
+	data := make([]byte, dataLen)
+	for i = 0; i < hrpLen; i++ {
 		ch := input[i]
 		if ch < 33 || ch > 126 {
 			return
 		}
 		if ch >= 'a' && ch <= 'z' {
-			have_lower = true
+			haveLower = true
 		} else if ch >= 'A' && ch <= 'Z' {
-			have_upper = true
+			haveUpper = true
 			ch = (ch - 'A') + 'a'
 		}
 		hrp[i] = ch
-		chk = bech32_polymod_step(chk) ^ uint32(ch>>5)
+		chk = bech32PolymodStep(chk) ^ uint32(ch>>5)
 	}
-	chk = bech32_polymod_step(chk)
-	for i = 0; i < hrp_len; i++ {
-		chk = bech32_polymod_step(chk) ^ uint32(input[i]&0x1f)
+	chk = bech32PolymodStep(chk)
+	for i = 0; i < hrpLen; i++ {
+		chk = bech32PolymodStep(chk) ^ uint32(input[i]&0x1f)
 	}
 	i++
 	for i < len(input) {
 		if (input[i] & 0x80) != 0 {
 			return
 		}
-		v := charset_rev[(input[i])]
+		v := charsetRev[(input[i])]
 		if v > 31 {
 			return
 		}
 		if input[i] >= 'a' && input[i] <= 'z' {
-			have_lower = true
+			haveLower = true
 		}
 		if input[i] >= 'A' && input[i] <= 'Z' {
-			have_upper = true
+			haveUpper = true
 		}
-		chk = bech32_polymod_step(chk) ^ uint32(v)
+		chk = bech32PolymodStep(chk) ^ uint32(v)
 		if i+6 < len(input) {
-			data[i-(1+hrp_len)] = v
+			data[i-(1+hrpLen)] = v
 		}
 		i++
 	}
-	if have_lower && have_upper {
+	if haveLower && haveUpper {
 		return
 	}
 	if chk == 1 {
-		res_hrp = string(hrp)
-		res_data = data
+		resHrp = string(hrp)
+		resData = data
 	}
 	return
 }
