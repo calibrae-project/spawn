@@ -1,28 +1,27 @@
 package main
 
 import (
-	"fmt"
-	"unsafe"
-	"syscall"
 	"encoding/hex"
+	"fmt"
+	"syscall"
+	"unsafe"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/script"
 )
 
 const (
-	DllName = "libbitcoinconsensus-0.dll"
+	DllName  = "libbitcoinconsensus-0.dll"
 	ProcName = "bitcoinconsensus_verify_script_with_amount"
 )
-
 
 var (
 	bitcoinconsensus_verify_script_with_amount *syscall.Proc
 )
 
-
 func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flags uint32) bool {
 	var tmp []byte
-	if len(pkScr)!=0 {
+	if len(pkScr) != 0 {
 		tmp = make([]byte, len(pkScr))
 		copy(tmp, pkScr)
 	}
@@ -40,24 +39,24 @@ func call_consensus_lib(pkScr []byte, amount uint64, i int, tx *btc.Tx, ver_flag
 	return r1 == 1
 }
 
-
 func init() {
 	dll, er := syscall.LoadDLL(DllName)
-	if er!=nil {
+	if er != nil {
 		println(er.Error())
 		println("WARNING: Consensus verificatrion disabled")
 		return
 	}
 	bitcoinconsensus_verify_script_with_amount, er = dll.FindProc(ProcName)
-	if er!=nil {
+	if er != nil {
 		println(er.Error())
 		println("WARNING: Consensus verificatrion disabled")
 		return
 	}
 	fmt.Println("Using", DllName, "to ensure consensus rules")
 }
+
 /*
-*/
+ */
 
 func main() {
 	pkscript, _ := hex.DecodeString("a9143d98738ba9013a53acc34686cd8e8b2ebc3612e587")
@@ -69,9 +68,9 @@ func main() {
 	flags := uint32(script.STANDARD_VERIFY_FLAGS) //& ^uint32(script.VER_MINDATA)
 	amount := uint64(1000000)
 	//script.DBG_SCR = true
-	//script.DBG_ERR = true
+	//script.DebugError = true
 	res := script.VerifyTxScript(pkscript, amount, i, tx, flags)
-	if bitcoinconsensus_verify_script_with_amount!=nil {
+	if bitcoinconsensus_verify_script_with_amount != nil {
 		resc := call_consensus_lib(pkscript, amount, i, tx, flags)
 		println(res, resc)
 	} else {

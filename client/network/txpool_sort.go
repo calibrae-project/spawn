@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -11,55 +11,55 @@ import (
 )
 
 var (
-	expireTxsNow  bool = true
+	expireTxsNow  = true
 	lastTxsExpire time.Time
 )
 
-// Return txs sorted by SPB, but with parents first
+// GetSortedMempool - Return txs sorted by SPB, but with parents first
 func GetSortedMempool() (result []*OneTxToSend) {
-	all_txs := make([]BIDX, len(TransactionsToSend))
+	allTxs := make([]BIDX, len(TransactionsToSend))
 	var idx int
-	const MIN_PKB = 200
-	for k, _ := range TransactionsToSend {
-		all_txs[idx] = k
+	const MinPkb = 200
+	for k := range TransactionsToSend {
+		allTxs[idx] = k
 		idx++
 	}
-	sort.Slice(all_txs, func(i, j int) bool {
-		rec_i := TransactionsToSend[all_txs[i]]
-		rec_j := TransactionsToSend[all_txs[j]]
-		rate_i := rec_i.Fee * uint64(rec_j.Weight())
-		rate_j := rec_j.Fee * uint64(rec_i.Weight())
-		if rate_i != rate_j {
-			return rate_i > rate_j
+	sort.Slice(allTxs, func(i, j int) bool {
+		recI := TransactionsToSend[allTxs[i]]
+		recJ := TransactionsToSend[allTxs[j]]
+		rateI := recI.Fee * uint64(recJ.Weight())
+		rateJ := recJ.Fee * uint64(recI.Weight())
+		if rateI != rateJ {
+			return rateI > rateJ
 		}
-		if rec_i.MemInputCnt != rec_j.MemInputCnt {
-			return rec_i.MemInputCnt < rec_j.MemInputCnt
+		if recI.MemInputCnt != recJ.MemInputCnt {
+			return recI.MemInputCnt < recJ.MemInputCnt
 		}
 		for x := 0; x < 32; x++ {
-			if rec_i.Hash.Hash[x] != rec_i.Hash.Hash[x] {
-				return rec_i.Hash.Hash[x] < rec_i.Hash.Hash[x]
+			if recI.Hash.Hash[x] != recI.Hash.Hash[x] {
+				return recI.Hash.Hash[x] < recI.Hash.Hash[x]
 			}
 		}
 		return false
 	})
 
 	// now put the childrer after the parents
-	result = make([]*OneTxToSend, len(all_txs))
-	already_in := make(map[BIDX]bool, len(all_txs))
-	parent_of := make(map[BIDX][]BIDX)
+	result = make([]*OneTxToSend, len(allTxs))
+	alreadyIn := make(map[BIDX]bool, len(allTxs))
+	parentOf := make(map[BIDX][]BIDX)
 
 	idx = 0
 
-	var missing_parents = func(txkey BIDX, is_any bool) (res []BIDX, yes bool) {
+	var missingParents = func(txkey BIDX, is_any bool) (res []BIDX, yes bool) {
 		tx := TransactionsToSend[txkey]
 		if tx.MemInputs == nil {
 			return
 		}
-		var cnt_ok int
+		var countOK int
 		for idx, inp := range tx.TxIn {
 			if tx.MemInputs[idx] {
 				txk := btc.BIdx(inp.Input.Hash[:])
-				if _, ok := already_in[txk]; ok {
+				if _, ok := alreadyIn[txk]; ok {
 				} else {
 					yes = true
 					if is_any {
@@ -68,8 +68,8 @@ func GetSortedMempool() (result []*OneTxToSend) {
 					res = append(res, txk)
 				}
 
-				cnt_ok++
-				if cnt_ok == tx.MemInputCnt {
+				countOK++
+				if countOK == tx.MemInputCnt {
 					return
 				}
 			}
@@ -77,37 +77,37 @@ func GetSortedMempool() (result []*OneTxToSend) {
 		return
 	}
 
-	var append_txs func(txkey BIDX)
-	append_txs = func(txkey BIDX) {
+	var appendTxs func(txkey BIDX)
+	appendTxs = func(txkey BIDX) {
 		result[idx] = TransactionsToSend[txkey]
 		idx++
-		already_in[txkey] = true
+		alreadyIn[txkey] = true
 
-		if toretry, ok := parent_of[txkey]; ok {
+		if toretry, ok := parentOf[txkey]; ok {
 			for _, kv := range toretry {
-				if _, in := already_in[kv]; in {
+				if _, in := alreadyIn[kv]; in {
 					continue
 				}
-				if _, yes := missing_parents(kv, true); !yes {
-					append_txs(kv)
+				if _, yes := missingParents(kv, true); !yes {
+					appendTxs(kv)
 				}
 			}
-			delete(parent_of, txkey)
+			delete(parentOf, txkey)
 		}
 	}
 
-	for _, txkey := range all_txs {
-		if missing, yes := missing_parents(txkey, false); yes {
+	for _, txkey := range allTxs {
+		if missing, yes := missingParents(txkey, false); yes {
 			for _, kv := range missing {
-				parent_of[kv] = append(parent_of[kv], txkey)
+				parentOf[kv] = append(parentOf[kv], txkey)
 			}
 			continue
 		}
-		append_txs(txkey)
+		appendTxs(txkey)
 	}
 
-	if idx != len(result) || idx != len(already_in) || len(parent_of) != 0 {
-		fmt.Println("Get sorted mempool idx:", idx, " result:", len(result), " alreadyin:", len(already_in), " parents:", len(parent_of))
+	if idx != len(result) || idx != len(alreadyIn) || len(parentOf) != 0 {
+		fmt.Println("Get sorted mempool idx:", idx, " result:", len(result), " alreadyin:", len(alreadyIn), " parents:", len(parentOf))
 		fmt.Println("DUPA!!!!!!!!!!")
 		result = result[:idx]
 	}
@@ -115,7 +115,7 @@ func GetSortedMempool() (result []*OneTxToSend) {
 	return
 }
 
-// This must be called with TxMutex locked
+// LimitPoolSize - This must be called with TxMutex locked
 func LimitPoolSize(maxlen uint64) {
 	ticklen := maxlen >> 5 // 1/32th of the max size = X
 
@@ -147,7 +147,7 @@ func LimitPoolSize(maxlen uint64) {
 	sorted := GetSortedMempoolNew()
 	idx := len(sorted)
 
-	old_size := TransactionsToSendSize
+	oldSize := TransactionsToSendSize
 
 	maxlen -= ticklen
 
@@ -166,15 +166,16 @@ func LimitPoolSize(maxlen uint64) {
 		common.SetMinFeePerKB(newspkb)
 
 		/*fmt.Println("Mempool purged in", time.Now().Sub(sta).String(), "-",
-		old_size-TransactionsToSendSize, "/", old_size, "bytes and", cnt, "/", len(sorted), "txs removed. SPKB:", newspkb)*/
+		oldSize-TransactionsToSendSize, "/", oldSize, "bytes and", cnt, "/", len(sorted), "txs removed. SPKB:", newspkb)*/
 		common.CounterMutex.Lock()
 		common.Counter["TxPoolSizeHigh"]++
 		common.Counter["TxPurgedSizCnt"] += uint64(cnt)
-		common.Counter["TxPurgedSizBts"] += old_size - TransactionsToSendSize
+		common.Counter["TxPurgedSizBts"] += oldSize - TransactionsToSendSize
 		common.CounterMutex.Unlock()
 	}
 }
 
+// GetSortedRejected -
 func GetSortedRejected() (sorted []*OneTxRejected) {
 	var idx int
 	sorted = make([]*OneTxRejected, len(TransactionsRejected))
@@ -189,14 +190,14 @@ func GetSortedRejected() (sorted []*OneTxRejected) {
 	return
 }
 
-// This must be called with TxMutex locked
+// LimitRejectedSize - This must be called with TxMutex locked
 func LimitRejectedSize() {
 	//ticklen := maxlen >> 5 // 1/32th of the max size = X
 	var idx int
 	var sorted []*OneTxRejected
 
-	old_cnt := len(TransactionsRejected)
-	old_size := TransactionsRejectedSize
+	oldCount := len(TransactionsRejected)
+	oldSize := TransactionsRejectedSize
 
 	maxlen, maxcnt := common.RejectedTxsLimits()
 
@@ -224,12 +225,12 @@ func LimitRejectedSize() {
 		}
 	}
 
-	if old_cnt > len(TransactionsRejected) {
+	if oldCount > len(TransactionsRejected) {
 		common.CounterMutex.Lock()
-		common.Counter["TxRejectedSizCnt"] += uint64(old_cnt - len(TransactionsRejected))
-		common.Counter["TxRejectedSizBts"] += old_size - TransactionsRejectedSize
+		common.Counter["TxRejectedSizCnt"] += uint64(oldCount - len(TransactionsRejected))
+		common.Counter["TxRejectedSizBts"] += oldSize - TransactionsRejectedSize
 		if common.GetBool(&common.CFG.TXPool.Debug) {
-			println("Removed", uint64(old_cnt-len(TransactionsRejected)), "txs and", old_size-TransactionsRejectedSize,
+			println("Removed", uint64(oldCount-len(TransactionsRejected)), "txs and", oldSize-TransactionsRejectedSize,
 				"bytes from the rejected poool")
 		}
 		common.CounterMutex.Unlock()
@@ -260,10 +261,10 @@ func MPC() (res bool) {
 }
 */
 
-// Verifies Mempool for consistency
+// MempoolCheck - Verifies Mempool for consistency
 // Make sure to call it with TxMutex Locked
 func MempoolCheck() (dupa bool) {
-	var spent_cnt int
+	var spentCount int
 	var totsize uint64
 
 	// First check if t2s.MemInputs fields are properly set
@@ -273,7 +274,7 @@ func MempoolCheck() (dupa bool) {
 		totsize += uint64(len(t2s.Raw))
 
 		for i, inp := range t2s.TxIn {
-			spent_cnt++
+			spentCount++
 
 			outk, ok := SpentOutputs[inp.Input.UIdx()]
 			if ok {
@@ -325,8 +326,8 @@ func MempoolCheck() (dupa bool) {
 		}
 	}
 
-	if spent_cnt != len(SpentOutputs) {
-		fmt.Println("SpentOutputs length mismatch", spent_cnt, len(SpentOutputs))
+	if spentCount != len(SpentOutputs) {
+		fmt.Println("SpentOutputs length mismatch", spentCount, len(SpentOutputs))
 		dupa = true
 	}
 
@@ -347,7 +348,7 @@ func MempoolCheck() (dupa bool) {
 	return
 }
 
-// Get all first level children of the tx
+// GetChildren - Get all first level children of the tx
 func (tx *OneTxToSend) GetChildren() (result []*OneTxToSend) {
 	var po btc.TxPrevOut
 	po.Hash = tx.Hash.Hash
@@ -363,23 +364,23 @@ func (tx *OneTxToSend) GetChildren() (result []*OneTxToSend) {
 
 	result = make([]*OneTxToSend, len(res))
 	var idx int
-	for ttx, _ := range res {
+	for ttx := range res {
 		result[idx] = ttx
 		idx++
 	}
 	return
 }
 
-// Get all the children (and all of their children...) of the tx
+// GetAllChildren - Get all the children (and all of their children...) of the tx
 // The result is sorted by the oldest parent
 func (tx *OneTxToSend) GetAllChildren() (result []*OneTxToSend) {
-	already_included := make(map[*OneTxToSend]bool)
+	alreadyIncluded := make(map[*OneTxToSend]bool)
 	var idx int
 	par := tx
 	for {
 		chlds := par.GetChildren()
 		for _, ch := range chlds {
-			if _, ok := already_included[ch]; !ok {
+			if _, ok := alreadyIncluded[ch]; !ok {
 				result = append(result, ch)
 			}
 		}
@@ -388,49 +389,53 @@ func (tx *OneTxToSend) GetAllChildren() (result []*OneTxToSend) {
 		}
 
 		par = result[idx]
-		already_included[par] = true
+		alreadyIncluded[par] = true
 		idx++
 	}
 	return
 }
 
-// Get all the parents of the given tx
+// GetAllParents - Get all the parents of the given tx
 // The result is sorted by the oldest parent
 func (tx *OneTxToSend) GetAllParents() (result []*OneTxToSend) {
-	already_in := make(map[*OneTxToSend]bool)
-	already_in[tx] = true
-	var do_one func(*OneTxToSend)
-	do_one = func(tx *OneTxToSend) {
+	alreadyIn := make(map[*OneTxToSend]bool)
+	alreadyIn[tx] = true
+	var doOne func(*OneTxToSend)
+	doOne = func(tx *OneTxToSend) {
 		if tx.MemInputCnt > 0 {
 			for idx := range tx.TxIn {
 				if tx.MemInputs[idx] {
-					do_one(TransactionsToSend[btc.BIdx(tx.TxIn[idx].Input.Hash[:])])
+					doOne(TransactionsToSend[btc.BIdx(tx.TxIn[idx].Input.Hash[:])])
 				}
 			}
 		}
-		if _, ok := already_in[tx]; !ok {
+		if _, ok := alreadyIn[tx]; !ok {
 			result = append(result, tx)
-			already_in[tx] = true
+			alreadyIn[tx] = true
 		}
 	}
-	do_one(tx)
+	doOne(tx)
 	return
 }
 
+// SPW -
 func (tx *OneTxToSend) SPW() float64 {
 	return float64(tx.Fee) / float64(tx.Weight())
 }
 
+// SPB -
 func (tx *OneTxToSend) SPB() float64 {
 	return tx.SPW() * 4.0
 }
 
+// OneTxsPackage -
 type OneTxsPackage struct {
 	Txs    []*OneTxToSend
 	Weight int
 	Fee    uint64
 }
 
+// AnyIn -
 func (pk *OneTxsPackage) AnyIn(list map[*OneTxToSend]bool) (ok bool) {
 	for _, par := range pk.Txs {
 		if _, ok = list[par]; ok {
@@ -440,6 +445,7 @@ func (pk *OneTxsPackage) AnyIn(list map[*OneTxToSend]bool) (ok bool) {
 	return
 }
 
+// LookForPackages -
 func LookForPackages(txs []*OneTxToSend) (result []*OneTxsPackage) {
 	for _, tx := range txs {
 		var pkg OneTxsPackage
@@ -459,91 +465,92 @@ func LookForPackages(txs []*OneTxToSend) (result []*OneTxsPackage) {
 	return
 }
 
-// It is like GetSortedMempool(), but one uses Child-Pays-For-Parent algo
+// GetSortedMempoolNew - It is like GetSortedMempool(), but one uses Child-Pays-For-Parent algo
 func GetSortedMempoolNew() (result []*OneTxToSend) {
 	txs := GetSortedMempool()
 	pkgs := LookForPackages(txs)
 
 	result = make([]*OneTxToSend, len(txs))
-	var txs_idx, pks_idx, res_idx int
-	already_in := make(map[*OneTxToSend]bool, len(txs))
-	for txs_idx < len(txs) {
-		tx := txs[txs_idx]
+	var txsIndex, pksIndex, resIndex int
+	alreadyIn := make(map[*OneTxToSend]bool, len(txs))
+	for txsIndex < len(txs) {
+		tx := txs[txsIndex]
 
-		if pks_idx < len(pkgs) {
-			pk := pkgs[pks_idx]
+		if pksIndex < len(pkgs) {
+			pk := pkgs[pksIndex]
 			if pk.Fee*uint64(tx.Weight()) > tx.Fee*uint64(pk.Weight) {
-				pks_idx++
-				if pk.AnyIn(already_in) {
+				pksIndex++
+				if pk.AnyIn(alreadyIn) {
 					continue
 				}
 				// all package's txs new: incude them all
-				copy(result[res_idx:], pk.Txs)
-				res_idx += len(pk.Txs)
+				copy(result[resIndex:], pk.Txs)
+				resIndex += len(pk.Txs)
 				for _, _t := range pk.Txs {
-					already_in[_t] = true
+					alreadyIn[_t] = true
 				}
 				continue
 			}
 		}
 
-		txs_idx++
-		if _, ok := already_in[tx]; ok {
+		txsIndex++
+		if _, ok := alreadyIn[tx]; ok {
 			continue
 		}
-		result[res_idx] = tx
-		already_in[tx] = true
-		res_idx++
+		result[resIndex] = tx
+		alreadyIn[tx] = true
+		resIndex++
 	}
-	//println("All sorted.  res_idx:", res_idx, "  txs:", len(txs))
+	//println("All sorted.  resIndex:", resIndex, "  txs:", len(txs))
 	return
 }
 
-// Only take tx/package weight and the fee
+// GetMempoolFees - Only take tx/package weight and the fee
 func GetMempoolFees(maxweight uint64) (result [][2]uint64) {
 	txs := GetSortedMempool()
 	pkgs := LookForPackages(txs)
 
-	var txs_idx, pks_idx, res_idx int
+	var txsIndex, pksIndex, resIndex int
 	var weightsofar uint64
 	result = make([][2]uint64, len(txs))
-	already_in := make(map[*OneTxToSend]bool, len(txs))
-	for txs_idx < len(txs) && weightsofar < maxweight {
-		tx := txs[txs_idx]
+	alreadyIn := make(map[*OneTxToSend]bool, len(txs))
+	for txsIndex < len(txs) && weightsofar < maxweight {
+		tx := txs[txsIndex]
 
-		if pks_idx < len(pkgs) {
-			pk := pkgs[pks_idx]
+		if pksIndex < len(pkgs) {
+			pk := pkgs[pksIndex]
 			if pk.Fee*uint64(tx.Weight()) > tx.Fee*uint64(pk.Weight) {
-				pks_idx++
-				if pk.AnyIn(already_in) {
+				pksIndex++
+				if pk.AnyIn(alreadyIn) {
 					continue
 				}
 
-				result[res_idx] = [2]uint64{uint64(pk.Weight), pk.Fee}
-				res_idx++
+				result[resIndex] = [2]uint64{uint64(pk.Weight), pk.Fee}
+				resIndex++
 				weightsofar += uint64(pk.Weight)
 
 				for _, _t := range pk.Txs {
-					already_in[_t] = true
+					alreadyIn[_t] = true
 				}
 				continue
 			}
 		}
 
-		txs_idx++
-		if _, ok := already_in[tx]; ok {
+		txsIndex++
+		if _, ok := alreadyIn[tx]; ok {
 			continue
 		}
-		result[res_idx] = [2]uint64{uint64(tx.Weight()), tx.Fee}
-		res_idx++
+		result[resIndex] = [2]uint64{uint64(tx.Weight()), tx.Fee}
+		resIndex++
 		weightsofar += uint64(tx.Weight())
 
-		already_in[tx] = true
+		alreadyIn[tx] = true
 	}
-	result = result[:res_idx]
+	result = result[:resIndex]
 	return
 }
 
+// ExpireTxs -
 func ExpireTxs() {
 	lastTxsExpire = time.Now()
 	expireTxsNow = false

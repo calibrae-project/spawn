@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -10,8 +10,9 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-func (rec *OneTxToSend) IIdx(key uint64) int {
-	for i, o := range rec.TxIn {
+// IIdx -
+func (tx *OneTxToSend) IIdx(key uint64) int {
+	for i, o := range tx.TxIn {
 		if o.Input.UIdx() == key {
 			return i
 		}
@@ -19,7 +20,7 @@ func (rec *OneTxToSend) IIdx(key uint64) int {
 	return -1
 }
 
-// Clear MemInput flag of all the children (used when a tx is mined)
+// UnMarkChildrenForMem - Clear MemInput flag of all the children (used when a tx is mined)
 func (tx *OneTxToSend) UnMarkChildrenForMem() {
 	// Go through all the tx's outputs and unmark MemInputs in txs that have been spending it
 	var po btc.TxPrevOut
@@ -55,7 +56,7 @@ func (tx *OneTxToSend) UnMarkChildrenForMem() {
 }
 
 // This function is called for each tx mined in a new block
-func tx_mined(tx *btc.Tx) (wtg *OneWaitingList) {
+func txMined(tx *btc.Tx) (wtg *OneWaitingList) {
 	h := tx.Hash
 	if rec, ok := TransactionsToSend[h.BIdx()]; ok {
 		common.CountSafe("TxMinedToSend")
@@ -100,24 +101,24 @@ func tx_mined(tx *btc.Tx) (wtg *OneWaitingList) {
 	return
 }
 
-// Removes all the block's tx from the mempool
+// BlockMined - Removes all the block's tx from the mempool
 func BlockMined(bl *btc.Block) {
 	wtgs := make([]*OneWaitingList, len(bl.Txs)-1)
-	var wtg_cnt int
+	var wtgCount int
 	TxMutex.Lock()
 	for i := 1; i < len(bl.Txs); i++ {
-		wtg := tx_mined(bl.Txs[i])
+		wtg := txMined(bl.Txs[i])
 		if wtg != nil {
-			wtgs[wtg_cnt] = wtg
-			wtg_cnt++
+			wtgs[wtgCount] = wtg
+			wtgCount++
 		}
 	}
 	TxMutex.Unlock()
 
 	// Try to redo waiting txs
-	if wtg_cnt > 0 {
-		common.CountSafeAdd("TxMinedGotInput", uint64(wtg_cnt))
-		for _, wtg := range wtgs[:wtg_cnt] {
+	if wtgCount > 0 {
+		common.CountSafeAdd("TxMinedGotInput", uint64(wtgCount))
+		for _, wtg := range wtgs[:wtgCount] {
 			RetryWaitingForInput(wtg)
 		}
 	}
@@ -125,6 +126,7 @@ func BlockMined(bl *btc.Block) {
 	expireTxsNow = true
 }
 
+// SendGetMP -
 func (c *OneConnection) SendGetMP() error {
 	TxMutex.Lock()
 	tcnt := len(TransactionsToSend) + len(TransactionsRejected)
@@ -135,16 +137,17 @@ func (c *OneConnection) SendGetMP() error {
 	}
 	b := new(bytes.Buffer)
 	btc.WriteVlen(b, uint64(tcnt))
-	for k, _ := range TransactionsToSend {
+	for k := range TransactionsToSend {
 		b.Write(k[:])
 	}
-	for k, _ := range TransactionsRejected {
+	for k := range TransactionsRejected {
 		b.Write(k[:])
 	}
 	TxMutex.Unlock()
 	return c.SendRawMsg("getmp", b.Bytes())
 }
 
+// ProcessGetMP -
 func (c *OneConnection) ProcessGetMP(pl []byte) {
 	br := bytes.NewBuffer(pl)
 
@@ -155,7 +158,7 @@ func (c *OneConnection) ProcessGetMP(pl []byte) {
 		return
 	}
 
-	has_this_one := make(map[BIDX]bool, cnt)
+	hasThisOne := make(map[BIDX]bool, cnt)
 	for i := 0; i < int(cnt); i++ {
 		var idx BIDX
 		if n, _ := br.Read(idx[:]); n != len(idx) {
@@ -163,10 +166,10 @@ func (c *OneConnection) ProcessGetMP(pl []byte) {
 			c.DoS("GetMPError2")
 			return
 		}
-		has_this_one[idx] = true
+		hasThisOne[idx] = true
 	}
 
-	var data_sent_so_far int
+	var dataSentSoFar int
 	var redo [1]byte
 
 	TxMutex.Lock()
@@ -175,9 +178,9 @@ func (c *OneConnection) ProcessGetMP(pl []byte) {
 			redo[0] = 1
 			break
 		}
-		if !has_this_one[k] {
+		if !hasThisOne[k] {
 			c.SendRawMsg("tx", v.Raw)
-			data_sent_so_far += 24 + len(v.Raw)
+			dataSentSoFar += 24 + len(v.Raw)
 		}
 	}
 	TxMutex.Unlock()

@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -16,21 +16,24 @@ import (
 )
 
 var (
-	END_MARKER = []byte("END_OF_FILE")
+	// EndMarker -
+	EndMarker = []byte("END_OF_FILE")
 )
 
 const (
-	MEMPOOL_FILE_NAME2 = "mempool.dmp"
+	// MempoolFileName2 -
+	MempoolFileName2 = "mempool.dmp"
 )
 
-func bool2byte(v bool) byte {
+func bool2byte(v bool) (b byte) {
 	if v {
-		return 1
-	} else {
-		return 0
+		b = 1
 	}
+	return
+
 }
 
+// WriteBytes -
 func (t2s *OneTxToSend) WriteBytes(wr io.Writer) {
 	btc.WriteVlen(wr, uint64(len(t2s.Raw)))
 	wr.Write(t2s.Raw)
@@ -49,19 +52,20 @@ func (t2s *OneTxToSend) WriteBytes(wr io.Writer) {
 	wr.Write([]byte{bool2byte(t2s.Local), t2s.Blocked, bool2byte(t2s.MemInputs != nil), bool2byte(t2s.Final)})
 }
 
+// MempoolSave -
 func MempoolSave(force bool) {
 	if !force && !common.CFG.TXPool.SaveOnDisk {
-		os.Remove(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
+		os.Remove(common.SpawnHomeDir + MempoolFileName2)
 		return
 	}
 
-	f, er := os.Create(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
+	f, er := os.Create(common.SpawnHomeDir + MempoolFileName2)
 	if er != nil {
 		println(er.Error())
 		return
 	}
 
-	fmt.Println("Saving", MEMPOOL_FILE_NAME2)
+	fmt.Println("Saving", MempoolFileName2)
 	wr := bufio.NewWriter(f)
 
 	wr.Write(common.Last.Block.BlockHash.Hash[:])
@@ -77,11 +81,12 @@ func MempoolSave(force bool) {
 		binary.Write(wr, binary.LittleEndian, v)
 	}
 
-	wr.Write(END_MARKER[:])
+	wr.Write(EndMarker[:])
 	wr.Flush()
 	f.Close()
 }
 
+// MempoolLoad2 -
 func MempoolLoad2() bool {
 	var t2s *OneTxToSend
 	var totcnt, le uint64
@@ -91,7 +96,7 @@ func MempoolLoad2() bool {
 	var i int
 	var cnt1, cnt2 uint
 
-	f, er := os.Open(common.SpawnHomeDir + MEMPOOL_FILE_NAME2)
+	f, er := os.Open(common.SpawnHomeDir + MempoolFileName2)
 	if er != nil {
 		fmt.Println("MempoolLoad:", er.Error())
 		return false
@@ -103,7 +108,7 @@ func MempoolLoad2() bool {
 		goto fatal_error
 	}
 	if !bytes.Equal(tmp[:32], common.Last.Block.BlockHash.Hash[:]) {
-		er = errors.New(MEMPOOL_FILE_NAME2 + " is for different last block hash (try to load it with 'mpl' command)")
+		er = errors.New(MempoolFileName2 + " is for different last block hash (try to load it with 'mpl' command)")
 		goto fatal_error
 	}
 
@@ -128,7 +133,7 @@ func MempoolLoad2() bool {
 
 		t2s.Tx, i = btc.NewTx(raw)
 		if t2s.Tx == nil || i != len(raw) {
-			er = errors.New(fmt.Sprint("Error parsing tx from ", MEMPOOL_FILE_NAME2, " at idx", len(TransactionsToSend)))
+			er = errors.New(fmt.Sprint("Error parsing tx from ", MempoolFileName2, " at idx", len(TransactionsToSend)))
 			goto fatal_error
 		}
 		t2s.Tx.SetHash(raw)
@@ -210,11 +215,11 @@ func MempoolLoad2() bool {
 		SpentOutputs[le] = bi
 	}
 
-	if er = btc.ReadAll(rd, tmp[:len(END_MARKER)]); er != nil {
+	if er = btc.ReadAll(rd, tmp[:len(EndMarker)]); er != nil {
 		goto fatal_error
 	}
-	if !bytes.Equal(tmp[:len(END_MARKER)], END_MARKER) {
-		er = errors.New(MEMPOOL_FILE_NAME2 + " has marker missing")
+	if !bytes.Equal(tmp[:len(EndMarker)], EndMarker) {
+		er = errors.New(MempoolFileName2 + " has marker missing")
 		goto fatal_error
 	}
 
@@ -236,13 +241,13 @@ func MempoolLoad2() bool {
 		}
 	}
 
-	fmt.Println(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MEMPOOL_FILE_NAME2)
+	fmt.Println(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
 	fmt.Println(cnt1, "transactions use", cnt2, "memory inputs")
 
 	return true
 
 fatal_error:
-	fmt.Println("Error loading", MEMPOOL_FILE_NAME2, ":", er.Error())
+	fmt.Println("Error loading", MempoolFileName2, ":", er.Error())
 	TransactionsToSend = make(map[BIDX]*OneTxToSend)
 	TransactionsToSendSize = 0
 	TransactionsToSendWeight = 0
@@ -250,7 +255,7 @@ fatal_error:
 	return false
 }
 
-// this one is only called from TextUI
+// MempoolLoadNew - this one is only called from TextUI
 func MempoolLoadNew(fname string, abort *bool) bool {
 	var ntx *TxRcvd
 	var idx, totcnt, le, tmp64, oneperc, cntdwn, perc uint64

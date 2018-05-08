@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -15,8 +15,10 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
-var IgnoreExternalIpFrom = []string{}
+// IgnoreExternalIPFrom -
+var IgnoreExternalIPFrom = []string{}
 
+// SendVersion -
 func (c *OneConnection) SendVersion() {
 	b := bytes.NewBuffer([]byte{})
 
@@ -46,10 +48,12 @@ func (c *OneConnection) SendVersion() {
 	c.SendRawMsg("version", b.Bytes())
 }
 
+// IsSpawn -
 func (c *OneConnection) IsSpawn() bool {
 	return strings.HasPrefix(c.Node.Agent, "/Spawn:")
 }
 
+// HandleVersion -
 func (c *OneConnection) HandleVersion(pl []byte) error {
 	if len(pl) >= 80 /*Up to, includiong, the nonce */ {
 		if bytes.Equal(pl[72:80], nonce[:]) {
@@ -89,7 +93,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		c.Node.Timestamp = binary.LittleEndian.Uint64(pl[12:20])
 		c.Node.ReportedIPv4 = binary.BigEndian.Uint32(pl[40:44])
 
-		use_this_ip := sys.ValidIp4(pl[40:44])
+		useThisIP := sys.ValidIp4(pl[40:44])
 
 		if len(pl) >= 86 {
 			le, of := btc.VLen(pl[80:])
@@ -109,7 +113,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		c.X.VersionReceived = true
 		c.Mutex.Unlock()
 
-		if use_this_ip {
+		if useThisIP {
 			if bytes.Equal(pl[40:44], c.PeerAddr.Ip4[:]) {
 				if common.FLAG.Log {
 					ExternalIPmutex.Lock()
@@ -123,7 +127,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					ExternalIPmutex.Unlock()
 				}
 				common.CountSafe("IgnoreExtIP-O")
-				use_this_ip = false
+				useThisIP = false
 			} else if len(pl) >= 86 && binary.BigEndian.Uint32(pl[66:70]) != 0 &&
 				!bytes.Equal(pl[66:70], c.PeerAddr.Ip4[:]) {
 				if common.FLAG.Log {
@@ -138,27 +142,27 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					ExternalIPmutex.Unlock()
 				}
 				common.CountSafe("IgnoreExtIP-B")
-				use_this_ip = false
+				useThisIP = false
 			}
 		}
 
-		if use_this_ip {
+		if useThisIP {
 			ExternalIPmutex.Lock()
 			if _, known := ExternalIP4[c.Node.ReportedIPv4]; !known { // New IP
-				use_this_ip = true
-				for x, v := range IgnoreExternalIpFrom {
+				useThisIP = true
+				for x, v := range IgnoreExternalIPFrom {
 					if c.Node.Agent == v {
-						use_this_ip = false
+						useThisIP = false
 						common.CountSafe(fmt.Sprint("IgnoreExtIP", x))
 						break
 					}
 				}
-				if use_this_ip && common.IsListenTCP() {
+				if useThisIP && common.IsListenTCP() {
 					fmt.Printf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
 						pl[40], pl[41], pl[42], pl[43], c.ConnID)
 				}
 			}
-			if use_this_ip {
+			if useThisIP {
 				ExternalIP4[c.Node.ReportedIPv4] = [2]uint{ExternalIP4[c.Node.ReportedIPv4][0] + 1,
 					uint(time.Now().Unix())}
 			}

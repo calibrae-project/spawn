@@ -27,7 +27,7 @@ func TestScritps(t *testing.T) {
 	var str interface{}
 	var vecs []*oneTestVector
 
-	DBG_ERR = false
+	DebugError = false
 	dat, er := ioutil.ReadFile("../test/script_tests.json")
 	if er != nil {
 		t.Error(er.Error())
@@ -127,7 +127,7 @@ func TestScritps(t *testing.T) {
 		/*
 			if tot==114400 {
 				DBG_SCR = true
-				DBG_ERR = true
+				DebugError = true
 			}*/
 
 		flags := v.flags

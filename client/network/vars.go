@@ -1,4 +1,4 @@
-//Package network
+// Package network -
 package network
 
 import (
@@ -10,6 +10,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
+// OneReceivedBlock -
 type OneReceivedBlock struct {
 	TmStart        time.Time // when we receioved message letting us about this block
 	TmPreproc      time.Time // when we added this block to BlocksToGet
@@ -23,6 +24,7 @@ type OneReceivedBlock struct {
 	DoInvs         bool
 }
 
+// BlockRcvd -
 type BlockRcvd struct {
 	Conn *OneConnection
 	*btc.Block
@@ -31,12 +33,14 @@ type BlockRcvd struct {
 	*btc.BlockExtraInfo
 }
 
+// TxRcvd -
 type TxRcvd struct {
 	conn *OneConnection
 	*btc.Tx
 	trusted, local bool
 }
 
+// OneBlockToGet -
 type OneBlockToGet struct {
 	Started time.Time
 	*btc.Block
@@ -47,21 +51,31 @@ type OneBlockToGet struct {
 }
 
 var (
-	ReceivedBlocks           map[BIDX]*OneReceivedBlock = make(map[BIDX]*OneReceivedBlock, 400e3)
-	BlocksToGet              map[BIDX]*OneBlockToGet    = make(map[BIDX]*OneBlockToGet)
-	IndexToBlocksToGet       map[uint32][]BIDX          = make(map[uint32][]BIDX)
+	// ReceivedBlocks -
+	ReceivedBlocks = make(map[BIDX]*OneReceivedBlock, 400e3)
+	// BlocksToGet -
+	BlocksToGet = make(map[BIDX]*OneBlockToGet)
+	// IndexToBlocksToGet -
+	IndexToBlocksToGet = make(map[uint32][]BIDX)
+	// LowestIndexToBlocksToGet -
 	LowestIndexToBlocksToGet uint32
-	LastCommitedHeader       *chain.BlockTreeNode
-	MutexRcv                 sync.Mutex
-
-	NetBlocks chan *BlockRcvd = make(chan *BlockRcvd, MaxBlocksForwardCount+10)
-	NetTxs    chan *TxRcvd    = make(chan *TxRcvd, 2000)
-
-	CachedBlocks    []*BlockRcvd
+	// LastCommitedHeader -
+	LastCommitedHeader *chain.BlockTreeNode
+	// MutexRcv -
+	MutexRcv sync.Mutex
+	// NetBlocks -
+	NetBlocks = make(chan *BlockRcvd, MaxBlocksForwardCount+10)
+	// NetTxs -
+	NetTxs = make(chan *TxRcvd, 2000)
+	// CachedBlocks -
+	CachedBlocks []*BlockRcvd
+	// CachedBlocksLen -
 	CachedBlocksLen sys.SyncInt
-	DiscardedBlocks map[BIDX]bool = make(map[BIDX]bool)
+	// DiscardedBlocks -
+	DiscardedBlocks = make(map[BIDX]bool)
 )
 
+// AddB2G -
 func AddB2G(b2g *OneBlockToGet) {
 	bidx := b2g.Block.Hash.BIdx()
 	BlocksToGet[bidx] = b2g
@@ -81,6 +95,7 @@ func AddB2G(b2g *OneBlockToGet) {
 	*/
 }
 
+// DelB2G -
 func DelB2G(idx BIDX) {
 	b2g := BlocksToGet[idx]
 	if b2g == nil {
