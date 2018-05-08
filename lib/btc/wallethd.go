@@ -16,9 +16,13 @@ import (
 )
 
 const (
-	Public      = uint32(0x0488B21E)
-	Private     = uint32(0x0488ADE4)
-	TestPublic  = uint32(0x043587CF)
+	// Public -
+	Public = uint32(0x0488B21E)
+	// Private -
+	Private = uint32(0x0488ADE4)
+	// TestPublic -
+	TestPublic = uint32(0x043587CF)
+	// TestPrivate -
 	TestPrivate = uint32(0x04358394)
 )
 
@@ -122,10 +126,9 @@ func (w *HDWallet) Pub() *HDWallet {
 		r := new(HDWallet)
 		*r = *w
 		return r
-	} else {
-		return &HDWallet{Prefix: Public, Depth: w.Depth, Checksum: w.Checksum,
-			I: w.I, ChCode: w.ChCode, Key: PublicFromPrivate(w.Key[1:], true)}
 	}
+	return &HDWallet{Prefix: Public, Depth: w.Depth, Checksum: w.Checksum,
+		I: w.I, ChCode: w.ChCode, Key: PublicFromPrivate(w.Key[1:], true)}
 }
 
 // StringChild returns the ith base58-encoded extended key of a base58-encoded extended key.
@@ -133,13 +136,12 @@ func StringChild(data string, i uint32) string {
 	w, err := StringWallet(data)
 	if err != nil {
 		return ""
-	} else {
-		w = w.Child(i)
-		return w.String()
 	}
+	w = w.Child(i)
+	return w.String()
 }
 
-//StringToAddress returns the Bitcoin address of a base58-encoded extended key.
+//StringAddress returns the Bitcoin address of a base58-encoded extended key.
 func StringAddress(data string) (string, error) {
 	w, err := StringWallet(data)
 	if err != nil {
@@ -149,7 +151,7 @@ func StringAddress(data string) (string, error) {
 	return NewAddrFromPubkey(w.Key, AddrVerPubkey(w.Prefix == TestPublic || w.Prefix == TestPrivate)).String(), nil
 }
 
-// PublicAddress returns base58 encoded public address of the given HD key
+// PubAddr returns base58 encoded public address of the given HD key
 func (w *HDWallet) PubAddr() *Addr {
 	var pub []byte
 	if w.Prefix == Private || w.Prefix == TestPrivate {
@@ -180,7 +182,7 @@ func StringCheck(key string) error {
 	return ByteCheck(DecodeBase58(key))
 }
 
-// Verifies consistency of a serialized HD address
+// ByteCheck Verifies consistency of a serialized HD address
 func ByteCheck(dbin []byte) error {
 	// check proper length
 	if len(dbin) != 82 {
@@ -204,19 +206,17 @@ func ByteCheck(dbin []byte) error {
 	return nil
 }
 
-// Returns first 32 bits, as expected for sepcific HD address
+// HDKeyPrefix Returns first 32 bits, as expected for sepcific HD address
 func HDKeyPrefix(private, testnet bool) uint32 {
 	if private {
 		if testnet {
 			return TestPrivate
-		} else {
-			return Private
 		}
-	} else {
-		if testnet {
-			return TestPublic
-		} else {
-			return Public
-		}
+		return Private
 	}
+	if testnet {
+		return TestPublic
+	}
+	return Public
+
 }

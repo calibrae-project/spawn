@@ -8,9 +8,10 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
-const LTC_ADDR_VERSION = 48
+// LTCAddrVersion -
+const LTCAddrVersion = 48
 
-// LTC signing uses different seed string
+// HashFromMessage - LTC signing uses different seed string
 func HashFromMessage(msg []byte, out []byte) {
 	const MessageMagic = "Litecoin Signed Message:\n"
 	b := new(bytes.Buffer)
@@ -21,21 +22,24 @@ func HashFromMessage(msg []byte, out []byte) {
 	btc.ShaHash(b.Bytes(), out)
 }
 
+// AddrVerPubkey -
 func AddrVerPubkey(testnet bool) byte {
 	if !testnet {
-		return LTC_ADDR_VERSION
+		return LTCAddrVersion
 	}
 	return btc.AddrVerPubkey(testnet)
 }
 
+// NewAddrFromPkScript -
 func NewAddrFromPkScript(scr []byte, testnet bool) (ad *btc.Addr) {
 	ad = btc.NewAddrFromPkScript(scr, testnet)
 	if ad != nil && ad.Version == btc.AddrVerPubkey(false) {
-		ad.Version = LTC_ADDR_VERSION
+		ad.Version = LTCAddrVersion
 	}
 	return
 }
 
+// GetUnspent -
 func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 
@@ -48,7 +52,7 @@ func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	return
 }
 
-// Download testnet's raw transaction from a web server
+// GetTxFromWeb - Download testnet's raw transaction from a web server
 func GetTxFromWeb(txid *btc.Uint256) (raw []byte) {
 	raw = utils.GetTxFromBlockcypher(txid, "ltc")
 	if raw != nil && txid.Equal(btc.NewSha2Hash(raw)) {

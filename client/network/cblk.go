@@ -212,8 +212,8 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		b2g.SendInvs = true
 	}
 
-	if common.BlockChain.Consensus.Enforce_SEGWIT != 0 && c.Node.SendCmpctVer < 2 {
-		if b2g.Block.Height >= common.BlockChain.Consensus.Enforce_SEGWIT {
+	if common.BlockChain.Consensus.EnforceSegwit != 0 && c.Node.SendCmpctVer < 2 {
+		if b2g.Block.Height >= common.BlockChain.Consensus.EnforceSegwit {
 			common.CountSafe("CmpctBlockIgnore")
 			println("Ignore compact block", b2g.Block.Height, "from non-segwit node", c.ConnID)
 			if (c.Node.Services & ServiceSegwit) != 0 {

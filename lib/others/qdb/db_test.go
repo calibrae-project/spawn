@@ -1,18 +1,18 @@
 package qdb
 
 import (
-	"os"
-	"fmt"
-	"time"
 	"bytes"
-	"testing"
-	mr "math/rand"
 	cr "crypto/rand"
 	"encoding/hex"
+	"fmt"
+	mr "math/rand"
+	"os"
+	"testing"
+	"time"
 )
 
 const (
-	dbname = "test"
+	dbname   = "test"
 	oneRound = 10000
 	delRound = 1000
 )
@@ -22,11 +22,9 @@ func getRecSize() int {
 	//return mr.Intn(4096)
 }
 
-
 func kim(v []byte) bool {
-	return (mr.Int63()&1)==0
+	return (mr.Int63() & 1) == 0
 }
-
 
 func dumpidx(db *DB) {
 	println("index")
@@ -34,7 +32,6 @@ func dumpidx(db *DB) {
 		println(k2s(k), v.datpos, v.datlen)
 	}
 }
-
 
 func TestDatabase(t *testing.T) {
 	var key KeyType
@@ -52,7 +49,7 @@ func TestDatabase(t *testing.T) {
 	}
 
 	// Add oneRound random records
-	for i:=0; i<oneRound; i++ {
+	for i := 0; i < oneRound; i++ {
 		vlen := getRecSize()
 		val = make([]byte, vlen)
 		key = KeyType(mr.Int63())
@@ -67,7 +64,7 @@ func TestDatabase(t *testing.T) {
 		t.Error("Cannot reopen db")
 		return
 	}
-	if db.Count()!=oneRound {
+	if db.Count() != oneRound {
 		t.Error("Bad count", db.Count(), oneRound)
 		return
 	}
@@ -97,7 +94,7 @@ func TestDatabase(t *testing.T) {
 		t.Error("Wrong number of records", db.Count())
 	}
 	db.NoSync()
-	for i:=0; i<oneRound; i++ {
+	for i := 0; i < oneRound; i++ {
 		vlen := getRecSize()
 		val = make([]byte, vlen)
 		key = KeyType(mr.Int63())
@@ -147,13 +144,12 @@ func TestDatabase(t *testing.T) {
 	}
 
 	var keys []KeyType
-	db.Browse(func (key KeyType, v []byte) uint32 {
+	db.Browse(func(key KeyType, v []byte) uint32 {
 		keys = append(keys, key)
-		if len(keys)<delRound {
+		if len(keys) < delRound {
 			return 0
-		} else {
-			return BR_ABORT
 		}
+		return BrAbort
 	})
 	for i := range keys {
 		db.Del(keys[i])

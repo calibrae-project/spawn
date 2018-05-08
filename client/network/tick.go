@@ -658,8 +658,8 @@ func (c *OneConnection) Run() {
 						if (c.Node.Services & ServiceSegwit) == 0 {
 							// if the node does not support segwit, request compact blocks
 							// only if we have not achieved the segwit enforcement moment
-							if common.BlockChain.Consensus.Enforce_SEGWIT == 0 ||
-								common.Last.BlockHeight() < common.BlockChain.Consensus.Enforce_SEGWIT {
+							if common.BlockChain.Consensus.EnforceSegwit == 0 ||
+								common.Last.BlockHeight() < common.BlockChain.Consensus.EnforceSegwit {
 								c.SendRawMsg("sendcmpct", []byte{0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 							}
 						} else {

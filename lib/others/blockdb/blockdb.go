@@ -1,3 +1,4 @@
+// Package blockdb -
 /*
 This package is suposed to help importin Satoshi's bitcoin
 client blockchain into Spawn's bitcoin client.
@@ -5,21 +6,21 @@ client blockchain into Spawn's bitcoin client.
 package blockdb
 
 import (
-	"fmt"
-	"os"
 	"bytes"
 	"errors"
+	"fmt"
+	"os"
 )
 
-
+// BlockDB -
 type BlockDB struct {
-	dir string
-	magic [4]byte
-	f *os.File
+	dir         string
+	magic       [4]byte
+	f           *os.File
 	currfileidx uint32
 }
 
-
+// NewBlockDB -
 func NewBlockDB(dir string, magic [4]byte) (res *BlockDB) {
 	f, e := os.Open(idx2fname(dir, 0))
 	if e != nil {
@@ -32,14 +33,12 @@ func NewBlockDB(dir string, magic [4]byte) (res *BlockDB) {
 	return
 }
 
-
 func idx2fname(dir string, fidx uint32) string {
 	if fidx == 0xffffffff {
 		return "blk99999.dat"
 	}
 	return fmt.Sprintf("%s/blk%05d.dat", dir, fidx)
 }
-
 
 func readBlockFromFile(f *os.File, mag []byte) (res []byte, e error) {
 	var buf [4]byte
@@ -59,22 +58,21 @@ func readBlockFromFile(f *os.File, mag []byte) (res []byte, e error) {
 		return
 	}
 	le := uint32(lsb2uint(buf[:]))
-	if le<81 {
+	if le < 81 {
 		e = errors.New(fmt.Sprintf("Incorrect block size %d", le))
 		return
 	}
 
 	res = make([]byte, le)
 	_, e = f.Read(res[:])
-	if e!=nil {
+	if e != nil {
 		return
 	}
 
 	return
 }
 
-
-func (db *BlockDB)readOneBlock() (res []byte, e error) {
+func (db *BlockDB) readOneBlock() (res []byte, e error) {
 	fpos, _ := db.f.Seek(0, 1)
 	res, e = readBlockFromFile(db.f, db.magic[:])
 	if e != nil {
@@ -84,6 +82,7 @@ func (db *BlockDB)readOneBlock() (res []byte, e error) {
 	return
 }
 
+// FetchNextBlock -
 func (db *BlockDB) FetchNextBlock() (bl []byte, e error) {
 	if db.f == nil {
 		println("DB file not open - this should never happen")
@@ -103,7 +102,7 @@ func (db *BlockDB) FetchNextBlock() (bl []byte, e error) {
 }
 
 func lsb2uint(lt []byte) (res uint64) {
-	for i:=0; i<len(lt); i++ {
+	for i := 0; i < len(lt); i++ {
 		res |= (uint64(lt[i]) << uint(i*8))
 	}
 	return

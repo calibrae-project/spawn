@@ -10,8 +10,10 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
+// AbortNow -
 var AbortNow bool // set it to true to abort any activity
 
+// Chain -
 type Chain struct {
 	Blocks  *BlockDB        // blockchain.dat and blockchain.idx
 	Unspent *utxo.UnspentDB // unspent folder
@@ -31,9 +33,9 @@ type Chain struct {
 		MaxPOWBits                          uint32
 		MaxPOWValue                         *big.Int
 		GensisTimestamp                     uint32
-		Enforce_CSV                         uint32 // if non zero CVS verifications will be enforced from this block onwards
-		Enforce_SEGWIT                      uint32 // if non zero CVS verifications will be enforced from this block onwards
-		BIP9_Treshold                       uint32 // It is not really used at this moment, but maybe one day...
+		EnforceCSV                          uint32 // if non zero CVS verifications will be enforced from this block onwards
+		EnforceSegwit                       uint32 // if non zero CVS verifications will be enforced from this block onwards
+		BIP9Threshold                       uint32 // It is not really used at this moment, but maybe one day...
 		BIP34Height                         uint32
 		BIP65Height                         uint32
 		BIP66Height                         uint32
@@ -42,6 +44,7 @@ type Chain struct {
 	}
 }
 
+// NewChanOpts -
 type NewChanOpts struct {
 	UTXOVolatileMode bool
 	UndoBlocks       uint // undo this many blocks when opening the chain
@@ -49,7 +52,7 @@ type NewChanOpts struct {
 	BlockMinedCB     func(*btc.Block) // used to remove mined txs from memory pool
 }
 
-// This is the very first function one should call in order to use this package
+// NewChainExt - This is the very first function one should call in order to use this package
 func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewChanOpts, bdbopts *BlockDBOpts) (ch *Chain) {
 	ch = new(Chain)
 	ch.Genesis = genesis
@@ -67,17 +70,17 @@ func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewC
 		ch.Consensus.BIP34Height = 21111
 		ch.Consensus.BIP65Height = 581885
 		ch.Consensus.BIP66Height = 330776
-		ch.Consensus.Enforce_CSV = 770112
-		ch.Consensus.Enforce_SEGWIT = 834624
-		ch.Consensus.BIP9_Treshold = 1512
+		ch.Consensus.EnforceCSV = 770112
+		ch.Consensus.EnforceSegwit = 834624
+		ch.Consensus.BIP9Threshold = 1512
 	} else {
 		ch.Consensus.BIP34Height = 227931
 		ch.Consensus.BIP65Height = 388381
 		ch.Consensus.BIP66Height = 363725
-		ch.Consensus.Enforce_CSV = 419328
-		ch.Consensus.Enforce_SEGWIT = 481824 // https://www.reddit.com/r/Bitcoin/comments/6okd1n/bip91_lock_in_is_guaranteed_as_of_block_476768/
+		ch.Consensus.EnforceCSV = 419328
+		ch.Consensus.EnforceSegwit = 481824 // https://www.reddit.com/r/Bitcoin/comments/6okd1n/bip91_lock_in_is_guaranteed_as_of_block_476768/
 		ch.Consensus.BIP91Height = 477120
-		ch.Consensus.BIP9_Treshold = 1916
+		ch.Consensus.BIP9Threshold = 1916
 	}
 
 	ch.Blocks = NewBlockDBExt(dbrootdir, bdbopts)
@@ -115,7 +118,7 @@ func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewC
 	// And now re-apply the blocks which you have just reverted :)
 	end, _ := ch.BlockTreeRoot.FindFarthestNode()
 	if end.Height > ch.LastBlock().Height {
-		ch.ParseTillBlock(end)
+		ch.ParseUntilBlock(end)
 	} else {
 		ch.Unspent.LastBlockHeight = end.Height
 	}
@@ -123,7 +126,7 @@ func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewC
 	return
 }
 
-// Calculate an imaginary header of the genesis block (for Timestamp() and Bits() functions from chain_tree.go)
+// RebuildGenesisHeader - Calculate an imaginary header of the genesis block (for Timestamp() and Bits() functions from chain_tree.go)
 func (ch *Chain) RebuildGenesisHeader() {
 	binary.LittleEndian.PutUint32(ch.BlockTreeRoot.BlockHeader[0:4], 1) // Version
 	// [4:36] - prev_block
@@ -133,14 +136,14 @@ func (ch *Chain) RebuildGenesisHeader() {
 	// [76:80] - nonce
 }
 
-// Call this function periodically (i.e. each second)
+// Idle - Call this function periodically (i.e. each second)
 // when your client is idle, to defragment databases.
 func (ch *Chain) Idle() bool {
 	ch.Blocks.Idle()
 	return ch.Unspent.Idle()
 }
 
-// Return blockchain stats in one string.
+// Stats - Return blockchain stats in one string.
 func (ch *Chain) Stats() (s string) {
 	last := ch.LastBlock()
 	ch.BlockIndexAccess.Lock()
@@ -163,24 +166,23 @@ func (ch *Chain) testnet() bool {
 	return ch.Genesis.Hash[0] == 0x43 // it's simple, but works
 }
 
-// For SegWit2X
+// MaxBlockWeight - For SegWit2X
 func (ch *Chain) MaxBlockWeight(height uint32) uint {
 	if ch.Consensus.S2XHeight != 0 && height >= ch.Consensus.S2XHeight {
 		return 2 * btc.MaxBlockWeight
-	} else {
-		return btc.MaxBlockWeight
 	}
+	return btc.MaxBlockWeight
 }
 
-// For SegWit2X
+// MaxBlockSigopsCost - For SegWit2X
 func (ch *Chain) MaxBlockSigopsCost(height uint32) uint32 {
 	if ch.Consensus.S2XHeight != 0 && height >= ch.Consensus.S2XHeight {
 		return 2 * btc.MaxBlockSigOpsCost
-	} else {
-		return btc.MaxBlockSigOpsCost
 	}
+	return btc.MaxBlockSigOpsCost
 }
 
+// LastBlock -
 func (ch *Chain) LastBlock() (res *BlockTreeNode) {
 	ch.blockTreeAccess.Lock()
 	res = ch.blockTreeEnd
@@ -188,6 +190,7 @@ func (ch *Chain) LastBlock() (res *BlockTreeNode) {
 	return
 }
 
+// SetLast -
 func (ch *Chain) SetLast(val *BlockTreeNode) {
 	ch.blockTreeAccess.Lock()
 	ch.blockTreeEnd = val

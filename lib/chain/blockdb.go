@@ -17,15 +17,22 @@ import (
 )
 
 const (
-	BLOCK_TRUSTED = 0x01
-	BLOCK_INVALID = 0x02
-	BLOCK_COMPRSD = 0x04
-	BLOCK_SNAPPED = 0x08
-	BLOCK_LENGTH  = 0x10
-	BLOCK_INDEX   = 0x20
-
-	MAX_BLOCKS_TO_WRITE = 1024 // flush the data to disk when exceeding
-	MAX_DATA_WRITE      = 16 * 1024 * 1024
+	// BlockTrusted -
+	BlockTrusted = 0x01
+	// BlockInvalid -
+	BlockInvalid = 0x02
+	// BlockCompressed -
+	BlockCompressed = 0x04
+	// BlockSnapped -
+	BlockSnapped = 0x08
+	// BlockLength -
+	BlockLength = 0x10
+	// BlockIndex -
+	BlockIndex = 0x20
+	// MaxBlocksToWrite -
+	MaxBlocksToWrite = 1024 // flush the data to disk when exceeding
+	// MaxDataWrite -
+	MaxDataWrite = 16 * 1024 * 1024
 )
 
 /*
@@ -66,6 +73,7 @@ type oneBl struct {
 	snappied   bool
 }
 
+// BlckCachRec -
 type BlckCachRec struct {
 	Data []byte
 	*btc.Block
@@ -76,6 +84,7 @@ type BlckCachRec struct {
 	LastUsed time.Time
 }
 
+// BlockDBOpts -
 type BlockDBOpts struct {
 	MaxCachedBlocks int
 	MaxDataFileSize uint64
@@ -90,14 +99,15 @@ type oneB2W struct {
 	txcount uint32
 }
 
+// BlockDB -
 type BlockDB struct {
-	dirname            string
-	blockIndex         map[[btc.Uint256IdxLen]byte]*oneBl
-	blockdata          *os.File
-	blockindx          *os.File
-	mutex, disk_access sync.Mutex
-	max_cached_blocks  int
-	cache              map[[btc.Uint256IdxLen]byte]*BlckCachRec
+	dirname           string
+	blockIndex        map[[btc.Uint256IdxLen]byte]*oneBl
+	blockdata         *os.File
+	blockindx         *os.File
+	mutex, diskAccess sync.Mutex
+	maxCachedBlocks   int
+	cache             map[[btc.Uint256IdxLen]byte]*BlckCachRec
 
 	maxidxfilepos, maxdatfilepos int64
 	maxdatfileidx                uint32
@@ -105,10 +115,11 @@ type BlockDB struct {
 	blocksToWrite chan oneB2W
 	datToWrite    uint64
 
-	max_data_file_size uint64
-	data_files_keep    uint32
+	maxDataFileSize uint64
+	dataFilesKeep   uint32
 }
 
+// NewBlockDBExt -
 func NewBlockDBExt(dir string, opts *BlockDBOpts) (db *BlockDB) {
 	db = new(BlockDB)
 	db.dirname = dir
@@ -123,16 +134,17 @@ func NewBlockDBExt(dir string, opts *BlockDBOpts) (db *BlockDB) {
 		panic("Cannot open blockchain.new")
 	}
 	if opts.MaxCachedBlocks > 0 {
-		db.max_cached_blocks = opts.MaxCachedBlocks
-		db.cache = make(map[[btc.Uint256IdxLen]byte]*BlckCachRec, db.max_cached_blocks)
+		db.maxCachedBlocks = opts.MaxCachedBlocks
+		db.cache = make(map[[btc.Uint256IdxLen]byte]*BlckCachRec, db.maxCachedBlocks)
 	}
-	db.max_data_file_size = opts.MaxDataFileSize
-	db.data_files_keep = opts.DataFilesKeep
+	db.maxDataFileSize = opts.MaxDataFileSize
+	db.dataFilesKeep = opts.DataFilesKeep
 
-	db.blocksToWrite = make(chan oneB2W, MAX_BLOCKS_TO_WRITE)
+	db.blocksToWrite = make(chan oneB2W, MaxBlocksToWrite)
 	return
 }
 
+// NewBlockDB -
 func NewBlockDB(dir string) (db *BlockDB) {
 	return NewBlockDBExt(dir, &BlockDBOpts{MaxCachedBlocks: 500})
 }
@@ -151,22 +163,22 @@ func (db *BlockDB) addToCache(h *btc.Uint256, bl []byte, str *btc.Block) (crec *
 		crec.LastUsed = time.Now()
 		return
 	}
-	for len(db.cache) >= db.max_cached_blocks {
-		var oldest_t time.Time
-		var oldest_k [btc.Uint256IdxLen]byte
+	for len(db.cache) >= db.maxCachedBlocks {
+		var oldestT time.Time
+		var oldestK [btc.Uint256IdxLen]byte
 		for k, v := range db.cache {
-			if oldest_t.IsZero() || v.LastUsed.Before(oldest_t) {
+			if oldestT.IsZero() || v.LastUsed.Before(oldestT) {
 				if rec := db.blockIndex[k]; rec.ipos != -1 {
 					// don't expire records that have not been writen to disk yet
-					oldest_t = v.LastUsed
-					oldest_k = k
+					oldestT = v.LastUsed
+					oldestK = k
 				}
 			}
 		}
-		if oldest_t.IsZero() {
+		if oldestT.IsZero() {
 			break
 		} else {
-			delete(db.cache, oldest_k)
+			delete(db.cache, oldestK)
 		}
 	}
 	crec = &BlckCachRec{LastUsed: time.Now(), Data: bl, Block: str}
@@ -174,10 +186,11 @@ func (db *BlockDB) addToCache(h *btc.Uint256, bl []byte, str *btc.Block) (crec *
 	return
 }
 
+// GetStats -
 func (db *BlockDB) GetStats() (s string) {
 	db.mutex.Lock()
 	s += fmt.Sprintf("BlockDB: %d blocks, %d/%d in cache.  ToWriteCnt:%d (%dKB)\n",
-		len(db.blockIndex), len(db.cache), db.max_cached_blocks, len(db.blocksToWrite), db.datToWrite>>10)
+		len(db.blockIndex), len(db.cache), db.maxCachedBlocks, len(db.blocksToWrite), db.datToWrite>>10)
 	db.mutex.Unlock()
 	return
 }
@@ -187,8 +200,9 @@ func hash2idx(h []byte) (idx [btc.Uint256IdxLen]byte) {
 	return
 }
 
+// BlockAdd -
 func (db *BlockDB) BlockAdd(height uint32, bl *btc.Block) (e error) {
-	var trust_it bool
+	var trustIt bool
 	var flush bool
 
 	db.mutex.Lock()
@@ -198,7 +212,7 @@ func (db *BlockDB) BlockAdd(height uint32, bl *btc.Block) (e error) {
 		db.addToCache(bl.Hash, bl.Raw, bl)
 		db.datToWrite += uint64(len(bl.Raw))
 		db.blocksToWrite <- oneB2W{idx: idx, h: bl.Hash.Hash, data: bl.Raw, height: height, txcount: uint32(bl.TxCount)}
-		flush = len(db.blocksToWrite) >= MAX_BLOCKS_TO_WRITE || db.datToWrite >= MAX_DATA_WRITE
+		flush = len(db.blocksToWrite) >= MaxBlocksToWrite || db.datToWrite >= MaxDataWrite
 	} else {
 		//println("Block", bl.Hash.String(), "already in", rec.trusted, bl.Trusted)
 		if !rec.trusted && bl.Trusted {
@@ -207,13 +221,13 @@ func (db *BlockDB) BlockAdd(height uint32, bl *btc.Block) (e error) {
 				// It's not saved yet - just change the flag
 				rec.trusted = true
 			} else {
-				trust_it = true
+				trustIt = true
 			}
 		}
 	}
 	db.mutex.Unlock()
 
-	if trust_it {
+	if trustIt {
 		//println(" ... in the slow mode")
 		db.BlockTrusted(bl.Hash.Hash[:])
 	}
@@ -266,20 +280,20 @@ func (db *BlockDB) writeOne() (written bool) {
 		return
 	}
 
-	db.disk_access.Lock()
+	db.diskAccess.Lock()
 
 	rec.compressed, rec.snappied = true, true
 	cbts := snappy.Encode(nil, b2w.data)
 	rec.blen = uint32(len(cbts))
 	rec.ipos = db.maxidxfilepos
 
-	if db.max_data_file_size != 0 && uint64(db.maxdatfilepos)+uint64(len(cbts)) > db.max_data_file_size {
+	if db.maxDataFileSize != 0 && uint64(db.maxdatfilepos)+uint64(len(cbts)) > db.maxDataFileSize {
 		if tmpf, _ := os.Create(db.datFilename(db.maxdatfileidx+1, false)); tmpf != nil {
 			db.blockdata.Close()
 			db.blockdata = tmpf
 			db.maxdatfilepos = 0
-			if db.data_files_keep != 0 && db.maxdatfileidx >= db.data_files_keep {
-				os.Remove(db.datFilename(db.maxdatfileidx-db.data_files_keep, false))
+			if db.dataFilesKeep != 0 && db.maxdatfileidx >= db.dataFilesKeep {
+				os.Remove(db.datFilename(db.maxdatfileidx-db.dataFilesKeep, false))
 			}
 			db.maxdatfileidx++
 		} else {
@@ -289,13 +303,13 @@ func (db *BlockDB) writeOne() (written bool) {
 
 	rec.datfileidx = db.maxdatfileidx
 	rec.fpos = uint64(db.maxdatfilepos)
-	fl[0] |= BLOCK_COMPRSD | BLOCK_SNAPPED // gzip compression is deprecated
+	fl[0] |= BlockCompressed | BlockSnapped // gzip compression is deprecated
 	if rec.trusted {
-		fl[0] |= BLOCK_TRUSTED
+		fl[0] |= BlockTrusted
 	}
 
 	//copy(fl[4:32], b2w.h[:28])
-	fl[0] |= BLOCK_LENGTH | BLOCK_INDEX
+	fl[0] |= BlockLength | BlockIndex
 	binary.LittleEndian.PutUint32(fl[32:36], uint32(len(b2w.data)))
 	binary.LittleEndian.PutUint32(fl[28:32], rec.datfileidx)
 
@@ -316,13 +330,14 @@ func (db *BlockDB) writeOne() (written bool) {
 	db.maxidxfilepos += 136
 	db.maxdatfilepos += int64(rec.blen)
 
-	db.disk_access.Unlock()
+	db.diskAccess.Unlock()
 
 	written = true
 
 	return
 }
 
+// BlockInvalid -
 func (db *BlockDB) BlockInvalid(hash []byte) {
 	idx := btc.NewUint256(hash).BIdx()
 	db.mutex.Lock()
@@ -344,11 +359,12 @@ func (db *BlockDB) BlockInvalid(hash []byte) {
 		delete(db.blockIndex, idx)
 	} else {
 		// write the new flag to disk
-		db.setBlockFlag(cur, BLOCK_INVALID)
+		db.setBlockFlag(cur, BlockInvalid)
 	}
 	db.mutex.Unlock()
 }
 
+// BlockTrusted -
 func (db *BlockDB) BlockTrusted(hash []byte) {
 	idx := btc.NewUint256(hash).BIdx()
 	db.mutex.Lock()
@@ -360,7 +376,7 @@ func (db *BlockDB) BlockTrusted(hash []byte) {
 	}
 	if !cur.trusted {
 		//fmt.Println("mark", btc.NewUint256(hash).String(), "as trusted")
-		db.setBlockFlag(cur, BLOCK_TRUSTED)
+		db.setBlockFlag(cur, BlockTrusted)
 	}
 	db.mutex.Unlock()
 }
@@ -368,21 +384,23 @@ func (db *BlockDB) BlockTrusted(hash []byte) {
 func (db *BlockDB) setBlockFlag(cur *oneBl, fl byte) {
 	var b [1]byte
 	cur.trusted = true
-	db.disk_access.Lock()
+	db.diskAccess.Lock()
 	cpos, _ := db.blockindx.Seek(0, os.SEEK_CUR) // remember our position
 	db.blockindx.ReadAt(b[:], cur.ipos)
 	b[0] |= fl
 	db.blockindx.WriteAt(b[:], cur.ipos)
 	db.blockindx.Seek(cpos, os.SEEK_SET) // restore the end posistion
-	db.disk_access.Unlock()
+	db.diskAccess.Unlock()
 }
 
+// Idle -
 func (db *BlockDB) Idle() {
 	if db.writeAll() {
 		//println(" * block(s) stored from idle")
 	}
 }
 
+// Close -
 func (db *BlockDB) Close() {
 	if db.writeAll() {
 		//println(" * block(s) stored from close")
@@ -391,7 +409,8 @@ func (db *BlockDB) Close() {
 	db.blockindx.Close()
 }
 
-func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cacherec *BlckCachRec, trusted bool, e error) {
+// BlockGetInternal -
+func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, doNotCache bool) (cacherec *BlckCachRec, trusted bool, e error) {
 	db.mutex.Lock()
 	rec, ok := db.blockIndex[hash.BIdx()]
 	if !ok {
@@ -423,7 +442,7 @@ func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cache
 
 	bl := make([]byte, rec.blen)
 
-	db.disk_access.Lock()
+	db.diskAccess.Lock()
 
 	var f *os.File
 	// we will re-open the data file, to not spoil the writting pointer
@@ -431,7 +450,7 @@ func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cache
 	if f == nil || e != nil {
 		f, e = os.Open(db.datFilename(rec.datfileidx, true))
 		if f == nil || e != nil {
-			db.disk_access.Unlock()
+			db.diskAccess.Unlock()
 			return
 		}
 	}
@@ -439,13 +458,13 @@ func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cache
 	_, e = f.Seek(int64(rec.fpos), os.SEEK_SET)
 	if e != nil {
 		f.Close()
-		db.disk_access.Unlock()
+		db.diskAccess.Unlock()
 		return
 	}
 
 	e = btc.ReadAll(f, bl)
 	f.Close()
-	db.disk_access.Unlock()
+	db.diskAccess.Unlock()
 
 	if e != nil {
 		return
@@ -468,7 +487,7 @@ func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cache
 		rec.olen = uint32(len(bl))
 	}
 
-	if !do_not_cache {
+	if !doNotCache {
 		db.mutex.Lock()
 		cacherec = db.addToCache(hash, bl, nil)
 		db.mutex.Unlock()
@@ -479,10 +498,12 @@ func (db *BlockDB) BlockGetInternal(hash *btc.Uint256, do_not_cache bool) (cache
 	return
 }
 
+// BlockGetExt -
 func (db *BlockDB) BlockGetExt(hash *btc.Uint256) (cacherec *BlckCachRec, trusted bool, e error) {
 	return db.BlockGetInternal(hash, false)
 }
 
+// BlockGet -
 func (db *BlockDB) BlockGet(hash *btc.Uint256) (bl []byte, trusted bool, e error) {
 	var rec *BlckCachRec
 	rec, trusted, e = db.BlockGetInternal(hash, false)
@@ -492,7 +513,8 @@ func (db *BlockDB) BlockGet(hash *btc.Uint256) (bl []byte, trusted bool, e error
 	return
 }
 
-func (db *BlockDB) BlockLength(hash *btc.Uint256, decode_if_needed bool) (length uint32, e error) {
+// BlockLength -
+func (db *BlockDB) BlockLength(hash *btc.Uint256, decodeIfNeeded bool) (length uint32, e error) {
 	db.mutex.Lock()
 	rec, ok := db.blockIndex[hash.BIdx()]
 	if !ok {
@@ -507,7 +529,7 @@ func (db *BlockDB) BlockLength(hash *btc.Uint256, decode_if_needed bool) (length
 		return
 	}
 
-	if !rec.compressed || !decode_if_needed {
+	if !rec.compressed || !decodeIfNeeded {
 		length = rec.blen
 		return
 	}
@@ -531,6 +553,7 @@ func (db *BlockDB) datFilename(idx uint32, archive bool) string {
 	return dir + fmt.Sprintf("blockchain-%08x.dat", idx)
 }
 
+// LoadBlockIndex -
 func (db *BlockDB) LoadBlockIndex(ch *Chain, walk func(ch *Chain, hash, hdr []byte, height, blen, txs uint32)) (e error) {
 	var b [136]byte
 	var bh, txs uint32
@@ -545,24 +568,24 @@ func (db *BlockDB) LoadBlockIndex(ch *Chain, walk func(ch *Chain, hash, hdr []by
 		bh = binary.LittleEndian.Uint32(b[36:40])
 		BlockHash := btc.NewSha2Hash(b[56:136])
 
-		if (b[0] & BLOCK_INVALID) != 0 {
+		if (b[0] & BlockInvalid) != 0 {
 			// just ignore it
 			fmt.Println("BlockDB: Block", binary.LittleEndian.Uint32(b[36:40]), BlockHash.String(), "is invalid")
 			continue
 		}
 
 		ob := new(oneBl)
-		ob.trusted = (b[0] & BLOCK_TRUSTED) != 0
-		ob.compressed = (b[0] & BLOCK_COMPRSD) != 0
-		ob.snappied = (b[0] & BLOCK_SNAPPED) != 0
+		ob.trusted = (b[0] & BlockTrusted) != 0
+		ob.compressed = (b[0] & BlockCompressed) != 0
+		ob.snappied = (b[0] & BlockSnapped) != 0
 		ob.fpos = binary.LittleEndian.Uint64(b[40:48])
 		blen := binary.LittleEndian.Uint32(b[48:52])
 		ob.blen = blen
-		if (b[0] & BLOCK_LENGTH) != 0 {
+		if (b[0] & BlockLength) != 0 {
 			blen = binary.LittleEndian.Uint32(b[32:36])
 			ob.olen = blen
 		}
-		if (b[0] & BLOCK_INDEX) != 0 {
+		if (b[0] & BlockIndex) != 0 {
 			ob.datfileidx = binary.LittleEndian.Uint32(b[28:32])
 		}
 		if blen > 0 && ob.datfileidx != 0xffffffff && ob.datfileidx > db.maxdatfileidx {

@@ -335,9 +335,9 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 		maxHeight = LastCommitedHeader.Height
 	}
 
-	if common.BlockChain.Consensus.Enforce_SEGWIT != 0 && (c.Node.Services&ServiceSegwit) == 0 { // no segwit node
-		if maxHeight >= common.BlockChain.Consensus.Enforce_SEGWIT-1 {
-			maxHeight = common.BlockChain.Consensus.Enforce_SEGWIT - 1
+	if common.BlockChain.Consensus.EnforceSegwit != 0 && (c.Node.Services&ServiceSegwit) == 0 { // no segwit node
+		if maxHeight >= common.BlockChain.Consensus.EnforceSegwit-1 {
+			maxHeight = common.BlockChain.Consensus.EnforceSegwit - 1
 			if maxHeight <= common.Last.Block.Height {
 				c.IncCnt("FetchNoWitness", 1)
 				c.nextGetData = time.Now().Add(3600 * time.Second) // never do getdata

@@ -33,8 +33,8 @@ func pWal(w http.ResponseWriter, r *http.Request) {
 
 	var str string
 	common.Last.Mutex.Lock()
-	if common.BlockChain.Consensus.Enforce_SEGWIT != 0 &&
-		common.Last.Block.Height >= common.BlockChain.Consensus.Enforce_SEGWIT {
+	if common.BlockChain.Consensus.EnforceSegwit != 0 &&
+		common.Last.Block.Height >= common.BlockChain.Consensus.EnforceSegwit {
 		str = "var segwit_active=true"
 	} else {
 		str = "var segwit_active=false"

@@ -2,52 +2,55 @@ package chain
 
 import (
 	"math/big"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 const (
+	// POWRetargetSpam -
 	POWRetargetSpam = 14 * 24 * 60 * 60 // two weeks
-	TargetSpacing = 10 * 60
+	// TargetSpacing -
+	TargetSpacing  = 10 * 60
 	targetInterval = POWRetargetSpam / TargetSpacing
 )
 
+// GetNextWorkRequired -
 func (ch *Chain) GetNextWorkRequired(lst *BlockTreeNode, ts uint32) (res uint32) {
 	// Genesis block
 	if lst.Parent == nil {
 		return ch.Consensus.MaxPOWBits
 	}
 
-	if ((lst.Height+1) % targetInterval) != 0 {
+	if ((lst.Height + 1) % targetInterval) != 0 {
 		// Special difficulty rule for testnet:
 		if ch.testnet() {
 			// If the new block's timestamp is more than 2* 10 minutes
 			// then allow mining of a min-difficulty block.
-			if ts > lst.Timestamp() + TargetSpacing*2 {
+			if ts > lst.Timestamp()+TargetSpacing*2 {
 				return ch.Consensus.MaxPOWBits
-			} else {
-				// Return the last non-special-min-difficulty-rules-block
-				prv := lst
-				for prv.Parent!=nil && (prv.Height%targetInterval)!=0 && prv.Bits()==ch.Consensus.MaxPOWBits {
-					prv = prv.Parent
-				}
-				return prv.Bits()
 			}
+			// Return the last non-special-min-difficulty-rules-block
+			prv := lst
+			for prv.Parent != nil && (prv.Height%targetInterval) != 0 && prv.Bits() == ch.Consensus.MaxPOWBits {
+				prv = prv.Parent
+			}
+			return prv.Bits()
 		}
 		return lst.Bits()
 	}
 
 	prv := lst
-	for i:=0; i<targetInterval-1; i++ {
+	for i := 0; i < targetInterval-1; i++ {
 		prv = prv.Parent
 	}
 
 	actualTimespan := int64(lst.Timestamp() - prv.Timestamp())
 
 	if actualTimespan < POWRetargetSpam/4 {
-		actualTimespan = POWRetargetSpam/4
+		actualTimespan = POWRetargetSpam / 4
 	}
 	if actualTimespan > POWRetargetSpam*4 {
-		actualTimespan = POWRetargetSpam*4
+		actualTimespan = POWRetargetSpam * 4
 	}
 
 	// Retarget
@@ -64,7 +67,7 @@ func (ch *Chain) GetNextWorkRequired(lst *BlockTreeNode, ts uint32) (res uint32)
 	return
 }
 
-// Returns true if b1 has more POW than b2
+// MorePOW Returns true if b1 has more POW than b2
 func (b1 *BlockTreeNode) MorePOW(b2 *BlockTreeNode) bool {
 	var b1sum, b2sum float64
 	for b1.Height > b2.Height {

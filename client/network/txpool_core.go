@@ -430,7 +430,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 				return
 			}
 			if pos[i].WasCoinbase {
-				if common.Last.BlockHeight()+1-pos[i].BlockHeight < chain.COINBASE_MATURITY {
+				if common.Last.BlockHeight()+1-pos[i].BlockHeight < chain.CoinbaseMaturity {
 					RejectTx(ntx.Tx, TxRejectedCoinbaseImmature)
 					TxMutex.Unlock()
 					common.CountSafe("TxRejectedCBInmature")

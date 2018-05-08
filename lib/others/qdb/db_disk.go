@@ -1,7 +1,7 @@
+// Package qdb -
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
 /*
 Qdb is a fast persistent storage database.
 
@@ -18,14 +18,13 @@ There are can be three possible files in that folder
 package qdb
 
 import (
-	"os"
-	"io"
-	"fmt"
-	"strconv"
-	"path/filepath"
 	"encoding/binary"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strconv"
 )
-
 
 func (db *DB) seq2fn(seq uint32) string {
 	return fmt.Sprintf("%s%08x.dat", db.Dir, seq)
@@ -41,15 +40,14 @@ func (db *DB) checklogfile() {
 	}
 }
 
-
 // load record from disk, if not loaded yet
 func (db *DB) loadrec(idx *oneIdx) {
 	if idx.data == nil {
 		var f *os.File
-		if f, _ = db.DatFiles[idx.DataSeq]; f==nil {
+		if f, _ = db.DatFiles[idx.DataSeq]; f == nil {
 			fn := db.seq2fn(idx.DataSeq)
 			f, _ = os.Open(fn)
-			if f==nil {
+			if f == nil {
 				println("file", fn, "not found")
 				os.Exit(1)
 			}
@@ -61,7 +59,7 @@ func (db *DB) loadrec(idx *oneIdx) {
 
 // add record at the end of the log
 func (db *DB) addtolog(f io.Writer, key KeyType, val []byte) (fpos int64) {
-	if f==nil {
+	if f == nil {
 		db.checklogfile()
 		db.LogFile.Seek(db.LastValidLogPos, os.SEEK_SET)
 		f = db.LogFile
@@ -78,12 +76,12 @@ func (db *DB) addtolog(f io.Writer, key KeyType, val []byte) (fpos int64) {
 func (db *DB) cleanupold(used map[uint32]bool) {
 	filepath.Walk(db.Dir, func(path string, info os.FileInfo, err error) error {
 		fn := info.Name()
-		if len(fn)==12 && fn[8:12]==".dat" {
+		if len(fn) == 12 && fn[8:12] == ".dat" {
 			v, er := strconv.ParseUint(fn[:8], 16, 32)
-			if er == nil && uint32(v)!=db.DataSeq {
+			if er == nil && uint32(v) != db.DataSeq {
 				if _, ok := used[uint32(v)]; !ok {
 					//println("deleting", v, path)
-					if f, _ := db.DatFiles[uint32(v)]; f!=nil {
+					if f, _ := db.DatFiles[uint32(v)]; f != nil {
 						f.Close()
 						delete(db.DatFiles, uint32(v))
 					}

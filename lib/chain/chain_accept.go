@@ -15,6 +15,7 @@ import (
 // been verified already by the client while being taken to its memory pool
 var TrustedTxChecker func(*btc.Tx) bool
 
+// ProcessBlockTransactions -
 func (ch *Chain) ProcessBlockTransactions(bl *btc.Block, height, lknown uint32) (changes *utxo.BlockChanges, sigopscost uint32, e error) {
 	changes = new(utxo.BlockChanges)
 	changes.Height = height
@@ -24,11 +25,8 @@ func (ch *Chain) ProcessBlockTransactions(bl *btc.Block, height, lknown uint32) 
 	return
 }
 
-// This function either appends a new block at the end of the existing chain
-// in which case it also applies all the transactions to the unspent database.
-// If the block does is not the heighest, it is added to the chain, but maked
-// as an orphan - its transaction will be verified only if the chain would swap
-// to its branch later on.
+// AcceptBlock This function either appends a new block at the end of the existing chain in which case it also applies all the transactions to the unspent database.
+// If the block does is not the heighest, it is added to the chain, but maked as an orphan - its transaction will be verified only if the chain would swap to its branch later on.
 func (ch *Chain) AcceptBlock(bl *btc.Block) (e error) {
 	ch.BlockIndexAccess.Lock()
 	cur := ch.AcceptHeader(bl)
@@ -36,7 +34,7 @@ func (ch *Chain) AcceptBlock(bl *btc.Block) (e error) {
 	return ch.CommitBlock(bl, cur)
 }
 
-// Make sure to call this function with ch.BlockIndexAccess locked
+// AcceptHeader - Make sure to call this function with ch.BlockIndexAccess locked
 func (ch *Chain) AcceptHeader(bl *btc.Block) (cur *BlockTreeNode) {
 	prevblk, ok := ch.BlockIndex[btc.NewUint256(bl.ParentHash()).BIdx()]
 	if !ok {
@@ -57,6 +55,7 @@ func (ch *Chain) AcceptHeader(bl *btc.Block) (cur *BlockTreeNode) {
 	return
 }
 
+// CommitBlock -
 func (ch *Chain) CommitBlock(bl *btc.Block, cur *BlockTreeNode) (e error) {
 	cur.BlockSize = uint32(len(bl.Raw))
 	cur.TxCount = uint32(bl.TxCount)
@@ -125,22 +124,22 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 
 		// Check each tx for a valid input, except from the first one
 		if i > 0 {
-			tx_trusted := bl.Trusted
-			if !tx_trusted && TrustedTxChecker != nil && TrustedTxChecker(bl.Txs[i]) {
-				tx_trusted = true
+			txTrusted := bl.Trusted
+			if !txTrusted && TrustedTxChecker != nil && TrustedTxChecker(bl.Txs[i]) {
+				txTrusted = true
 			}
 
 			for j := 0; j < len(bl.Txs[i].TxIn); j++ {
 				inp := &bl.Txs[i].TxIn[j].Input
-				spent_map, was_spent := changes.DeledTxs[inp.Hash]
-				if was_spent {
-					if int(inp.Vout) >= len(spent_map) {
+				spentMap, wasSpent := changes.DeledTxs[inp.Hash]
+				if wasSpent {
+					if int(inp.Vout) >= len(spentMap) {
 						println("txin", inp.String(), "did not have vout", inp.Vout)
 						e = errors.New("Tx VOut too big")
 						return
 					}
 
-					if spent_map[inp.Vout] {
+					if spentMap[inp.Vout] {
 						println("txin", inp.String(), "already spent in this block")
 						e = errors.New("Double spend inside the block")
 						return
@@ -174,16 +173,16 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 					tout = t[inp.Vout]
 					t[inp.Vout] = nil // and now mark it as spent:
 				} else {
-					if tout.WasCoinbase && changes.Height-tout.BlockHeight < COINBASE_MATURITY {
+					if tout.WasCoinbase && changes.Height-tout.BlockHeight < CoinbaseMaturity {
 						e = errors.New("Trying to spend prematured coinbase: " + btc.NewUint256(inp.Hash[:]).String())
 						return
 					}
 					// it is confirmed already so delete it later
-					if !was_spent {
-						spent_map = make([]bool, tout.VoutCount)
-						changes.DeledTxs[inp.Hash] = spent_map
+					if !wasSpent {
+						spentMap = make([]bool, tout.VoutCount)
+						changes.DeledTxs[inp.Hash] = spentMap
 					}
-					spent_map[inp.Vout] = true
+					spentMap[inp.Vout] = true
 
 					if changes.UndoData != nil {
 						var urec *utxo.UtxoRec
@@ -204,7 +203,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 					}
 				}
 
-				if !tx_trusted { // run VerifyTxScript() in a parallel task
+				if !txTrusted { // run VerifyTxScript() in a parallel task
 					wg.Add(1)
 					go func(prv []byte, amount uint64, i int, tx *btc.Tx) {
 						if !script.VerifyTxScript(prv, amount, i, tx, bl.VerifyFlags) {
@@ -223,7 +222,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 				txinsum += tout.Value
 			}
 
-			if !tx_trusted {
+			if !txTrusted {
 				wg.Wait()
 				if verErrCount > 0 {
 					println("VerifyScript failed", verErrCount, "time (s)")
@@ -298,25 +297,25 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 	return
 }
 
-// Check transactions for consistency and finality. Return nil if OK, otherwise a descripive error
+// CheckTransactions - Check transactions for consistency and finality. Return nil if OK, otherwise a descripive error
 func CheckTransactions(txs []*btc.Tx, height, btime uint32) (res error) {
 	var wg sync.WaitGroup
 
-	res_chan := make(chan error, 1)
+	resChan := make(chan error, 1)
 
-	for i := 0; len(res_chan) == 0 && i < len(txs); i++ {
+	for i := 0; len(resChan) == 0 && i < len(txs); i++ {
 		wg.Add(1)
 
 		go func(tx *btc.Tx) {
 			defer wg.Done() // call wg.Done() before returning from this goroutine
 
-			if len(res_chan) > 0 {
+			if len(resChan) > 0 {
 				return // abort checking if a parallel error has already been reported
 			}
 
 			er := tx.CheckTransaction()
 
-			if len(res_chan) > 0 {
+			if len(resChan) > 0 {
 				return // abort checking if a parallel error has already been reported
 			}
 
@@ -326,7 +325,7 @@ func CheckTransactions(txs []*btc.Tx, height, btime uint32) (res error) {
 
 			if er != nil {
 				select { // this is a non-blocking write to channel
-				case res_chan <- er:
+				case resChan <- er:
 				default:
 				}
 			}
@@ -335,8 +334,8 @@ func CheckTransactions(txs []*btc.Tx, height, btime uint32) (res error) {
 
 	wg.Wait() // wait for all the goroutines to complete
 
-	if len(res_chan) > 0 {
-		res = <-res_chan
+	if len(resChan) > 0 {
+		res = <-resChan
 	}
 
 	return

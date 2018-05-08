@@ -521,7 +521,7 @@ func analyzeBIP9(par string) {
 		if len(bits) > 0 {
 			var s string
 			for k, v := range bits {
-				if all || v >= common.BlockChain.Consensus.BIP9_Treshold {
+				if all || v >= common.BlockChain.Consensus.BIP9Threshold {
 					if s != "" {
 						s += " | "
 					}

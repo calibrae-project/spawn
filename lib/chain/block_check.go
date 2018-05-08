@@ -96,8 +96,8 @@ func (ch *Chain) PreCheckBlock(bl *btc.Block) (dos bool, maybelater bool, err er
 		return
 	}
 
-	if ch.Consensus.BIP91Height != 0 && ch.Consensus.Enforce_SEGWIT != 0 {
-		if bl.Height >= ch.Consensus.BIP91Height && bl.Height < ch.Consensus.Enforce_SEGWIT-2016 {
+	if ch.Consensus.BIP91Height != 0 && ch.Consensus.EnforceSegwit != 0 {
+		if bl.Height >= ch.Consensus.BIP91Height && bl.Height < ch.Consensus.EnforceSegwit-2016 {
 			if (ver&0xE0000000) != 0x20000000 || (ver&2) == 0 {
 				err = errors.New("CheckBlock() : relayed block must signal for segwit - RPC_Result:bad-no-segwit")
 			}
@@ -123,11 +123,11 @@ func (ch *Chain) ApplyBlockFlags(bl *btc.Block) {
 		bl.VerifyFlags |= script.VER_CLTV
 	}
 
-	if ch.Consensus.Enforce_CSV != 0 && bl.Height >= ch.Consensus.Enforce_CSV {
+	if ch.Consensus.EnforceCSV != 0 && bl.Height >= ch.Consensus.EnforceCSV {
 		bl.VerifyFlags |= script.VER_CSV
 	}
 
-	if ch.Consensus.Enforce_SEGWIT != 0 && bl.Height >= ch.Consensus.Enforce_SEGWIT {
+	if ch.Consensus.EnforceSegwit != 0 && bl.Height >= ch.Consensus.EnforceSegwit {
 		bl.VerifyFlags |= script.VER_WITNESS | script.VER_NULLDUMMY
 	}
 

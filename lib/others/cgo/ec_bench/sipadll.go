@@ -14,6 +14,7 @@ var (
 	DLLECVerify = secp256k1.NewProc("ECVerify")
 )
 
+// ECVerify -
 func ECVerify(pkey, sign, hash []byte) int32 {
 	r1, _, _ := syscall.Syscall6(DLLECVerify.Addr(), 6,
 		uintptr(unsafe.Pointer(&hash[0])), uintptr(32),
@@ -22,7 +23,8 @@ func ECVerify(pkey, sign, hash []byte) int32 {
 	return int32(r1)
 }
 
-var CNT int = 100e3
+// CNT -
+var CNT = 100e3
 
 func main() {
 	key, _ := hex.DecodeString("040eaebcd1df2df853d66ce0e1b0fda07f67d1cabefde98514aad795b86a6ea66dbeb26b67d7a00e2447baeccc8a4cef7cd3cad67376ac1c5785aeebb4f6441c16")

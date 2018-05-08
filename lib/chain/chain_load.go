@@ -2,9 +2,9 @@ package chain
 
 import (
 	"errors"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
-
 
 func nextBlock(ch *Chain, hash, header []byte, height, blen, txs uint32) {
 	bh := btc.NewUint256(hash[:])
@@ -21,15 +21,13 @@ func nextBlock(ch *Chain, hash, header []byte, height, blen, txs uint32) {
 	ch.BlockIndex[v.BlockHash.BIdx()] = v
 }
 
-
 // Loads block index from the disk
-func (ch *Chain)loadBlockIndex() {
+func (ch *Chain) loadBlockIndex() {
 	ch.BlockIndex = make(map[[btc.Uint256IdxLen]byte]*BlockTreeNode, BlockMapInitLen)
 	ch.BlockTreeRoot = new(BlockTreeNode)
 	ch.BlockTreeRoot.BlockHash = ch.Genesis
 	ch.RebuildGenesisHeader()
 	ch.BlockIndex[ch.Genesis.BIdx()] = ch.BlockTreeRoot
-
 
 	ch.Blocks.LoadBlockIndex(ch, nextBlock)
 	tlb := ch.Unspent.LastBlockHash
@@ -38,7 +36,7 @@ func (ch *Chain)loadBlockIndex() {
 		if AbortNow {
 			return
 		}
-		if v==ch.BlockTreeRoot {
+		if v == ch.BlockTreeRoot {
 			// skip root block (should be only one)
 			continue
 		}
@@ -57,16 +55,17 @@ func (ch *Chain)loadBlockIndex() {
 		//println("No last block - full rescan will be needed")
 		ch.SetLast(ch.BlockTreeRoot)
 		return
-	} else {
-		//println("Last Block Hash:", btc.NewUint256(tlb).String())
-		last, ok := ch.BlockIndex[btc.NewUint256(tlb).BIdx()]
-		if !ok {
-			panic("Last Block Hash not found")
-		}
-		ch.SetLast(last)
 	}
+	//println("Last Block Hash:", btc.NewUint256(tlb).String())
+	last, ok := ch.BlockIndex[btc.NewUint256(tlb).BIdx()]
+	if !ok {
+		panic("Last Block Hash not found")
+	}
+	ch.SetLast(last)
+
 }
 
+// GetRawTx -
 func (ch *Chain) GetRawTx(BlockHeight uint32, txid *btc.Uint256) (data []byte, er error) {
 	// Find the block with the indicated Height in the main tree
 	ch.BlockIndexAccess.Lock()
