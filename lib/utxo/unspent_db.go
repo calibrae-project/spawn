@@ -95,7 +95,7 @@ func NewUnspentDb(opts *NewUnspentOpts) (db *UnspentDB) {
 
 	// Load data form disk
 	var k UtxoKeyType
-	var cnt_dwn, cnt_dwn_from, perc int
+	var cnt_dwn, countDownFrom, perc int
 	var le uint64
 	var u64, tot_recs uint64
 	var info string
@@ -129,7 +129,7 @@ redo:
 	}
 
 	//fmt.Println("Last block height", db.LastBlockHeight, "   Number of records", u64)
-	cnt_dwn_from = int(u64 / 100)
+	countDownFrom = int(u64 / 100)
 	perc = 0
 
 	db.HashMap = make(map[UtxoKeyType][]byte, int(u64))
@@ -161,7 +161,7 @@ redo:
 		if cnt_dwn == 0 {
 			fmt.Print(info, perc, "% complete ... ")
 			perc++
-			cnt_dwn = cnt_dwn_from
+			cnt_dwn = countDownFrom
 		} else {
 			cnt_dwn--
 		}
@@ -192,7 +192,7 @@ fatal_error:
 }
 
 func (db *UnspentDB) save() {
-	//var cnt_dwn, cnt_dwn_from, perc int
+	//var cnt_dwn, countDownFrom, perc int
 	var abort, hurryup, check_time bool
 	var total_records, current_record, data_progress, time_progress int64
 

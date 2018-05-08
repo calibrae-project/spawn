@@ -3,16 +3,20 @@ package wallet
 import (
 	"bytes"
 	"encoding/gob"
+	"io/ioutil"
+
 	"github.com/calibrae-project/spawn/client/common"
 	"github.com/calibrae-project/spawn/lib/utxo"
-	"io/ioutil"
 )
 
 var (
+	// FetchingBalanceTick -
 	FetchingBalanceTick func() bool
-	OnOff               chan bool = make(chan bool, 1)
+	// OnOff -
+	OnOff = make(chan bool, 1)
 )
 
+// InitMaps -
 func InitMaps(empty bool) {
 	var szs [4]int
 	var ok bool
@@ -37,6 +41,7 @@ init:
 	AllBalancesP2WSH = make(map[[32]byte]*OneAllAddrBal, szs[3])
 }
 
+// LoadBalance -
 func LoadBalance() {
 	if common.GetBool(&common.WalletON) {
 		//fmt.Println("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
@@ -53,8 +58,8 @@ func LoadBalance() {
 	common.BlockChain.Unspent.RWMutex.RLock()
 	defer common.BlockChain.Unspent.RWMutex.RUnlock()
 
-	cnt_dwn_from := (len(common.BlockChain.Unspent.HashMap) + 999) / 1000
-	cnt_dwn := cnt_dwn_from
+	countDownFrom := (len(common.BlockChain.Unspent.HashMap) + 999) / 1000
+	cnt_dwn := countDownFrom
 	perc := uint32(1)
 
 	for k, v := range common.BlockChain.Unspent.HashMap {
@@ -62,7 +67,7 @@ func LoadBalance() {
 		if cnt_dwn == 0 {
 			perc++
 			common.SetUint32(&common.WalletProgress, perc)
-			cnt_dwn = cnt_dwn_from
+			cnt_dwn = countDownFrom
 		} else {
 			cnt_dwn--
 		}

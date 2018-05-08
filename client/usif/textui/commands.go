@@ -112,7 +112,7 @@ func MainThread() {
 					if cmd == uiCmds[i].cmds[j] {
 						found = true
 						if uiCmds[i].sync {
-							usif.ExecUiReq(&usif.OneUIReq{Param: param, Handler: uiCmds[i].handler})
+							usif.ExecUIRequest(&usif.OneUIRequest{Param: param, Handler: uiCmds[i].handler})
 							showPrompt = false
 						} else {
 							uiCmds[i].handler(param)

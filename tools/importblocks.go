@@ -2,42 +2,45 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"time"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/chain"
 	"github.com/calibrae-project/spawn/lib/others/blockdb"
 	"github.com/calibrae-project/spawn/lib/others/sys"
 )
 
-const Trust = true  // Set this to false if you want to re-check all scripts
-
+// Trust - Set this to false if you want to re-check all scripts
+const Trust = true
 
 var (
+	// Magic -
 	Magic [4]byte
+	// SpawnHomeDir -
 	SpawnHomeDir string
-	BtcRootDir string
-	GenesisBlock *btc.Uint256
-	prev_EcdsaVerifyCnt uint64
+	// BTCRootDir -
+	BTCRootDir string
+	// GenesisBlock -
+	GenesisBlock         *btc.Uint256
+	prevEcdsaVerifyCount uint64
 )
 
-
 func stat(totnsec, pernsec int64, totbytes, perbytes uint64, height uint32) {
-	totmbs := float64(totbytes) / (1024*1024)
+	totmbs := float64(totbytes) / (1024 * 1024)
 	perkbs := float64(perbytes) / (1024)
 	var x string
-	cn := btc.EcdsaVerifyCnt() - prev_EcdsaVerifyCnt
+	cn := btc.EcdsaVerifyCnt() - prevEcdsaVerifyCount
 	if cn > 0 {
 		x = fmt.Sprintf("|  %d -> %d us/ecdsa", cn, uint64(pernsec)/cn/1e3)
-		prev_EcdsaVerifyCnt += cn
+		prevEcdsaVerifyCount += cn
 	}
 	fmt.Printf("%.1fMB of data processed. We are at height %d. Processing speed %.3fMB/sec, recent: %.1fKB/s %s\n",
 		totmbs, height, totmbs/(float64(totnsec)/1e9), perkbs/(float64(pernsec)/1e9), x)
 }
 
-
-func import_blockchain(dir string) {
+func importBlockchain(dir string) {
 	BlockDatabase := blockdb.NewBlockDB(dir, Magic)
 	chain := chain.NewChainExt(SpawnHomeDir, GenesisBlock, false, nil, nil)
 
@@ -53,12 +56,12 @@ func import_blockchain(dir string) {
 		now := time.Now().UnixNano()
 		if now-prv >= 10e9 {
 			stat(now-start, now-prv, totbytes, perbytes, chain.LastBlock().Height)
-			prv = now  // show progress each 10 seconds
+			prv = now // show progress each 10 seconds
 			perbytes = 0
 		}
 
 		dat, er = BlockDatabase.FetchNextBlock()
-		if dat==nil || er!=nil {
+		if dat == nil || er != nil {
 			println("END of DB file")
 			break
 		}
@@ -74,7 +77,7 @@ func import_blockchain(dir string) {
 		er, _, _ = chain.CheckBlock(bl)
 
 		if er != nil {
-			if er.Error()!="Genesis" {
+			if er.Error() != "Genesis" {
 				println("CheckBlock failed:", er.Error())
 				os.Exit(1) // Such a thing should not happen, so let's better abort here.
 			}
@@ -101,9 +104,9 @@ func import_blockchain(dir string) {
 	fmt.Println("Database saved. No more imports should be needed.")
 }
 
-
+// RemoveLastSlash -
 func RemoveLastSlash(p string) string {
-	if len(p)>0 && os.IsPathSeparator(p[len(p)-1]) {
+	if len(p) > 0 && os.IsPathSeparator(p[len(p)-1]) {
 		return p[:len(p)-1]
 	}
 	return p
@@ -111,11 +114,11 @@ func RemoveLastSlash(p string) string {
 
 func exists(fn string) bool {
 	_, e := os.Lstat(fn)
-	return e==nil
+	return e == nil
 }
 
 func main() {
-	if len(os.Args)<2 {
+	if len(os.Args) < 2 {
 		fmt.Println("Specify at least one parameter - a path to the blk0000?.dat files.")
 		fmt.Println("By default it should be:", sys.BitcoinHome()+"blocks")
 		fmt.Println()
@@ -124,8 +127,8 @@ func main() {
 		return
 	}
 
-	BtcRootDir = RemoveLastSlash(os.Args[1])
-	fn := BtcRootDir+string(os.PathSeparator)+"blk00000.dat"
+	BTCRootDir = RemoveLastSlash(os.Args[1])
+	fn := BTCRootDir + string(os.PathSeparator) + "blk00000.dat"
 	fmt.Println("Looking for file", fn, "...")
 	f, e := os.Open(fn)
 	if e != nil {
@@ -139,21 +142,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(os.Args)>2 {
-		SpawnHomeDir = RemoveLastSlash(os.Args[2])+string(os.PathSeparator)
+	if len(os.Args) > 2 {
+		SpawnHomeDir = RemoveLastSlash(os.Args[2]) + string(os.PathSeparator)
 	} else {
-		SpawnHomeDir = sys.BitcoinHome()+"Spawn"+string(os.PathSeparator)
+		SpawnHomeDir = sys.BitcoinHome() + "Spawn" + string(os.PathSeparator)
 	}
 
-	if Magic==[4]byte{0x0B,0x11,0x09,0x07} {
+	if Magic == [4]byte{0x0B, 0x11, 0x09, 0x07} {
 		// testnet3
 		fmt.Println("There are Testnet3 blocks")
 		GenesisBlock = btc.NewUint256FromString("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
-		SpawnHomeDir += "tstnet"+string(os.PathSeparator)
-	} else if Magic==[4]byte{0xF9,0xBE,0xB4,0xD9} {
+		SpawnHomeDir += "tstnet" + string(os.PathSeparator)
+	} else if Magic == [4]byte{0xF9, 0xBE, 0xB4, 0xD9} {
 		fmt.Println("There are valid Bitcoin blocks")
 		GenesisBlock = btc.NewUint256FromString("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
-		SpawnHomeDir += "btcnet"+string(os.PathSeparator)
+		SpawnHomeDir += "btcnet" + string(os.PathSeparator)
 	} else {
 		println("blk00000.dat has an unexpected magic")
 		os.Exit(1)
@@ -173,5 +176,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	import_blockchain(BtcRootDir)
+	importBlockchain(BTCRootDir)
 }

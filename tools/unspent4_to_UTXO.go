@@ -79,14 +79,14 @@ func load_lastBlock() {
 }
 
 func save_map(ndb map[qdb.KeyType][]byte) {
-	var cnt_dwn, cnt_dwn_from, perc int
+	var cnt_dwn, countDownFrom, perc int
 	of, er := os.Create("UTXO.db")
 	if er != nil {
 		fmt.Println("Create file:", er.Error())
 		return
 	}
 
-	cnt_dwn_from = len(ndb) / 100
+	countDownFrom = len(ndb) / 100
 	wr := bufio.NewWriter(of)
 	binary.Write(wr, binary.LittleEndian, uint64(block_height))
 	wr.Write(block_hash)
@@ -102,7 +102,7 @@ func save_map(ndb map[qdb.KeyType][]byte) {
 		}
 		if cnt_dwn == 0 {
 			fmt.Print("\rSaving UTXO.db - ", perc, "% complete ... ")
-			cnt_dwn = cnt_dwn_from
+			cnt_dwn = countDownFrom
 			perc++
 		} else {
 			cnt_dwn--

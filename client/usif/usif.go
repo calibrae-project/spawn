@@ -16,8 +16,8 @@ import (
 	"github.com/calibrae-project/spawn/lib/script"
 )
 
-// OneUIReq -
-type OneUIReq struct {
+// OneUIRequest -
+type OneUIRequest struct {
 	Param   string
 	Handler func(pars string)
 	Done    sync.WaitGroup
@@ -34,7 +34,7 @@ type OneLock struct {
 
 var (
 	// UIChannel -
-	UIChannel = make(chan *OneUIReq, 1)
+	UIChannel = make(chan *OneUIRequest, 1)
 	// LocksChan -
 	LocksChan = make(chan *OneLock, 1)
 	// ExitNow -
@@ -119,11 +119,13 @@ func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64,
 	return
 }
 
+// DecodeTx -
 func DecodeTx(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64, e error) {
 	s, missinginp, totinp, totout, _, e = DecodeTxSops(tx)
 	return
 }
 
+// LoadRawTx -
 func LoadRawTx(buf []byte) (s string) {
 	txd, er := hex.DecodeString(string(buf))
 	if er != nil {
@@ -176,6 +178,7 @@ func LoadRawTx(buf []byte) (s string) {
 	return
 }
 
+// SendInvToRandomPeer -
 func SendInvToRandomPeer(typ uint32, h *btc.Uint256) {
 	common.CountSafe(fmt.Sprint("NetSendOneInv", typ))
 
@@ -201,6 +204,7 @@ func SendInvToRandomPeer(typ uint32, h *btc.Uint256) {
 	return
 }
 
+// GetNetworkHashRateNum -
 func GetNetworkHashRateNum() float64 {
 	hours := common.CFG.Stat.HashrateHrs
 	common.Last.Mutex.Lock()
@@ -224,7 +228,8 @@ func GetNetworkHashRateNum() float64 {
 	return bph / 6 * diff * 7158278.826667
 }
 
-func ExecUiReq(req *OneUIReq) {
+// ExecUIRequest -
+func ExecUIRequest(req *OneUIRequest) {
 	fmt.Println("main.go last seen in line", common.BusyIn())
 	sta := time.Now().UnixNano()
 	req.Done.Add(1)
@@ -237,6 +242,7 @@ func ExecUiReq(req *OneUIReq) {
 	}()
 }
 
+// MemoryPoolFees -
 func MemoryPoolFees() (res string) {
 	res = fmt.Sprintln("Content of mempool sorted by fee's SPB:")
 	network.TxMutex.Lock()

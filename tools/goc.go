@@ -17,11 +17,13 @@ import (
 )
 
 var (
-	HOST string
-	SID  string
+	// Host -
+	Host string
+	// SID -
+	SID string
 )
 
-func http_get(url string) (res []byte) {
+func httpGet(url string) (res []byte) {
 	req, _ := http.NewRequest("GET", url, nil)
 	if SID != "" {
 		req.AddCookie(&http.Cookie{Name: "sid", Value: SID})
@@ -49,10 +51,10 @@ func http_get(url string) (res []byte) {
 	return
 }
 
-func fetch_balance() {
+func fetchBalance() {
 	os.RemoveAll("balance/")
 
-	d := http_get(HOST + "balance.zip")
+	d := httpGet(Host + "balance.zip")
 	r, er := zip.NewReader(bytes.NewReader(d), int64(len(d)))
 	if er != nil {
 		println(er.Error())
@@ -72,8 +74,8 @@ func fetch_balance() {
 	}
 }
 
-func list_wallets() {
-	d := http_get(HOST + "wallets.xml")
+func listWallets() {
+	d := httpGet(Host + "wallets.xml")
 	var wls struct {
 		Wallet []struct {
 			Name     string
@@ -94,17 +96,17 @@ func list_wallets() {
 	}
 }
 
-func switch_to_wallet(s string) {
-	http_get(HOST + "cfg") // get SID
-	u, _ := url.Parse(HOST + "cfg")
+func switchToWallet(s string) {
+	httpGet(Host + "cfg") // get SID
+	u, _ := url.Parse(Host + "cfg")
 	ps := url.Values{}
 	ps.Add("sid", SID)
 	ps.Add("qwalsel", s)
 	u.RawQuery = ps.Encode()
-	http_get(u.String())
+	httpGet(u.String())
 }
 
-func push_tx(rawtx string) {
+func pushTx(rawtx string) {
 	dat := sys.GetRawData(rawtx)
 	if dat == nil {
 		println("Cannot fetch the raw transaction data (specify hexdump or filename)")
@@ -114,7 +116,7 @@ func push_tx(rawtx string) {
 	val := make(url.Values)
 	val["rawtx"] = []string{hex.EncodeToString(dat)}
 
-	r, er := http.PostForm(HOST+"txs", val)
+	r, er := http.PostForm(Host+"txs", val)
 	if er != nil {
 		println(er.Error())
 		os.Exit(1)
@@ -126,15 +128,15 @@ func push_tx(rawtx string) {
 			txid := btc.NewSha2Hash(dat)
 			fmt.Println("TxID", txid.String(), "loaded")
 
-			http_get(HOST + "cfg") // get SID
+			httpGet(Host + "cfg") // get SID
 			//fmt.Println("sid", SID)
 
-			u, _ := url.Parse(HOST + "txs2s.xml")
+			u, _ := url.Parse(Host + "txs2s.xml")
 			ps := url.Values{}
 			ps.Add("sid", SID)
 			ps.Add("send", txid.String())
 			u.RawQuery = ps.Encode()
-			http_get(u.String())
+			httpGet(u.String())
 		}
 	} else {
 		println("http.Post returned code", r.StatusCode)
@@ -155,32 +157,32 @@ func main() {
 		return
 	}
 
-	HOST = os.Getenv("Spawn_WEBUI")
-	if HOST == "" {
-		HOST = "http://127.0.0.1:8833/"
+	Host = os.Getenv("Spawn_WEBUI")
+	if Host == "" {
+		Host = "http://127.0.0.1:8833/"
 	} else {
-		if !strings.HasPrefix(HOST, "http://") {
-			HOST = "http://" + HOST
+		if !strings.HasPrefix(Host, "http://") {
+			Host = "http://" + Host
 		}
-		if !strings.HasSuffix(HOST, "/") {
-			HOST = HOST + "/"
+		if !strings.HasSuffix(Host, "/") {
+			Host = Host + "/"
 		}
 	}
-	fmt.Println("Spawn WebUI at", HOST, "(you can overwrite it via env variable Spawn_WEBUI)")
+	fmt.Println("Spawn WebUI at", Host, "(you can overwrite it via env variable Spawn_WEBUI)")
 
 	switch os.Args[1] {
 	case "wal":
 		if len(os.Args) > 2 {
-			switch_to_wallet(os.Args[2])
+			switchToWallet(os.Args[2])
 		} else {
-			list_wallets()
+			listWallets()
 		}
 
 	case "bal":
-		fetch_balance()
+		fetchBalance()
 
 	case "ptx":
-		push_tx(os.Args[2])
+		pushTx(os.Args[2])
 
 	default:
 		showHelp()

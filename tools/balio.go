@@ -5,11 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/ltc"
-	"github.com/calibrae-project/spawn/lib/others/utils"
-	"github.com/calibrae-project/spawn/lib/utxo"
 	"io"
 	"io/ioutil"
 	"net"
@@ -17,17 +12,24 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/calibrae-project/spawn"
+	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/calibrae-project/spawn/lib/others/ltc"
+	"github.com/calibrae-project/spawn/lib/others/utils"
+	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
-const MAX_UNSPENT_AT_ONCE = 20
+// MaxUnspentAtOnce -
+const MaxUnspentAtOnce = 20
 
 var (
-	proxy    string
-	ltc_mode bool
-	tbtc     bool
+	proxy   string
+	ltcMode bool
+	tbtc    bool
 )
 
-func print_help() {
+func printHelp() {
 	fmt.Println()
 	fmt.Println("Specify at lest one parameter on the command line.")
 	fmt.Println("  Name of one text file containing BTC/LTC addresses,")
@@ -62,9 +64,9 @@ func dials5(tcp, dest string) (conn net.Conn, err error) {
 	}
 
 	if buf[0] != 5 {
-		err = errors.New("We only support SOCKS5 proxy.")
+		err = errors.New("we only support SOCKS5 proxy")
 	} else if buf[1] != 0 {
-		err = errors.New("SOCKS proxy connection refused.")
+		err = errors.New("SOCKS proxy connection refused")
 		return
 	}
 
@@ -94,7 +96,7 @@ func dials5(tcp, dest string) (conn net.Conn, err error) {
 	}
 
 	if buf[1] != 0 {
-		err = errors.New("SOCKS proxy connection terminated.")
+		err = errors.New("SOCKS proxy connection terminated")
 	}
 
 	return
@@ -107,15 +109,14 @@ func splitHostPort(addr string) (host string, port uint16, err error) {
 	return
 }
 
-func curr_unit() string {
-	if ltc_mode {
+func currUnit() string {
+	if ltcMode {
 		return "LTC"
-	} else {
-		return "BTC"
 	}
+	return "BTC"
 }
 
-func load_wallet(fn string) (addrs []*btc.BtcAddr) {
+func loadWallet(fn string) (addrs []*btc.BtcAddr) {
 	f, e := os.Open(fn)
 	if e != nil {
 		println(e.Error())
@@ -155,7 +156,7 @@ func main() {
 	fmt.Println("Spawn BalIO version", Spawn.Version)
 
 	if len(os.Args) < 2 {
-		print_help()
+		printHelp()
 		return
 	}
 
@@ -172,7 +173,7 @@ func main() {
 	var argz []string
 	for i := 1; i < len(os.Args); i++ {
 		if os.Args[i] == "-ltc" {
-			ltc_mode = true
+			ltcMode = true
 		} else if os.Args[i] == "-t" {
 			tbtc = true
 		} else {
@@ -183,7 +184,7 @@ func main() {
 	if len(argz) == 1 {
 		fi, er := os.Stat(argz[0])
 		if er == nil && fi.Size() > 10 && !fi.IsDir() {
-			addrs = load_wallet(argz[0])
+			addrs = loadWallet(argz[0])
 			if addrs != nil {
 				fmt.Println("Found", len(addrs), "address(es) in", argz[0])
 			}
@@ -196,27 +197,26 @@ func main() {
 			if e != nil {
 				println(argz[i], ": ", e.Error())
 				return
-			} else {
-				addrs = append(addrs, a)
 			}
+			addrs = append(addrs, a)
 		}
 	}
 
 	if len(addrs) == 0 {
-		print_help()
+		printHelp()
 		return
 	}
 
 	for i := range addrs {
 		switch addrs[i].Version {
 		case 48:
-			ltc_mode = true
+			ltcMode = true
 		case 111:
 			tbtc = true
 		}
 	}
 
-	if tbtc && ltc_mode {
+	if tbtc && ltcMode {
 		println("Litecoin's testnet is not suppported")
 		return
 	}
@@ -233,7 +233,7 @@ func main() {
 	unsp, _ := os.Create("balance/unspent.txt")
 	for off := 0; off < len(addrs); off++ {
 		var res utxo.AllUnspentTx
-		if ltc_mode {
+		if ltcMode {
 			res = ltc.GetUnspent(addrs[off])
 		} else if tbtc {
 			res = utils.GetUnspentTestnet(addrs[off])
@@ -243,7 +243,7 @@ func main() {
 		for _, r := range res {
 			var txraw []byte
 			id := btc.NewUint256(r.TxPrevOut.Hash[:])
-			if ltc_mode {
+			if ltcMode {
 				txraw = ltc.GetTxFromWeb(id)
 			} else if tbtc {
 				txraw = utils.GetTestnetTxFromWeb(id)
@@ -265,7 +265,7 @@ func main() {
 	}
 	unsp.Close()
 	if outcnt > 0 {
-		fmt.Printf("Total %.8f %s in %d unspent outputs.\n", float64(sum)/1e8, curr_unit(), outcnt)
+		fmt.Printf("Total %.8f %s in %d unspent outputs.\n", float64(sum)/1e8, currUnit(), outcnt)
 		fmt.Println("The data has been stored in 'balance' folder.")
 		fmt.Println("Use it with the wallet app to spend any of it.")
 	} else {
