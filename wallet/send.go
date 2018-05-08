@@ -10,7 +10,7 @@ import (
 
 // Resolved while parsing "-send" parameter
 type oneSendTo struct {
-	addr   *btc.BtcAddr
+	addr   *btc.Addr
 	amount uint64
 }
 

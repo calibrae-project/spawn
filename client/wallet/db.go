@@ -246,7 +246,7 @@ func (r *OneAllAddrBal) Count() int {
 }
 
 // GetAllUnspent -
-func GetAllUnspent(aa *btc.BtcAddr) (thisbal utxo.AllUnspentTx) {
+func GetAllUnspent(aa *btc.Addr) (thisbal utxo.AllUnspentTx) {
 	var rec *OneAllAddrBal
 	if aa.SegwitProg != nil {
 		var uidx [32]byte
@@ -275,7 +275,7 @@ func GetAllUnspent(aa *btc.BtcAddr) (thisbal utxo.AllUnspentTx) {
 			if qr, vout := v.GetRec(); qr != nil {
 				if oo := qr.Outs[vout]; oo != nil {
 					unsp := &utxo.OneUnspentTx{TxPrevOut: btc.TxPrevOut{Hash: qr.TxID, Vout: vout},
-						Value: oo.Value, MinedAt: qr.InBlock, Coinbase: qr.Coinbase, BtcAddr: aa}
+						Value: oo.Value, MinedAt: qr.InBlock, Coinbase: qr.Coinbase, Addr: aa}
 
 					if int(vout+1) < len(qr.Outs) {
 						var msg []byte

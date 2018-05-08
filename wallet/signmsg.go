@@ -38,7 +38,7 @@ func signMessage() {
 			}
 			txsig.R.Set(r)
 			txsig.S.Set(s)
-			fmt.Println("PublicKey:", hex.EncodeToString(signkey.BtcAddr.Pubkey))
+			fmt.Println("PublicKey:", hex.EncodeToString(signkey.Addr.Pubkey))
 			fmt.Println(hex.EncodeToString(txsig.Bytes()))
 			return
 		}
@@ -79,15 +79,15 @@ func signMessage() {
 	copy(sb[1+64-len(sd):], sd)
 
 	rpk := btcsig.RecoverPublicKey(hash[:], 0)
-	sa := btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.BtcAddr.Version)
-	if sa.Hash160 == signkey.BtcAddr.Hash160 {
+	sa := btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.Addr.Version)
+	if sa.Hash160 == signkey.Addr.Hash160 {
 		fmt.Println(base64.StdEncoding.EncodeToString(sb[:]))
 		return
 	}
 
 	rpk = btcsig.RecoverPublicKey(hash[:], 1)
-	sa = btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.BtcAddr.Version)
-	if sa.Hash160 == signkey.BtcAddr.Hash160 {
+	sa = btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.Addr.Version)
+	if sa.Hash160 == signkey.Addr.Hash160 {
 		sb[0]++
 		fmt.Println(base64.StdEncoding.EncodeToString(sb[:]))
 		return

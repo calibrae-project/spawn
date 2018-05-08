@@ -1,8 +1,9 @@
 package utxo
 
 import (
-	"fmt"
 	"encoding/binary"
+	"fmt"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
@@ -11,12 +12,12 @@ type AllUnspentTx []*OneUnspentTx
 // Returned by GetUnspentFromPkScr
 type OneUnspentTx struct {
 	btc.TxPrevOut
-	Value uint64
+	Value   uint64
 	MinedAt uint32
-	*btc.BtcAddr
+	*btc.Addr
 	destString string
-	Coinbase bool
-	Message []byte
+	Coinbase   bool
+	Message    []byte
 }
 
 func (x AllUnspentTx) Len() int {
@@ -25,7 +26,7 @@ func (x AllUnspentTx) Len() int {
 
 func (x AllUnspentTx) Less(i, j int) bool {
 	if x[i].MinedAt == x[j].MinedAt {
-		if x[i].TxPrevOut.Hash==x[j].TxPrevOut.Hash {
+		if x[i].TxPrevOut.Hash == x[j].TxPrevOut.Hash {
 			return x[i].TxPrevOut.Vout < x[j].TxPrevOut.Vout
 		}
 		return binary.LittleEndian.Uint64(x[i].TxPrevOut.Hash[24:32]) <
@@ -40,8 +41,8 @@ func (x AllUnspentTx) Swap(i, j int) {
 
 func (ou *OneUnspentTx) String() (s string) {
 	s = fmt.Sprintf("%15s BTC %s", btc.UintToBtc(ou.Value), ou.TxPrevOut.String())
-	if ou.BtcAddr!=nil {
-		s += " " + ou.DestAddr() + ou.BtcAddr.Label()
+	if ou.Addr != nil {
+		s += " " + ou.DestAddr() + ou.Addr.Label()
 	}
 	if ou.MinedAt != 0 {
 		s += fmt.Sprint(" ", ou.MinedAt)
@@ -52,7 +53,7 @@ func (ou *OneUnspentTx) String() (s string) {
 	if ou.Message != nil {
 		s += "  "
 		for _, c := range ou.Message {
-			if c<' ' || c>127 {
+			if c < ' ' || c > 127 {
 				s += fmt.Sprintf("\\x%02x", c)
 			} else {
 				s += string(c)
@@ -63,18 +64,18 @@ func (ou *OneUnspentTx) String() (s string) {
 }
 
 func (ou *OneUnspentTx) FixDestString() {
-	ou.destString = ou.BtcAddr.String()
+	ou.destString = ou.Addr.String()
 }
 
 func (ou *OneUnspentTx) UnspentTextLine() (s string) {
 	s = fmt.Sprintf("%s # %.8f BTC @ %s%s, block %d", ou.TxPrevOut.String(),
-		float64(ou.Value)/1e8, ou.DestAddr(), ou.BtcAddr.Label(), ou.MinedAt)
+		float64(ou.Value)/1e8, ou.DestAddr(), ou.Addr.Label(), ou.MinedAt)
 	return
 }
 
-func (ou *OneUnspentTx) DestAddr() (string) {
-	if ou.destString=="" {
-		return ou.BtcAddr.String()
+func (ou *OneUnspentTx) DestAddr() string {
+	if ou.destString == "" {
+		return ou.Addr.String()
 	}
 	return ou.destString
 }

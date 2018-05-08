@@ -47,7 +47,7 @@ func pWal(w http.ResponseWriter, r *http.Request) {
 	writeHTMLTail(w)
 }
 
-func getaddrtype(aa *btc.BtcAddr) string {
+func getaddrtype(aa *btc.Addr) string {
 	if aa.SegwitProg != nil && aa.SegwitProg.Version == 0 && len(aa.SegwitProg.Program) == 20 {
 		return "P2WPKH"
 	}

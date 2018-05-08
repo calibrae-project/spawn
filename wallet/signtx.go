@@ -65,12 +65,12 @@ func signTx(tx *btc.Tx) (allSigned bool) {
 			var er error
 			k := keys[keyIdx]
 			if segwitProg != nil {
-				er = tx.SignWitness(in, k.BtcAddr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.BtcAddr.Pubkey, k.Key)
+				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
 			} else if adr.String() == segwit[keyIdx].String() {
-				tx.TxIn[in].ScriptSig = append([]byte{22, 0, 20}, k.BtcAddr.Hash160[:]...)
-				er = tx.SignWitness(in, k.BtcAddr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.BtcAddr.Pubkey, k.Key)
+				tx.TxIn[in].ScriptSig = append([]byte{22, 0, 20}, k.Addr.Hash160[:]...)
+				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
 			} else {
-				er = tx.Sign(in, uo.Pk_script, btc.SIGHASH_ALL, k.BtcAddr.Pubkey, k.Key)
+				er = tx.Sign(in, uo.Pk_script, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
 			}
 			if er != nil {
 				fmt.Println("ERROR: Sign failed for input number", in, er.Error())

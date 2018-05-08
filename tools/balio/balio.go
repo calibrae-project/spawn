@@ -116,7 +116,7 @@ func currUnit() string {
 	return "BTC"
 }
 
-func loadWallet(fn string) (addrs []*btc.BtcAddr) {
+func loadWallet(fn string) (addrs []*btc.Addr) {
 	f, e := os.Open(fn)
 	if e != nil {
 		println(e.Error())
@@ -168,7 +168,7 @@ func main() {
 		fmt.Println("WARNING: not using Tor (setup TOR variable, if you want)")
 	}
 
-	var addrs []*btc.BtcAddr
+	var addrs []*btc.Addr
 
 	var argz []string
 	for i := 1; i < len(os.Args); i++ {

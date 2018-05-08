@@ -17,7 +17,7 @@ var (
 	firstDetermIdx int
 	// set in makeWallet():
 	keys   []*btc.PrivateAddr
-	segwit []*btc.BtcAddr
+	segwit []*btc.Addr
 	curFee uint64
 )
 
@@ -53,9 +53,9 @@ func loadOthers() {
 				fmt.Println("You may want to play with -t or -ltc switch")
 			}
 			if len(pk) > 1 {
-				rec.BtcAddr.Extra.Label = pk[1]
+				rec.Addr.Extra.Label = pk[1]
 			} else {
-				rec.BtcAddr.Extra.Label = fmt.Sprint("Other ", len(keys))
+				rec.Addr.Extra.Label = fmt.Sprint("Other ", len(keys))
 			}
 			keys = append(keys, rec)
 		}
@@ -147,13 +147,13 @@ func makeWallet() {
 
 		rec := btc.NewPrivateAddr(privKey, verSecret(), !uncompressed)
 
-		if *pubkey != "" && *pubkey == rec.BtcAddr.String() {
-			fmt.Println("Public address:", rec.BtcAddr.String())
-			fmt.Println("Public hexdump:", hex.EncodeToString(rec.BtcAddr.Pubkey))
+		if *pubkey != "" && *pubkey == rec.Addr.String() {
+			fmt.Println("Public address:", rec.Addr.String())
+			fmt.Println("Public hexdump:", hex.EncodeToString(rec.Addr.Pubkey))
 			return
 		}
 
-		rec.BtcAddr.Extra.Label = fmt.Sprint(lab, " ", i+1)
+		rec.Addr.Extra.Label = fmt.Sprint(lab, " ", i+1)
 		keys = append(keys, rec)
 		i++
 	}
@@ -162,7 +162,7 @@ func makeWallet() {
 	}
 
 	// Calculate SegWit addresses
-	segwit = make([]*btc.BtcAddr, len(keys))
+	segwit = make([]*btc.Addr, len(keys))
 	for i, pk := range keys {
 		if len(pk.Pubkey) != 33 {
 			continue
@@ -182,12 +182,12 @@ func dumpAddrs() {
 
 	fmt.Fprintln(f, "# Deterministic Walet Type", waltype)
 	if type2Secret != nil {
-		fmt.Fprintln(f, "#", hex.EncodeToString(keys[firstDetermIdx].BtcAddr.Pubkey))
+		fmt.Fprintln(f, "#", hex.EncodeToString(keys[firstDetermIdx].Addr.Pubkey))
 		fmt.Fprintln(f, "#", hex.EncodeToString(type2Secret))
 	}
 	for i := range keys {
 		if !*noverify {
-			if er := btc.VerifyKeyPair(keys[i].Key, keys[i].BtcAddr.Pubkey); er != nil {
+			if er := btc.VerifyKeyPair(keys[i].Key, keys[i].Addr.Pubkey); er != nil {
 				println("Something wrong with key at index", i, " - abort!", er.Error())
 				cleanExit(1)
 			}
@@ -200,11 +200,11 @@ func dumpAddrs() {
 				pubaddr = segwit[i].String()
 			}
 		} else {
-			pubaddr = keys[i].BtcAddr.String()
+			pubaddr = keys[i].Addr.String()
 		}
-		fmt.Println(pubaddr, keys[i].BtcAddr.Extra.Label)
+		fmt.Println(pubaddr, keys[i].Addr.Extra.Label)
 		if f != nil {
-			fmt.Fprintln(f, pubaddr, keys[i].BtcAddr.Extra.Label)
+			fmt.Fprintln(f, pubaddr, keys[i].Addr.Extra.Label)
 		}
 	}
 	if f != nil {
@@ -215,7 +215,7 @@ func dumpAddrs() {
 
 func publicToKey(pubkey []byte) *btc.PrivateAddr {
 	for i := range keys {
-		if bytes.Equal(pubkey, keys[i].BtcAddr.Pubkey) {
+		if bytes.Equal(pubkey, keys[i].Addr.Pubkey) {
 			return keys[i]
 		}
 	}
@@ -224,7 +224,7 @@ func publicToKey(pubkey []byte) *btc.PrivateAddr {
 
 func hashToKeyIdx(h160 []byte) (res int) {
 	for i := range keys {
-		if bytes.Equal(keys[i].BtcAddr.Hash160[:], h160) {
+		if bytes.Equal(keys[i].Addr.Hash160[:], h160) {
 			return i
 		}
 		if segwit[i] != nil && bytes.Equal(segwit[i].Hash160[:], h160) {
@@ -271,15 +271,15 @@ func dumpPrivKey() {
 	if *dumppriv == "*" {
 		// Dump all private keys
 		for i := range keys {
-			fmt.Println(keys[i].String(), keys[i].BtcAddr.String(), keys[i].BtcAddr.Extra.Label)
+			fmt.Println(keys[i].String(), keys[i].Addr.String(), keys[i].Addr.Extra.Label)
 		}
 	} else {
 		// single key
 		k := addressToKey(*dumppriv)
 		if k != nil {
-			fmt.Println("Public address:", k.BtcAddr.String(), k.BtcAddr.Extra.Label)
-			fmt.Println("Public hexdump:", hex.EncodeToString(k.BtcAddr.Pubkey))
-			fmt.Println("Public compressed:", k.BtcAddr.IsCompressed())
+			fmt.Println("Public address:", k.Addr.String(), k.Addr.Extra.Label)
+			fmt.Println("Public hexdump:", hex.EncodeToString(k.Addr.Pubkey))
+			fmt.Println("Public compressed:", k.Addr.IsCompressed())
 			fmt.Println("Private encoded:", k.String())
 			fmt.Println("Private hexdump:", hex.EncodeToString(k.Key))
 		} else {

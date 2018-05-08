@@ -137,7 +137,7 @@ func allAddrs(par string) {
 
 	var pkscrP2sk [23]byte
 	var pkscrP2kh [25]byte
-	var ad *btc.BtcAddr
+	var ad *btc.Addr
 
 	pkscrP2sk[0] = 0xa9
 	pkscrP2sk[1] = 20
@@ -158,7 +158,7 @@ func allAddrs(par string) {
 			copy(pkscrP2sk[2:22], best[i].Key)
 			ad = btc.NewAddrFromPkScript(pkscrP2sk[:], common.CFG.Testnet)
 		case 2:
-			ad = new(btc.BtcAddr)
+			ad = new(btc.Addr)
 			ad.SegwitProg = new(btc.SegwitProg)
 			ad.SegwitProg.HRP = btc.GetSegwitHRP(common.CFG.Testnet)
 			ad.SegwitProg.Program = best[i].Key
@@ -185,7 +185,7 @@ func listUnspent(addr string) {
 		var tot uint64
 		sort.Sort(unsp)
 		for i := range unsp {
-			unsp[i].BtcAddr = nil // no need to print the address here
+			unsp[i].Addr = nil // no need to print the address here
 			tot += unsp[i].Value
 		}
 		fmt.Println(ad.String(), "has", btc.UintToBtc(tot), "BTC in", len(unsp), "records:")

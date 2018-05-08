@@ -11,7 +11,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
-func GetUnspentFromExplorer(addr *btc.BtcAddr, testnet bool) (res utxo.AllUnspentTx, er error) {
+func GetUnspentFromExplorer(addr *btc.Addr, testnet bool) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 	if testnet {
 		r, er = http.Get("https://testnet.blockexplorer.com/api/addr/" + addr.String() + "/utxo")
@@ -53,14 +53,14 @@ func GetUnspentFromExplorer(addr *btc.BtcAddr, testnet bool) (res utxo.AllUnspen
 		ur.TxPrevOut.Vout = r.Vout
 		ur.Value = r.Value
 		ur.MinedAt = r.Height
-		ur.BtcAddr = addr
+		ur.Addr = addr
 		res = append(res, ur)
 	}
 
 	return
 }
 
-func GetUnspentFromBlockchainInfo(addr *btc.BtcAddr) (res utxo.AllUnspentTx, er error) {
+func GetUnspentFromBlockchainInfo(addr *btc.Addr) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 	r, er = http.Get("https://blockchain.info/unspent?active=" + addr.String())
 	if er != nil {
@@ -98,14 +98,14 @@ func GetUnspentFromBlockchainInfo(addr *btc.BtcAddr) (res utxo.AllUnspentTx, er 
 		ur.TxPrevOut.Vout = r.Vout
 		ur.Value = r.Value
 		//ur.MinedAt = r.Height
-		ur.BtcAddr = addr
+		ur.Addr = addr
 		res = append(res, ur)
 	}
 
 	return
 }
 
-func GetUnspentFromBlockcypher(addr *btc.BtcAddr, currency string) (res utxo.AllUnspentTx, er error) {
+func GetUnspentFromBlockcypher(addr *btc.Addr, currency string) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 
 	r, er = http.Get("https://api.blockcypher.com/v1/" + currency + "/main/addrs/" + addr.String() + "?unspentOnly=true")
@@ -147,14 +147,14 @@ func GetUnspentFromBlockcypher(addr *btc.BtcAddr, currency string) (res utxo.All
 		ur.TxPrevOut.Vout = r.Vout
 		ur.Value = r.Value
 		ur.MinedAt = r.Height
-		ur.BtcAddr = addr
+		ur.Addr = addr
 		res = append(res, ur)
 	}
 
 	return
 }
 
-func GetUnspent(addr *btc.BtcAddr) (res utxo.AllUnspentTx) {
+func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 
 	res, er = GetUnspentFromExplorer(addr, false)
@@ -172,7 +172,7 @@ func GetUnspent(addr *btc.BtcAddr) (res utxo.AllUnspentTx) {
 	return
 }
 
-func GetUnspentTestnet(addr *btc.BtcAddr) (res utxo.AllUnspentTx) {
+func GetUnspentTestnet(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 
 	res, er = GetUnspentFromExplorer(addr, true)

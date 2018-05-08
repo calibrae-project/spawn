@@ -11,8 +11,8 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/bech32"
 )
 
-// BtcAddr -
-type BtcAddr struct {
+// Addr -
+type Addr struct {
 	Version  byte
 	Hash160  [20]byte
 	Checksum []byte
@@ -37,12 +37,12 @@ type SegwitProg struct {
 }
 
 // NewAddrFromString -
-func NewAddrFromString(hs string) (a *BtcAddr, e error) {
+func NewAddrFromString(hs string) (a *Addr, e error) {
 	if strings.HasPrefix(hs, "bc1") || strings.HasPrefix(hs, "tb1") {
 		var sw = &SegwitProg{HRP: hs[:2]}
 		sw.Version, sw.Program = bech32.SegwitDecode(sw.HRP, hs)
 		if sw.Program != nil {
-			a = &BtcAddr{SegwitProg: sw}
+			a = &Addr{SegwitProg: sw}
 		}
 		return
 	}
@@ -61,7 +61,7 @@ func NewAddrFromString(hs string) (a *BtcAddr, e error) {
 		if !bytes.Equal(sh[:4], dec[21:25]) {
 			e = errors.New("Address Checksum error")
 		} else {
-			a = new(BtcAddr)
+			a = new(Addr)
 			a.Version = dec[0]
 			copy(a.Hash160[:], dec[1:21])
 			a.Checksum = make([]byte, 4)
@@ -74,15 +74,15 @@ func NewAddrFromString(hs string) (a *BtcAddr, e error) {
 	return
 }
 
-func NewAddrFromHash160(in []byte, ver byte) (a *BtcAddr) {
-	a = new(BtcAddr)
+func NewAddrFromHash160(in []byte, ver byte) (a *Addr) {
+	a = new(Addr)
 	a.Version = ver
 	copy(a.Hash160[:], in[:])
 	return
 }
 
-func NewAddrFromPubkey(in []byte, ver byte) (a *BtcAddr) {
-	a = new(BtcAddr)
+func NewAddrFromPubkey(in []byte, ver byte) (a *Addr) {
+	a = new(Addr)
 	a.Pubkey = make([]byte, len(in))
 	copy(a.Pubkey[:], in[:])
 	a.Version = ver
@@ -106,7 +106,7 @@ func AddrVerScript(testnet bool) byte {
 	}
 }
 
-func NewAddrFromPkScript(scr []byte, testnet bool) *BtcAddr {
+func NewAddrFromPkScript(scr []byte, testnet bool) *Addr {
 	// check segwit bech32:
 	if len(scr) == 0 {
 		return nil
@@ -120,7 +120,7 @@ func NewAddrFromPkScript(scr []byte, testnet bool) *BtcAddr {
 			return nil
 		}
 
-		ad := new(BtcAddr)
+		ad := new(Addr)
 		ad.Enc58str = str
 		ad.SegwitProg = sw
 
@@ -140,7 +140,7 @@ func NewAddrFromPkScript(scr []byte, testnet bool) *BtcAddr {
 }
 
 // Base58 encoded address
-func (a *BtcAddr) String() string {
+func (a *Addr) String() string {
 	if a.Enc58str == "" {
 		if a.SegwitProg != nil {
 			a.Enc58str = a.SegwitProg.String()
@@ -160,7 +160,7 @@ func (a *BtcAddr) String() string {
 	return a.Enc58str
 }
 
-func (a *BtcAddr) IsCompressed() bool {
+func (a *Addr) IsCompressed() bool {
 	if len(a.Pubkey) == 33 {
 		return true
 	}
@@ -171,7 +171,7 @@ func (a *BtcAddr) IsCompressed() bool {
 }
 
 // String with a label
-func (a *BtcAddr) Label() (s string) {
+func (a *Addr) Label() (s string) {
 	if a.Extra.Wallet != "" {
 		s += " " + a.Extra.Wallet + ":"
 	}
@@ -185,7 +185,7 @@ func (a *BtcAddr) Label() (s string) {
 }
 
 // Check if a pk_script send coins to this address
-func (a *BtcAddr) Owns(scr []byte) (yes bool) {
+func (a *Addr) Owns(scr []byte) (yes bool) {
 	// The most common spend script
 	if len(scr) == 25 && scr[0] == 0x76 && scr[1] == 0xa9 && scr[2] == 0x14 && scr[23] == 0x88 && scr[24] == 0xac {
 		yes = bytes.Equal(scr[3:23], a.Hash160[:])
@@ -225,7 +225,7 @@ func (a *BtcAddr) Owns(scr []byte) (yes bool) {
 	return
 }
 
-func (a *BtcAddr) OutScript() (res []byte) {
+func (a *Addr) OutScript() (res []byte) {
 	if a.SegwitProg != nil {
 		if a.SegwitProg.Version != 0 || (len(a.SegwitProg.Program) != 20 && len(a.SegwitProg.Program) != 32) {
 			panic("Only Segwit programs version 0 and length 20 or 32 supported")

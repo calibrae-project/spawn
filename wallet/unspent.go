@@ -125,7 +125,7 @@ func applyToBalance(tx *btc.Tx) {
 				uns.key = k
 				uns.TxPrevOut.Hash = tx.Hash.Hash
 				uns.TxPrevOut.Vout = uint32(out)
-				uns.label = fmt.Sprint("# ", btc.UintToBtc(tx.TxOut[out].Value), " BTC @ ", k.BtcAddr.String())
+				uns.label = fmt.Sprint("# ", btc.UintToBtc(tx.TxOut[out].Value), " BTC @ ", k.Addr.String())
 				unspentOuts = append(unspentOuts, uns)
 			}
 		}

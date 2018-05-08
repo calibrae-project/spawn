@@ -372,7 +372,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 
 1.0.0rc5 - 2014-05-26
 * btcversig tool: added Litecoin support (specify LTC address or add "-ltc" switch for testnet)
-* lib/btc: BtcAddr.OutScript() handles version 48 (Litecoin's P2KH) & panics if cannot output right script
+* lib/btc: Addr.OutScript() handles version 48 (Litecoin's P2KH) & panics if cannot output right script
 * WebUI: shows page generation time
 * WebUI: fixed non-existing page tails
 * Wallet: added litcoin mode ("-ltc" switch)

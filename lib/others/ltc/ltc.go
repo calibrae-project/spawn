@@ -2,6 +2,7 @@ package ltc
 
 import (
 	"bytes"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/utils"
 	"github.com/calibrae-project/spawn/lib/utxo"
@@ -27,7 +28,7 @@ func AddrVerPubkey(testnet bool) byte {
 	return btc.AddrVerPubkey(testnet)
 }
 
-func NewAddrFromPkScript(scr []byte, testnet bool) (ad *btc.BtcAddr) {
+func NewAddrFromPkScript(scr []byte, testnet bool) (ad *btc.Addr) {
 	ad = btc.NewAddrFromPkScript(scr, testnet)
 	if ad != nil && ad.Version == btc.AddrVerPubkey(false) {
 		ad.Version = LTC_ADDR_VERSION
@@ -35,7 +36,7 @@ func NewAddrFromPkScript(scr []byte, testnet bool) (ad *btc.BtcAddr) {
 	return
 }
 
-func GetUnspent(addr *btc.BtcAddr) (res utxo.AllUnspentTx) {
+func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 
 	res, er = utils.GetUnspentFromBlockcypher(addr, "ltc")

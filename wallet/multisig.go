@@ -31,7 +31,7 @@ func makeP2sh() {
 		return
 	}
 
-	fmt.Println("The P2SH data points to address", ms.BtcAddr(testnet).String())
+	fmt.Println("The P2SH data points to address", ms.Addr(testnet).String())
 
 	sd := ms.Bytes()
 

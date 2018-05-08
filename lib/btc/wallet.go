@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"math/big"
+
 	"github.com/calibrae-project/spawn/lib/secp256k1"
 )
-
 
 // Get ECDSA public key in bitcoin protocol format, from the give private key
 func PublicFromPrivate(priv_key []byte, compressed bool) (res []byte) {
@@ -21,7 +21,6 @@ func PublicFromPrivate(priv_key []byte, compressed bool) (res []byte) {
 	}
 	return
 }
-
 
 // Verify the secret key's range and if a test message signed with it verifies OK
 // Returns nil if everything looks OK
@@ -67,7 +66,6 @@ func DeriveNextPrivate(p, s []byte) (toreturn []byte) {
 	return
 }
 
-
 // B_public_key = G * secret + A_public_key
 // Used for implementing Type-2 determinitic keys
 func DeriveNextPublic(public, secret []byte) (out []byte) {
@@ -76,23 +74,20 @@ func DeriveNextPublic(public, secret []byte) (out []byte) {
 	return
 }
 
-
 // returns one TxOut record
-func NewSpendOutputs(addr *BtcAddr, amount uint64, testnet bool) ([]*TxOut, error) {
+func NewSpendOutputs(addr *Addr, amount uint64, testnet bool) ([]*TxOut, error) {
 	out := new(TxOut)
 	out.Value = amount
 	out.Pk_script = addr.OutScript()
 	return []*TxOut{out}, nil
 }
 
-
 // Base58 encoded private address with checksum and it's corresponding public key/address
 type PrivateAddr struct {
 	Version byte
-	Key []byte
-	*BtcAddr
+	Key     []byte
+	*Addr
 }
-
 
 func NewPrivateAddr(key []byte, ver byte, compr bool) (ad *PrivateAddr) {
 	ad = new(PrivateAddr)
@@ -102,10 +97,9 @@ func NewPrivateAddr(key []byte, ver byte, compr bool) (ad *PrivateAddr) {
 	if pub == nil {
 		panic("PublicFromPrivate error")
 	}
-	ad.BtcAddr = NewAddrFromPubkey(pub, ver-0x80)
+	ad.Addr = NewAddrFromPubkey(pub, ver-0x80)
 	return
 }
-
 
 func DecodePrivateAddr(s string) (*PrivateAddr, error) {
 	pkb := Decodeb58(s)
@@ -118,7 +112,7 @@ func DecodePrivateAddr(s string) (*PrivateAddr, error) {
 		return nil, errors.New("Decoded data too short")
 	}
 
-	if len(pkb)>38 {
+	if len(pkb) > 38 {
 		return nil, errors.New("Decoded data too long")
 	}
 
@@ -128,9 +122,8 @@ func DecodePrivateAddr(s string) (*PrivateAddr, error) {
 		return nil, errors.New("Checksum error")
 	}
 
-	return NewPrivateAddr(pkb[1:33], pkb[0], len(pkb)==38 && pkb[33]==1), nil
+	return NewPrivateAddr(pkb[1:33], pkb[0], len(pkb) == 38 && pkb[33] == 1), nil
 }
-
 
 // Returns base58 encoded private key (with checksum)
 func (ad *PrivateAddr) String() string {
@@ -138,7 +131,7 @@ func (ad *PrivateAddr) String() string {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(ad.Version)
 	buf.Write(ad.Key)
-	if ad.BtcAddr.IsCompressed() {
+	if ad.Addr.IsCompressed() {
 		buf.WriteByte(1)
 	}
 	ShaHash(buf.Bytes(), ha[:])

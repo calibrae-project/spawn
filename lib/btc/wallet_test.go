@@ -2,11 +2,10 @@ package btc
 
 import (
 	"bytes"
-	"testing"
 	"crypto/rand"
 	"encoding/hex"
+	"testing"
 )
-
 
 func TestGetPublic(t *testing.T) {
 	prv, _ := hex.DecodeString("bb87a5e3e786ecd05f4901ef7ef32726570bfd176ada37a31ef2861db2834d7e")
@@ -16,7 +15,6 @@ func TestGetPublic(t *testing.T) {
 		t.Error("PublicFromPrivate failed")
 	}
 }
-
 
 func TestDeterministicPublic(t *testing.T) {
 	secret, _ := hex.DecodeString("4438addb9b147349432466d89d81f4dae1fc1fd9bcb764d2854f303931796c2d")
@@ -28,7 +26,6 @@ func TestDeterministicPublic(t *testing.T) {
 	}
 }
 
-
 func TestDeterministicWalletType2(t *testing.T) {
 	secret := make([]byte, 32)
 	rand.Read(secret)
@@ -37,14 +34,14 @@ func TestDeterministicWalletType2(t *testing.T) {
 	rand.Read(private_key)
 
 	public_key := PublicFromPrivate(private_key, true)
-	for i:=0; i<50; i++ {
+	for i := 0; i < 50; i++ {
 		private_key = DeriveNextPrivate(private_key, secret)
-		if private_key==nil {
+		if private_key == nil {
 			t.Fatal("DeriveNextPrivate fail")
 		}
 
 		public_key = DeriveNextPublic(public_key, secret)
-		if public_key==nil {
+		if public_key == nil {
 			t.Fatal("DeriveNextPublic fail")
 		}
 
@@ -55,7 +52,7 @@ func TestDeterministicWalletType2(t *testing.T) {
 		}
 
 		// make sure that you can sign and verify with it
-		if e := VerifyKeyPair(private_key, public_key); e!=nil {
+		if e := VerifyKeyPair(private_key, public_key); e != nil {
 			t.Error(i, "verify key failed", e.Error())
 		}
 	}
@@ -63,21 +60,19 @@ func TestDeterministicWalletType2(t *testing.T) {
 
 func BenchmarkPrivToPubCompr(b *testing.B) {
 	var prv [32]byte
-	for i:=0; i<b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		ShaHash(prv[:], prv[:])
 		PublicFromPrivate(prv[:], true)
 	}
 }
 
-
 func BenchmarkPrivToPubUncom(b *testing.B) {
 	var prv [32]byte
-	for i:=0; i<b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		ShaHash(prv[:], prv[:])
 		PublicFromPrivate(prv[:], false)
 	}
 }
-
 
 func BenchmarkDeriveNextPrivate(b *testing.B) {
 	var sec [32]byte
@@ -85,11 +80,10 @@ func BenchmarkDeriveNextPrivate(b *testing.B) {
 	ShaHash(sec[:], prv)
 	ShaHash(prv, sec[:])
 	b.ResetTimer()
-	for i:=0; i<b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		prv = DeriveNextPrivate(prv, sec[:])
 	}
 }
-
 
 func BenchmarkDeriveNextPublic(b *testing.B) {
 	var prv, sec [32]byte
@@ -97,11 +91,10 @@ func BenchmarkDeriveNextPublic(b *testing.B) {
 	ShaHash(prv[:], sec[:])
 	pub := PublicFromPrivate(prv[:], true)
 	b.ResetTimer()
-	for i:=0; i<b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		pub = DeriveNextPublic(pub, sec[:])
 	}
 }
-
 
 func TestDecodePrivateKey(t *testing.T) {
 	// mainnet compressed
@@ -115,7 +108,7 @@ func TestDecodePrivateKey(t *testing.T) {
 	if !pk.IsCompressed() {
 		t.Error("Should be compressed")
 	}
-	if pk.BtcAddr.String()!="179nPBZhnSRM9HB7RM9bJztRAb8ciPitVr" {
+	if pk.Addr.String() != "179nPBZhnSRM9HB7RM9bJztRAb8ciPitVr" {
 		t.Error("Bad address")
 	}
 	if pk.String() != "L2zsCZKchUMJ9BS7MVyo8gLGV26rYtgFZskSitwkptk4F1g3KtjN" {
@@ -133,7 +126,7 @@ func TestDecodePrivateKey(t *testing.T) {
 	if pk.IsCompressed() {
 		t.Error("Should not be compressed")
 	}
-	if pk.BtcAddr.String()!="mj12iv73R4V5bbyhZg6TTQHfd7bL7rzu2v" {
+	if pk.Addr.String() != "mj12iv73R4V5bbyhZg6TTQHfd7bL7rzu2v" {
 		t.Error("Bad address")
 	}
 	if pk.String() != "92fqqcuu2iSqjfAFifVJ7yxDAkUgFEMgu19YgzLxUqXmbJQRrWp" {
@@ -151,7 +144,7 @@ func TestDecodePrivateKey(t *testing.T) {
 	if !pk.IsCompressed() {
 		t.Error("Should be compressed")
 	}
-	if pk.BtcAddr.String()!="LMJoWKLk69uXn9joK5LmciyPwiVxAat7Ua" {
+	if pk.Addr.String() != "LMJoWKLk69uXn9joK5LmciyPwiVxAat7Ua" {
 		t.Error("Bad address")
 	}
 	if pk.String() != "TAtSTnmpQFUKRH56MN7mn6iU8tJpcok7uCP2Hcab599H2pyDZKfY" {

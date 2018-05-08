@@ -122,7 +122,7 @@ check_pass:
 }
 
 // return the change addrress or nil if there will be no change
-func getChangeAddr() (chng *btc.BtcAddr) {
+func getChangeAddr() (chng *btc.Addr) {
 	if *change != "" {
 		var e error
 		chng, e = btc.NewAddrFromString(*change)
@@ -138,7 +138,7 @@ func getChangeAddr() (chng *btc.BtcAddr) {
 	for idx := range unspentOuts {
 		uo := getUO(&unspentOuts[idx].TxPrevOut)
 		if k := pkscrToKey(uo.Pk_script); k != nil {
-			chng = k.BtcAddr
+			chng = k.Addr
 			return
 		}
 	}
@@ -222,8 +222,8 @@ func verSecret() byte {
 	return verPubkey() + 0x80
 }
 
-// get BtcAddr from pk_script
-func addrFromPkscr(scr []byte) *btc.BtcAddr {
+// get Addr from pk_script
+func addrFromPkscr(scr []byte) *btc.Addr {
 	if litecoin {
 		return ltc.NewAddrFromPkScript(scr, testnet)
 	}
@@ -231,7 +231,7 @@ func addrFromPkscr(scr []byte) *btc.BtcAddr {
 }
 
 // make sure the version byte in the given address is what we expect
-func assertAddressVersion(a *btc.BtcAddr) {
+func assertAddressVersion(a *btc.Addr) {
 	if a.SegwitProg != nil {
 		if a.SegwitProg.HRP != btc.GetSegwitHRP(testnet) {
 			println("Sending address", a.String(), "has an incorrect HRP string", a.SegwitProg.HRP)

@@ -42,7 +42,7 @@ func dlPayment(w http.ResponseWriter, r *http.Request) {
 		var thisbal utxo.AllUnspentTx
 		var payCmd string
 		var totalinput, spentsofar uint64
-		var changeAddr *btc.BtcAddr
+		var changeAddr *btc.Addr
 
 		tx := new(btc.Tx)
 		tx.Version = 1
@@ -75,7 +75,7 @@ func dlPayment(w http.ResponseWriter, r *http.Request) {
 							addr := btc.NewAddrFromPkScript(res.Pk_script, common.Testnet)
 
 							unsp := &utxo.OneUnspentTx{TxPrevOut: po, Value: res.Value,
-								MinedAt: res.BlockHeight, Coinbase: res.WasCoinbase, BtcAddr: addr}
+								MinedAt: res.BlockHeight, Coinbase: res.WasCoinbase, Addr: addr}
 
 							thisbal = append(thisbal, unsp)
 
