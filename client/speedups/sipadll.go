@@ -19,10 +19,12 @@ import (
 )
 
 var (
-	dll         = syscall.NewLazyDLL("secp256k1.dll")
+	dll = syscall.NewLazyDLL("secp256k1.dll")
+	// DLLECVerify -
 	DLLECVerify = dll.NewProc("ECVerify")
 )
 
+// ECVerify -
 func ECVerify(pkey, sign, hash []byte) bool {
 	r1, _, _ := syscall.Syscall6(DLLECVerify.Addr(), 6,
 		uintptr(unsafe.Pointer(&hash[0])), uintptr(32),

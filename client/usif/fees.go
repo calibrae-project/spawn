@@ -3,22 +3,28 @@ package usif
 import (
 	"bufio"
 	"encoding/gob"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
 	"os"
 	"sync"
+
+	"github.com/calibrae-project/spawn/client/common"
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 const (
-	BLKFES_FILE_NAME = "blkfees.gob"
+	// BlkFeesFileName -
+	BlkFeesFileName = "blkfees.gob"
 )
 
 var (
+	// BlockFeesMutex -
 	BlockFeesMutex sync.Mutex
-	BlockFees      map[uint32][][3]uint64 = make(map[uint32][][3]uint64) // [0]=Weight  [1]-Fee  [2]-Group
-	BlockFeesDirty bool                                                  // it true, clean up old data
+	// BlockFees -
+	BlockFees = make(map[uint32][][3]uint64) // [0]=Weight  [1]-Fee  [2]-Group
+	// BlockFeesDirty -
+	BlockFeesDirty bool // it true, clean up old data
 )
 
+// ProcessBlockFees -
 func ProcessBlockFees(height uint32, bl *btc.Block) {
 	if len(bl.Txs) < 2 {
 		return
@@ -31,7 +37,7 @@ func ProcessBlockFees(height uint32, bl *btc.Block) {
 
 	for i := 1; i < len(bl.Txs); i++ {
 		txs[bl.Txs[i].Hash.Hash] = i
-		fees[i-1][0] = uint64(3 * bl.Txs[i].NoWitSize + bl.Txs[i].Size)
+		fees[i-1][0] = uint64(3*bl.Txs[i].NoWitSize + bl.Txs[i].Size)
 		fees[i-1][1] = uint64(bl.Txs[i].Fee)
 		fees[i-1][2] = uint64(i)
 	}
@@ -52,6 +58,7 @@ func ProcessBlockFees(height uint32, bl *btc.Block) {
 	BlockFeesMutex.Unlock()
 }
 
+// ExpireBlockFees -
 func ExpireBlockFees() {
 	var height uint32
 	common.Last.Lock()
@@ -65,7 +72,7 @@ func ExpireBlockFees() {
 
 	BlockFeesMutex.Lock()
 	if BlockFeesDirty {
-		for k, _ := range BlockFees {
+		for k := range BlockFees {
 			if k < height {
 				delete(BlockFees, k)
 			}
@@ -75,8 +82,9 @@ func ExpireBlockFees() {
 	BlockFeesMutex.Unlock()
 }
 
+// SaveBlockFees -
 func SaveBlockFees() {
-	f, er := os.Create(common.SpawnHomeDir + BLKFES_FILE_NAME)
+	f, er := os.Create(common.SpawnHomeDir + BlkFeesFileName)
 	if er != nil {
 		println("SaveBlockFees:", er.Error())
 		return
@@ -95,8 +103,9 @@ func SaveBlockFees() {
 
 }
 
+// LoadBlockFees -
 func LoadBlockFees() {
-	f, er := os.Open(common.SpawnHomeDir + BLKFES_FILE_NAME)
+	f, er := os.Open(common.SpawnHomeDir + BlkFeesFileName)
 	if er != nil {
 		println("LoadBlockFees:", er.Error())
 		return

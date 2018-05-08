@@ -231,7 +231,7 @@ func loadMempool(par string) {
 	}
 }
 
-func get_mempool(par string) {
+func getMempool(par string) {
 	conid, e := strconv.ParseUint(par, 10, 32)
 	if e != nil {
 		fmt.Println("Specify ID of the peer")
@@ -256,5 +256,5 @@ func init() {
 	newUI("txmpsave mps", true, saveMempool, "Save memory pool to disk")
 	newUI("txcheck txc", true, checkTxs, "Verify consistency of mempool")
 	newUI("txmpload mpl", true, loadMempool, "Load transaction from the given file (must be in mempool.dmp format)")
-	newUI("getmp mpg", true, get_mempool, "Get getmp message to the peer with teh given ID")
+	newUI("getmp mpg", true, getMempool, "Get getmp message to the peer with teh given ID")
 }

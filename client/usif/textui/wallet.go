@@ -12,22 +12,26 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
+// OneWalletAddrs -
 type OneWalletAddrs struct {
 	Typ int // 0-p2kh, 1-p2sh, 2-segwit_prog
 	Key []byte
 	rec *wallet.OneAllAddrBal
 }
 
+// SortedWalletAddrs -
 type SortedWalletAddrs []OneWalletAddrs
 
-var sort_by_cnt bool
+var sortByCount bool
 
+// Len -
 func (sk SortedWalletAddrs) Len() int {
 	return len(sk)
 }
 
+// Less -
 func (sk SortedWalletAddrs) Less(a, b int) bool {
-	if sort_by_cnt {
+	if sortByCount {
 		return sk[a].rec.Count() > sk[b].rec.Count()
 	}
 	return sk[a].rec.Value > sk[b].rec.Value
@@ -37,27 +41,27 @@ func (sk SortedWalletAddrs) Swap(a, b int) {
 	sk[a], sk[b] = sk[b], sk[a]
 }
 
-func max_outs(par string) {
-	sort_by_cnt = true
-	all_addrs(par)
+func maxOuts(par string) {
+	sortByCount = true
+	allAddrs(par)
 }
 
-func best_val(par string) {
-	sort_by_cnt = false
-	all_addrs(par)
+func bestVal(par string) {
+	sortByCount = false
+	allAddrs(par)
 }
 
-func new_slice(in []byte) (kk []byte) {
+func newSlice(in []byte) (kk []byte) {
 	kk = make([]byte, len(in))
 	copy(kk, in)
 	return
 }
 
-func all_addrs(par string) {
-	var ptkh_outs, ptkh_vals, ptsh_outs, ptsh_vals uint64
-	var ptwkh_outs, ptwkh_vals, ptwsh_outs, ptwsh_vals uint64
+func allAddrs(par string) {
+	var ptkhOuts, ptkhVals, ptshOuts, ptshVals uint64
+	var ptwkhOuts, ptwkhVals, ptwshOuts, ptwshVals uint64
 	var best SortedWalletAddrs
-	var cnt int = 15
+	var cnt = 15
 	var mode int
 
 	if par != "" {
@@ -71,88 +75,88 @@ func all_addrs(par string) {
 		}
 	}
 
-	var MIN_BTC uint64 = 100e8
-	var MIN_OUTS int = 1000
+	var MinBTC uint64 = 100e8
+	var MinOuts = 1000
 
 	if mode != 0 {
-		MIN_BTC = 0
-		MIN_OUTS = 0
+		MinBTC = 0
+		MinOuts = 0
 	}
 
 	if mode == 0 || mode == 1 {
 		for k, rec := range wallet.AllBalancesP2KH {
-			ptkh_vals += rec.Value
-			ptkh_outs += uint64(rec.Count())
-			if sort_by_cnt && rec.Count() >= MIN_OUTS || !sort_by_cnt && rec.Value >= MIN_BTC {
-				best = append(best, OneWalletAddrs{Typ: 0, Key: new_slice(k[:]), rec: rec})
+			ptkhVals += rec.Value
+			ptkhOuts += uint64(rec.Count())
+			if sortByCount && rec.Count() >= MinOuts || !sortByCount && rec.Value >= MinBTC {
+				best = append(best, OneWalletAddrs{Typ: 0, Key: newSlice(k[:]), rec: rec})
 			}
 		}
-		fmt.Println(btc.UintToBtc(ptkh_vals), "BTC in", ptkh_outs, "unspent recs from", len(wallet.AllBalancesP2KH), "P2KH addresses")
+		fmt.Println(btc.UintToBtc(ptkhVals), "BTC in", ptkhOuts, "unspent recs from", len(wallet.AllBalancesP2KH), "P2KH addresses")
 	}
 
 	if mode == 0 || mode == 2 {
 		for k, rec := range wallet.AllBalancesP2SH {
-			ptsh_vals += rec.Value
-			ptsh_outs += uint64(rec.Count())
-			if sort_by_cnt && rec.Count() >= MIN_OUTS || !sort_by_cnt && rec.Value >= MIN_BTC {
-				best = append(best, OneWalletAddrs{Typ: 1, Key: new_slice(k[:]), rec: rec})
+			ptshVals += rec.Value
+			ptshOuts += uint64(rec.Count())
+			if sortByCount && rec.Count() >= MinOuts || !sortByCount && rec.Value >= MinBTC {
+				best = append(best, OneWalletAddrs{Typ: 1, Key: newSlice(k[:]), rec: rec})
 			}
 		}
-		fmt.Println(btc.UintToBtc(ptsh_vals), "BTC in", ptsh_outs, "unspent recs from", len(wallet.AllBalancesP2SH), "P2SH addresses")
+		fmt.Println(btc.UintToBtc(ptshVals), "BTC in", ptshOuts, "unspent recs from", len(wallet.AllBalancesP2SH), "P2SH addresses")
 	}
 
 	if mode == 0 || mode == 3 {
 		for k, rec := range wallet.AllBalancesP2WKH {
-			ptwkh_vals += rec.Value
-			ptwkh_outs += uint64(rec.Count())
-			if sort_by_cnt && rec.Count() >= MIN_OUTS || !sort_by_cnt && rec.Value >= MIN_BTC {
-				best = append(best, OneWalletAddrs{Typ: 2, Key: new_slice(k[:]), rec: rec})
+			ptwkhVals += rec.Value
+			ptwkhOuts += uint64(rec.Count())
+			if sortByCount && rec.Count() >= MinOuts || !sortByCount && rec.Value >= MinBTC {
+				best = append(best, OneWalletAddrs{Typ: 2, Key: newSlice(k[:]), rec: rec})
 			}
 		}
-		fmt.Println(btc.UintToBtc(ptwkh_vals), "BTC in", ptwkh_outs, "unspent recs from", len(wallet.AllBalancesP2WKH), "P2WKH addresses")
+		fmt.Println(btc.UintToBtc(ptwkhVals), "BTC in", ptwkhOuts, "unspent recs from", len(wallet.AllBalancesP2WKH), "P2WKH addresses")
 	}
 
 	if mode == 0 || mode == 4 {
 		for k, rec := range wallet.AllBalancesP2WSH {
-			ptwsh_vals += rec.Value
-			ptwsh_outs += uint64(rec.Count())
-			if sort_by_cnt && rec.Count() >= MIN_OUTS || !sort_by_cnt && rec.Value >= MIN_BTC {
-				best = append(best, OneWalletAddrs{Typ: 2, Key: new_slice(k[:]), rec: rec})
+			ptwshVals += rec.Value
+			ptwshOuts += uint64(rec.Count())
+			if sortByCount && rec.Count() >= MinOuts || !sortByCount && rec.Value >= MinBTC {
+				best = append(best, OneWalletAddrs{Typ: 2, Key: newSlice(k[:]), rec: rec})
 			}
 		}
-		fmt.Println(btc.UintToBtc(ptwsh_vals), "BTC in", ptwsh_outs, "unspent recs from", len(wallet.AllBalancesP2WSH), "P2WSH addresses")
+		fmt.Println(btc.UintToBtc(ptwshVals), "BTC in", ptwshOuts, "unspent recs from", len(wallet.AllBalancesP2WSH), "P2WSH addresses")
 	}
 
-	if sort_by_cnt {
-		fmt.Println("Top addresses with at least", MIN_OUTS, "unspent outputs:", len(best))
+	if sortByCount {
+		fmt.Println("Top addresses with at least", MinOuts, "unspent outputs:", len(best))
 	} else {
-		fmt.Println("Top addresses with at least", btc.UintToBtc(MIN_BTC), "BTC:", len(best))
+		fmt.Println("Top addresses with at least", btc.UintToBtc(MinBTC), "BTC:", len(best))
 	}
 
 	sort.Sort(best)
 
-	var pkscr_p2sk [23]byte
-	var pkscr_p2kh [25]byte
+	var pkscrP2sk [23]byte
+	var pkscrP2kh [25]byte
 	var ad *btc.BtcAddr
 
-	pkscr_p2sk[0] = 0xa9
-	pkscr_p2sk[1] = 20
-	pkscr_p2sk[22] = 0x87
+	pkscrP2sk[0] = 0xa9
+	pkscrP2sk[1] = 20
+	pkscrP2sk[22] = 0x87
 
-	pkscr_p2kh[0] = 0x76
-	pkscr_p2kh[1] = 0xa9
-	pkscr_p2kh[2] = 20
-	pkscr_p2kh[23] = 0x88
-	pkscr_p2kh[24] = 0xac
+	pkscrP2kh[0] = 0x76
+	pkscrP2kh[1] = 0xa9
+	pkscrP2kh[2] = 20
+	pkscrP2kh[23] = 0x88
+	pkscrP2kh[24] = 0xac
 
 	for i := 0; i < len(best) && i < cnt; i++ {
 		switch best[i].Typ {
 		case 0:
-			copy(pkscr_p2kh[3:23], best[i].Key)
-			ad = btc.NewAddrFromPkScript(pkscr_p2kh[:], common.CFG.Testnet)
+			copy(pkscrP2kh[3:23], best[i].Key)
+			ad = btc.NewAddrFromPkScript(pkscrP2kh[:], common.CFG.Testnet)
 		case 1:
-			copy(pkscr_p2sk[2:22], best[i].Key)
-			ad = btc.NewAddrFromPkScript(pkscr_p2sk[:], common.CFG.Testnet)
+			copy(pkscrP2sk[2:22], best[i].Key)
+			ad = btc.NewAddrFromPkScript(pkscrP2sk[:], common.CFG.Testnet)
 		case 2:
 			ad = new(btc.BtcAddr)
 			ad.SegwitProg = new(btc.SegwitProg)
@@ -163,7 +167,7 @@ func all_addrs(par string) {
 	}
 }
 
-func list_unspent(addr string) {
+func listUnspent(addr string) {
 	fmt.Println("Checking unspent coins for addr", addr)
 
 	ad, e := btc.NewAddrFromString(addr)
@@ -212,11 +216,11 @@ func list_unspent(addr string) {
 	network.TxMutex.Unlock()
 }
 
-func all_val_stats(s string) {
+func allValStats(s string) {
 	wallet.PrintStat()
 }
 
-func wallet_on_off(s string) {
+func walletOnOff(s string) {
 	if s == "on" {
 		select {
 		case wallet.OnOff <- true:
@@ -248,9 +252,9 @@ func wallet_on_off(s string) {
 }
 
 func init() {
-	newUI("richest r", true, best_val, "Show addresses with most coins [0,1,2,3 or count]")
-	newUI("maxouts o", true, max_outs, "Show addresses with highest number of outputs [0,1,2,3 or count]")
-	newUI("balance a", true, list_unspent, "List balance of given bitcoin address")
-	newUI("allbal ab", true, all_val_stats, "Show Allbalance statistics")
-	newUI("wallet w", false, wallet_on_off, "Enable (on) or disable (off) wallet functionality")
+	newUI("richest r", true, bestVal, "Show addresses with most coins [0,1,2,3 or count]")
+	newUI("maxouts o", true, maxOuts, "Show addresses with highest number of outputs [0,1,2,3 or count]")
+	newUI("balance a", true, listUnspent, "List balance of given bitcoin address")
+	newUI("allbal ab", true, allValStats, "Show Allbalance statistics")
+	newUI("wallet w", false, walletOnOff, "Enable (on) or disable (off) wallet functionality")
 }

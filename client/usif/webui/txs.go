@@ -39,13 +39,13 @@ func pTxs(w http.ResponseWriter, r *http.Request) {
 
 	if len(tx2in) > 0 {
 		wg.Add(1)
-		req := &usif.OneUiReq{Param: string(tx2in)}
+		req := &usif.OneUIReq{Param: string(tx2in)}
 		req.Done.Add(1)
 		req.Handler = func(dat string) {
 			txloadresult = usif.LoadRawTx([]byte(dat))
 			wg.Done()
 		}
-		usif.UiChannel <- req
+		usif.UIChannel <- req
 	}
 
 	s := loadTemplate("txs.html")

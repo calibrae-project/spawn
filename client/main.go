@@ -143,7 +143,7 @@ func RetryCachedBlocks() bool {
 				fmt.Println("AcceptBlock2", newbl.BlockTreeNode.BlockHash.String(), "-", e.Error())
 				newbl.Conn.Misbehave("LocalAcceptBl2", 250)
 			}
-			if usif.Exit_now.Get() {
+			if usif.ExitNow.Get() {
 				return false
 			}
 			// remove it from cache
@@ -312,14 +312,14 @@ func main() {
 	common.MkTempBlocksDir()
 
 	if common.FLAG.UndoBlocks > 0 {
-		usif.Exit_now.Set()
+		usif.ExitNow.Set()
 	}
 
 	if common.FLAG.Rescan && common.FLAG.VolatileUTXO {
 
 		fmt.Println("UTXO database rebuilt complete in the volatile mode, so flush DB to disk and exit...")
 
-	} else if !usif.Exit_now.Get() {
+	} else if !usif.ExitNow.Get() {
 
 		common.RecalcAverageBlockSize()
 
@@ -398,7 +398,7 @@ func main() {
 
 			default:
 			}
-			return usif.Exit_now.Get()
+			return usif.ExitNow.Get()
 		}
 
 		startupTicks := 5 // give 5 seconds for finding out missing blocks
@@ -407,14 +407,14 @@ func main() {
 			common.SetUint32(&common.WalletOnIn, 10)
 		}
 
-		for !usif.Exit_now.Get() {
+		for !usif.ExitNow.Get() {
 			common.Busy()
 
 			common.CountSafe("MainThreadLoops")
 			for retryCachedBlocks {
 				retryCachedBlocks = RetryCachedBlocks()
 				// We have done one per loop - now do something else if pending...
-				if len(network.NetBlocks) > 0 || len(usif.UiChannel) > 0 {
+				if len(network.NetBlocks) > 0 || len(usif.UIChannel) > 0 {
 					break
 				}
 			}
@@ -423,7 +423,7 @@ func main() {
 			select {
 			case <-common.KillChan:
 				common.Busy()
-				usif.Exit_now.Set()
+				usif.ExitNow.Set()
 				continue
 
 			case newbl := <-network.NetBlocks:
@@ -442,7 +442,7 @@ func main() {
 			select {
 			case <-common.KillChan:
 				common.Busy()
-				usif.Exit_now.Set()
+				usif.ExitNow.Set()
 				continue
 
 			case newbl := <-network.NetBlocks:
@@ -488,7 +488,7 @@ func main() {
 					wallet.OnOff <- true
 				}
 
-			case cmd := <-usif.UiChannel:
+			case cmd := <-usif.UIChannel:
 				common.Busy()
 				common.CountSafe("MainUICmd")
 				cmd.Handler(cmd.Param)

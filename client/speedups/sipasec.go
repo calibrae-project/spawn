@@ -16,6 +16,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
 )
 
+// ECVerify -
 func ECVerify(k, s, h []byte) bool {
 	return sipasec.ECVerify(k, s, h) == 1
 }

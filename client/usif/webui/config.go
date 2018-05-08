@@ -51,7 +51,7 @@ func pCfg(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(r.Form["shutdown"]) > 0 {
-			usif.Exit_now.Set()
+			usif.ExitNow.Set()
 			w.Write([]byte("Your node should shut down soon"))
 			return
 		}

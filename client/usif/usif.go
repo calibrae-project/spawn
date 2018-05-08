@@ -16,13 +16,14 @@ import (
 	"github.com/calibrae-project/spawn/lib/script"
 )
 
-type OneUiReq struct {
+// OneUIReq -
+type OneUIReq struct {
 	Param   string
 	Handler func(pars string)
 	Done    sync.WaitGroup
 }
 
-// A thread that wants to lock the main thread calls:
+// OneLock - A thread that wants to lock the main thread calls:
 // In.Add(1); Out.Add(1); [put msg into LocksChan]; In.Wait(); [do synchronized code]; Out.Done()
 // The main thread, upon receiving the message, does:
 // In.Done(); Out.Wait();
@@ -32,12 +33,15 @@ type OneLock struct {
 }
 
 var (
-	UiChannel chan *OneUiReq = make(chan *OneUiReq, 1)
-	LocksChan chan *OneLock  = make(chan *OneLock, 1)
-
-	Exit_now sys.SyncBool
+	// UIChannel -
+	UIChannel = make(chan *OneUIReq, 1)
+	// LocksChan -
+	LocksChan = make(chan *OneLock, 1)
+	// ExitNow -
+	ExitNow sys.SyncBool
 )
 
+// DecodeTxSops -
 func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64, sigops uint, e error) {
 	s += fmt.Sprintln("Transaction details (for your information):")
 	s += fmt.Sprintln(len(tx.TxIn), "Input(s):")
@@ -220,11 +224,11 @@ func GetNetworkHashRateNum() float64 {
 	return bph / 6 * diff * 7158278.826667
 }
 
-func ExecUiReq(req *OneUiReq) {
+func ExecUiReq(req *OneUIReq) {
 	fmt.Println("main.go last seen in line", common.BusyIn())
 	sta := time.Now().UnixNano()
 	req.Done.Add(1)
-	UiChannel <- req
+	UIChannel <- req
 	go func() {
 		req.Done.Wait()
 		sto := time.Now().UnixNano()

@@ -93,7 +93,7 @@ func ShowPrompt() {
 // MainThread -
 func MainThread() {
 	time.Sleep(1e9) // hold on for 1 sencond before showing the showPrompt
-	for !usif.Exit_now.Get() {
+	for !usif.ExitNow.Get() {
 		if showPrompt {
 			ShowPrompt()
 		}
@@ -112,7 +112,7 @@ func MainThread() {
 					if cmd == uiCmds[i].cmds[j] {
 						found = true
 						if uiCmds[i].sync {
-							usif.ExecUiReq(&usif.OneUiReq{Param: param, Handler: uiCmds[i].handler})
+							usif.ExecUiReq(&usif.OneUIReq{Param: param, Handler: uiCmds[i].handler})
 							showPrompt = false
 						} else {
 							uiCmds[i].handler(param)
@@ -301,7 +301,7 @@ func dumpBlock(s string) {
 }
 
 func uiQuit(par string) {
-	usif.Exit_now.Set()
+	usif.ExitNow.Set()
 }
 
 func blockchainStats(par string) {
