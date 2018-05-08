@@ -105,7 +105,7 @@ func multisigSign() {
 		return
 	}
 
-	k := address_to_key(*multisign)
+	k := addressToKey(*multisign)
 	if k == nil {
 		println("You do not know a key for address", *multisign)
 		return

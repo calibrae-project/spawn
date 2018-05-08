@@ -10,8 +10,8 @@ import (
 )
 
 // prepare a signed transaction
-func sign_tx(tx *btc.Tx) (allSigned bool) {
-	var multisig_done bool
+func signTx(tx *btc.Tx) (allSigned bool) {
+	var multisigDone bool
 	allSigned = true
 
 	// go through each input
@@ -19,11 +19,11 @@ func sign_tx(tx *btc.Tx) (allSigned bool) {
 		if ms, _ := btc.NewMultiSigFromScript(tx.TxIn[in].ScriptSig); ms != nil {
 			hash := tx.SignatureHash(ms.P2SH(), in, btc.SIGHASH_ALL)
 			for ki := range ms.PublicKeys {
-				k := public_to_key(ms.PublicKeys[ki])
+				k := publicToKey(ms.PublicKeys[ki])
 				if k != nil {
 					r, s, e := btc.EcdsaSign(k.Key, hash)
 					if e != nil {
-						println("ERROR in sign_tx:", e.Error())
+						println("ERROR in signTx:", e.Error())
 						allSigned = false
 					} else {
 						btcsig := &btc.Signature{HashType: 0x01}
@@ -32,7 +32,7 @@ func sign_tx(tx *btc.Tx) (allSigned bool) {
 
 						ms.Signatures = append(ms.Signatures, btcsig)
 						tx.TxIn[in].ScriptSig = ms.Bytes()
-						multisig_done = true
+						multisigDone = true
 					}
 				}
 			}
@@ -43,7 +43,7 @@ func sign_tx(tx *btc.Tx) (allSigned bool) {
 				allSigned = false
 				continue
 			}
-			adr := addr_from_pkscr(uo.Pk_script)
+			adr := addrFromPkscr(uo.Pk_script)
 			if adr == nil {
 				fmt.Println("WARNING: Don't know how to sign input number", in)
 				fmt.Println(" Pk_script:", hex.EncodeToString(uo.Pk_script))
@@ -51,22 +51,22 @@ func sign_tx(tx *btc.Tx) (allSigned bool) {
 				continue
 			}
 
-			ver, segwit_prog := btc.IsWitnessProgram(uo.Pk_script)
-			if len(segwit_prog) == 20 && ver == 0 {
-				copy(adr.Hash160[:], segwit_prog) // native segwith P2WPKH output
+			ver, segwitProg := btc.IsWitnessProgram(uo.Pk_script)
+			if len(segwitProg) == 20 && ver == 0 {
+				copy(adr.Hash160[:], segwitProg) // native segwith P2WPKH output
 			}
 
-			k_idx := hash_to_key_idx(adr.Hash160[:])
-			if k_idx < 0 {
+			keyIdx := hashToKeyIdx(adr.Hash160[:])
+			if keyIdx < 0 {
 				fmt.Println("WARNING: You do not have key for", adr.String(), "at input", in)
 				allSigned = false
 				continue
 			}
 			var er error
-			k := keys[k_idx]
-			if segwit_prog != nil {
+			k := keys[keyIdx]
+			if segwitProg != nil {
 				er = tx.SignWitness(in, k.BtcAddr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.BtcAddr.Pubkey, k.Key)
-			} else if adr.String() == segwit[k_idx].String() {
+			} else if adr.String() == segwit[keyIdx].String() {
 				tx.TxIn[in].ScriptSig = append([]byte{22, 0, 20}, k.BtcAddr.Hash160[:]...)
 				er = tx.SignWitness(in, k.BtcAddr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.BtcAddr.Pubkey, k.Key)
 			} else {
@@ -80,7 +80,7 @@ func sign_tx(tx *btc.Tx) (allSigned bool) {
 	}
 
 	// reorder signatures if we signed any multisig inputs
-	if multisig_done && !multisigReorder(tx) {
+	if multisigDone && !multisigReorder(tx) {
 		allSigned = false
 	}
 
@@ -120,7 +120,7 @@ func writeTxFile(tx *btc.Tx) {
 }
 
 // prepare a signed transaction
-func make_signed_tx() {
+func makeSignedTx() {
 	// Make an empty transaction
 	tx := new(btc.Tx)
 	tx.Version = 1
@@ -167,7 +167,7 @@ func make_signed_tx() {
 
 	if changeBtc > 0 {
 		// Add one more output (with the change)
-		chad := get_change_addr()
+		chad := getChangeAddr()
 		if *verbose {
 			fmt.Println("Sending change", changeBtc, "to", chad.String())
 		}
@@ -188,22 +188,22 @@ func make_signed_tx() {
 		tx.TxOut = append(tx.TxOut, &btc.TxOut{Value: 0, Pk_script: scr.Bytes()})
 	}
 
-	signed := sign_tx(tx)
+	signed := signTx(tx)
 	writeTxFile(tx)
 
 	if apply2bal && signed {
-		apply_to_balance(tx)
+		applyToBalance(tx)
 	}
 }
 
 // sign raw transaction with all the keys we have
-func process_rawTx() {
+func processRawTx() {
 	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		fmt.Println("ERROR: Cannot decode the raw transaction")
 		return
 	}
 
-	sign_tx(tx)
+	signTx(tx)
 	writeTxFile(tx)
 }

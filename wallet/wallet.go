@@ -13,16 +13,16 @@ import (
 )
 
 var (
-	type2_secret     []byte // used to type-2 wallets
-	first_determ_idx int
-	// set in make_wallet():
+	type2Secret    []byte // used to type-2 wallets
+	firstDetermIdx int
+	// set in makeWallet():
 	keys   []*btc.PrivateAddr
 	segwit []*btc.BtcAddr
 	curFee uint64
 )
 
 // load private keys fo .others file
-func load_others() {
+func loadOthers() {
 	f, e := os.Open(RawKeysFilename)
 	if e == nil {
 		defer f.Close()
@@ -48,8 +48,8 @@ func load_others() {
 				}
 				continue
 			}
-			if rec.Version != ver_secret() {
-				println(pk[0][:6], "has version", rec.Version, "while we expect", ver_secret())
+			if rec.Version != verSecret() {
+				println(pk[0][:6], "has version", rec.Version, "while we expect", verSecret())
 				fmt.Println("You may want to play with -t or -ltc switch")
 			}
 			if len(pk) > 1 {
@@ -70,16 +70,16 @@ func load_others() {
 }
 
 // Get the secret seed and generate "keycnt" key pairs (both private and public)
-func make_wallet() {
+func makeWallet() {
 	var lab string
 
-	load_others()
+	loadOthers()
 
-	var seed_key []byte
+	var seedKey []byte
 	var hdwal *btc.HDWallet
 
 	defer func() {
-		sys.ClearBuffer(seed_key)
+		sys.ClearBuffer(seedKey)
 		if hdwal != nil {
 			sys.ClearBuffer(hdwal.Key)
 			sys.ClearBuffer(hdwal.ChCode)
@@ -92,8 +92,8 @@ func make_wallet() {
 	}
 
 	if waltype >= 1 && waltype <= 3 {
-		seed_key = make([]byte, 32)
-		btc.ShaHash(pass, seed_key)
+		seedKey = make([]byte, 32)
+		btc.ShaHash(pass, seedKey)
 		sys.ClearBuffer(pass)
 		lab = fmt.Sprintf("Typ%c", 'A'+waltype-1)
 		if waltype == 1 {
@@ -105,10 +105,10 @@ func make_wallet() {
 					println("t2sec error:", e.Error())
 					cleanExit(1)
 				}
-				type2_secret = d
+				type2Secret = d
 			} else {
-				type2_secret = make([]byte, 20)
-				btc.RimpHash(seed_key, type2_secret)
+				type2Secret = make([]byte, 20)
+				btc.RimpHash(seedKey, type2Secret)
 			}
 		}
 	} else if waltype == 4 {
@@ -122,30 +122,30 @@ func make_wallet() {
 	}
 
 	if *verbose {
-		fmt.Println("Generating", keycnt, "keys, version", ver_pubkey(), "...")
+		fmt.Println("Generating", keycnt, "keys, version", verPubkey(), "...")
 	}
 
-	first_determ_idx = len(keys)
+	firstDetermIdx = len(keys)
 	for i := uint(0); i < keycnt; {
-		prv_key := make([]byte, 32)
+		privKey := make([]byte, 32)
 		if waltype == 3 {
-			btc.ShaHash(seed_key, prv_key)
-			seed_key = append(seed_key, byte(i))
+			btc.ShaHash(seedKey, privKey)
+			seedKey = append(seedKey, byte(i))
 		} else if waltype == 2 {
-			seed_key = btc.DeriveNextPrivate(seed_key, type2_secret)
-			copy(prv_key, seed_key)
+			seedKey = btc.DeriveNextPrivate(seedKey, type2Secret)
+			copy(privKey, seedKey)
 		} else if waltype == 1 {
-			btc.ShaHash(seed_key, prv_key)
-			copy(seed_key, prv_key)
+			btc.ShaHash(seedKey, privKey)
+			copy(seedKey, privKey)
 		} else /*if waltype==4*/ {
 			// HD wallet
 			_hd := hdwal.Child(uint32(0x80000000 | i))
-			copy(prv_key, _hd.Key[1:])
+			copy(privKey, _hd.Key[1:])
 			sys.ClearBuffer(_hd.Key)
 			sys.ClearBuffer(_hd.ChCode)
 		}
 
-		rec := btc.NewPrivateAddr(prv_key, ver_secret(), !uncompressed)
+		rec := btc.NewPrivateAddr(privKey, verSecret(), !uncompressed)
 
 		if *pubkey != "" && *pubkey == rec.BtcAddr.String() {
 			fmt.Println("Public address:", rec.BtcAddr.String())
@@ -177,13 +177,13 @@ func make_wallet() {
 }
 
 // Print all the public addresses
-func dump_addrs() {
+func dumpAddrs() {
 	f, _ := os.Create("wallet.txt")
 
 	fmt.Fprintln(f, "# Deterministic Walet Type", waltype)
-	if type2_secret != nil {
-		fmt.Fprintln(f, "#", hex.EncodeToString(keys[first_determ_idx].BtcAddr.Pubkey))
-		fmt.Fprintln(f, "#", hex.EncodeToString(type2_secret))
+	if type2Secret != nil {
+		fmt.Fprintln(f, "#", hex.EncodeToString(keys[firstDetermIdx].BtcAddr.Pubkey))
+		fmt.Fprintln(f, "#", hex.EncodeToString(type2Secret))
 	}
 	for i := range keys {
 		if !*noverify {
@@ -213,7 +213,7 @@ func dump_addrs() {
 	}
 }
 
-func public_to_key(pubkey []byte) *btc.PrivateAddr {
+func publicToKey(pubkey []byte) *btc.PrivateAddr {
 	for i := range keys {
 		if bytes.Equal(pubkey, keys[i].BtcAddr.Pubkey) {
 			return keys[i]
@@ -222,7 +222,7 @@ func public_to_key(pubkey []byte) *btc.PrivateAddr {
 	return nil
 }
 
-func hash_to_key_idx(h160 []byte) (res int) {
+func hashToKeyIdx(h160 []byte) (res int) {
 	for i := range keys {
 		if bytes.Equal(keys[i].BtcAddr.Hash160[:], h160) {
 			return i
@@ -234,40 +234,40 @@ func hash_to_key_idx(h160 []byte) (res int) {
 	return -1
 }
 
-func hash_to_key(h160 []byte) *btc.PrivateAddr {
-	if i := hash_to_key_idx(h160); i >= 0 {
+func hashToKey(h160 []byte) *btc.PrivateAddr {
+	if i := hashToKeyIdx(h160); i >= 0 {
 		return keys[i]
 	}
 	return nil
 }
 
-func address_to_key(addr string) *btc.PrivateAddr {
+func addressToKey(addr string) *btc.PrivateAddr {
 	a, e := btc.NewAddrFromString(addr)
 	if e != nil {
 		println("Cannot Decode address", addr)
 		println(e.Error())
 		cleanExit(1)
 	}
-	return hash_to_key(a.Hash160[:])
+	return hashToKey(a.Hash160[:])
 }
 
 // suuports only P2KH scripts
-func pkscr_to_key(scr []byte) *btc.PrivateAddr {
+func pkscrToKey(scr []byte) *btc.PrivateAddr {
 	if len(scr) == 25 && scr[0] == 0x76 && scr[1] == 0xa9 && scr[2] == 0x14 && scr[23] == 0x88 && scr[24] == 0xac {
-		return hash_to_key(scr[3:23])
+		return hashToKey(scr[3:23])
 	}
 	// P2SH(WPKH)
 	if len(scr) == 23 && scr[0] == 0xa9 && scr[22] == 0x87 {
-		return hash_to_key(scr[2:22])
+		return hashToKey(scr[2:22])
 	}
 	// P2WPKH
 	if len(scr) == 22 && scr[0] == 0x00 && scr[1] == 0x14 {
-		return hash_to_key(scr[2:])
+		return hashToKey(scr[2:])
 	}
 	return nil
 }
 
-func dump_prvkey() {
+func dumpPrivKey() {
 	if *dumppriv == "*" {
 		// Dump all private keys
 		for i := range keys {
@@ -275,7 +275,7 @@ func dump_prvkey() {
 		}
 	} else {
 		// single key
-		k := address_to_key(*dumppriv)
+		k := addressToKey(*dumppriv)
 		if k != nil {
 			fmt.Println("Public address:", k.BtcAddr.String(), k.BtcAddr.Extra.Label)
 			fmt.Println("Public hexdump:", hex.EncodeToString(k.BtcAddr.Pubkey))

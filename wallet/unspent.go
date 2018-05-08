@@ -1,39 +1,41 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"bufio"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
-	"io/ioutil"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-
-type unspRec struct {
+// UnspRec -
+type UnspRec struct {
 	btc.TxPrevOut
 	label string
-	key *btc.PrivateAddr
+	key   *btc.PrivateAddr
 	spent bool
 }
 
 var (
-	// set in load_balance():
-	unspentOuts []*unspRec
+	// set in loadBalance():
+	unspentOuts []*UnspRec
 )
 
-func (u *unspRec) String() string {
+func (u *UnspRec) String() string {
 	return fmt.Sprint(u.TxPrevOut.String(), " ", u.label)
 }
 
-func NewUnspRec(l []byte) (uns *unspRec) {
-	if l[64]!='-' {
+// NewUnspRec -
+func NewUnspRec(l []byte) (uns *UnspRec) {
+	if l[64] != '-' {
 		return nil
 	}
 
 	txid := btc.NewUint256FromString(string(l[:64]))
-	if txid==nil {
+	if txid == nil {
 		return nil
 	}
 
@@ -43,32 +45,31 @@ func NewUnspRec(l []byte) (uns *unspRec) {
 		return nil
 	}
 
-	uns = new(unspRec)
+	uns = new(UnspRec)
 	uns.TxPrevOut.Hash = txid.Hash
 	uns.TxPrevOut.Vout = uint32(vout)
-	if len(rst)>1 {
+	if len(rst) > 1 {
 		uns.label = rst[1]
 	}
 
 	return
 }
 
-
 // load the content of the "balance/" folder
-func load_balance() error {
+func loadBalance() error {
 	f, e := os.Open("balance/unspent.txt")
-	if e!=nil {
+	if e != nil {
 		return e
 	}
 	rd := bufio.NewReader(f)
 	for {
 		l, _, e := rd.ReadLine()
-		if len(l)==0 && e!=nil {
+		if len(l) == 0 && e != nil {
 			break
 		}
-		if uns:=NewUnspRec(l); uns!=nil {
-			if uns.key==nil {
-				uns.key = pkscr_to_key(getUO(&uns.TxPrevOut).Pk_script)
+		if uns := NewUnspRec(l); uns != nil {
+			if uns.key == nil {
+				uns.key = pkscrToKey(getUO(&uns.TxPrevOut).Pk_script)
 			}
 			unspentOuts = append(unspentOuts, uns)
 		} else {
@@ -79,13 +80,12 @@ func load_balance() error {
 	return nil
 }
 
-
-func show_balance() {
+func showBalance() {
 	var totBtc, msBtc, knownInputs, unknownInputs, multisigInputs uint64
 	for i := range unspentOuts {
 		uo := getUO(&unspentOuts[i].TxPrevOut)
 
-		if unspentOuts[i].key!=nil {
+		if unspentOuts[i].key != nil {
 			totBtc += uo.Value
 			knownInputs++
 			continue
@@ -103,7 +103,7 @@ func show_balance() {
 		}
 	}
 	fmt.Printf("You have %.8f BTC in %d keyhash outputs\n", float64(totBtc)/1e8, knownInputs)
-	if multisigInputs>0 {
+	if multisigInputs > 0 {
 		fmt.Printf("There is %.8f BTC in %d multisig outputs\n", float64(msBtc)/1e8, multisigInputs)
 	}
 	if unknownInputs > 0 {
@@ -111,9 +111,8 @@ func show_balance() {
 	}
 }
 
-
 // apply the chnages to the balance folder
-func apply_to_balance(tx *btc.Tx) {
+func applyToBalance(tx *btc.Tx) {
 	f, _ := os.Create("balance/unspent.txt")
 	if f != nil {
 		// append new outputs at the end of unspentOuts
@@ -121,8 +120,8 @@ func apply_to_balance(tx *btc.Tx) {
 
 		fmt.Println("Adding", len(tx.TxOut), "new output(s) to the balance/ folder...")
 		for out := range tx.TxOut {
-			if k:=pkscr_to_key(tx.TxOut[out].Pk_script); k!=nil {
-				uns := new(unspRec)
+			if k := pkscrToKey(tx.TxOut[out].Pk_script); k != nil {
+				uns := new(UnspRec)
 				uns.key = k
 				uns.TxPrevOut.Hash = tx.Hash.Hash
 				uns.TxPrevOut.Vout = uint32(out)
@@ -131,7 +130,7 @@ func apply_to_balance(tx *btc.Tx) {
 			}
 		}
 
-		for j:= range unspentOuts {
+		for j := range unspentOuts {
 			if !unspentOuts[j].spent {
 				fmt.Fprintln(f, unspentOuts[j].String())
 			}

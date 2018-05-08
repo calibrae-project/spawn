@@ -14,7 +14,7 @@ import (
 
 // OneWalletAddrs -
 type OneWalletAddrs struct {
-	Typ int // 0-p2kh, 1-p2sh, 2-segwit_prog
+	Typ int // 0-p2kh, 1-p2sh, 2-segwitProg
 	Key []byte
 	rec *wallet.OneAllAddrBal
 }

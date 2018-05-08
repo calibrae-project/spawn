@@ -14,7 +14,7 @@ import (
 )
 
 // Cache for txs from already loaded from balance/ folder
-var loadedTxs map[[32]byte]*btc.Tx = make(map[[32]byte]*btc.Tx)
+var loadedTxs = make(map[[32]byte]*btc.Tx)
 
 // Read a line from stdin
 func getline() string {
@@ -22,7 +22,7 @@ func getline() string {
 	return string(li)
 }
 
-func ask_yes_no(msg string) bool {
+func askYesNo(msg string) bool {
 	for {
 		fmt.Print(msg, " (y/n) : ")
 		l := strings.ToLower(getline())
@@ -32,7 +32,7 @@ func ask_yes_no(msg string) bool {
 			return false
 		}
 	}
-	return false
+	// return false
 }
 
 func getpass() []byte {
@@ -95,7 +95,7 @@ func getpass() []byte {
 		}
 		if *list {
 			// Maybe he wants to save the password?
-			if ask_yes_no("Save the password on disk, so you won't be asked for it later?") {
+			if askYesNo("Save the password on disk, so you won't be asked for it later?") {
 				e = ioutil.WriteFile(PassSeedFilename, pass[:n], 0600)
 				if e != nil {
 					fmt.Println("WARNING: Could not save the password", e.Error())
@@ -122,7 +122,7 @@ check_pass:
 }
 
 // return the change addrress or nil if there will be no change
-func get_change_addr() (chng *btc.BtcAddr) {
+func getChangeAddr() (chng *btc.BtcAddr) {
 	if *change != "" {
 		var e error
 		chng, e = btc.NewAddrFromString(*change)
@@ -130,14 +130,14 @@ func get_change_addr() (chng *btc.BtcAddr) {
 			println("Change address:", e.Error())
 			cleanExit(1)
 		}
-		assert_address_version(chng)
+		assertAddressVersion(chng)
 		return
 	}
 
 	// If change address not specified, send it back to the first input
 	for idx := range unspentOuts {
 		uo := getUO(&unspentOuts[idx].TxPrevOut)
-		if k := pkscr_to_key(uo.Pk_script); k != nil {
+		if k := pkscrToKey(uo.Pk_script); k != nil {
 			chng = k.BtcAddr
 			return
 		}
@@ -165,7 +165,7 @@ func rawTxFromFile(fn string) *btc.Tx {
 }
 
 // Get tx with given id from the balance folder, of from cache
-func tx_from_balance(txid *btc.Uint256, error_is_fatal bool) (tx *btc.Tx) {
+func txFromBalance(txid *btc.Uint256, errorIsFatal bool) (tx *btc.Tx) {
 	if tx = loadedTxs[txid.Hash]; tx != nil {
 		return // we have it in cache already
 	}
@@ -176,15 +176,15 @@ func tx_from_balance(txid *btc.Uint256, error_is_fatal bool) (tx *btc.Tx) {
 		btc.ShaHash(buf, th[:])
 		if txid.Hash == th {
 			tx, _ = btc.NewTx(buf)
-			if error_is_fatal && tx == nil {
+			if errorIsFatal && tx == nil {
 				println("Transaction is corrupt:", txid.String())
 				cleanExit(1)
 			}
-		} else if error_is_fatal {
+		} else if errorIsFatal {
 			println("Transaction file is corrupt:", txid.String())
 			cleanExit(1)
 		}
-	} else if error_is_fatal {
+	} else if errorIsFatal {
 		println("Error reading transaction file:", fn)
 		if er != nil {
 			println(er.Error())
@@ -198,48 +198,46 @@ func tx_from_balance(txid *btc.Uint256, error_is_fatal bool) (tx *btc.Tx) {
 // Look for specific TxPrevOut in the balance folder
 func getUO(pto *btc.TxPrevOut) *btc.TxOut {
 	if _, ok := loadedTxs[pto.Hash]; !ok {
-		loadedTxs[pto.Hash] = tx_from_balance(btc.NewUint256(pto.Hash[:]), true)
+		loadedTxs[pto.Hash] = txFromBalance(btc.NewUint256(pto.Hash[:]), true)
 	}
 	return loadedTxs[pto.Hash].TxOut[pto.Vout]
 }
 
 // version byte for P2KH addresses
-func ver_pubkey() byte {
+func verPubkey() byte {
 	if litecoin {
 		return ltc.AddrVerPubkey(testnet)
-	} else {
-		return btc.AddrVerPubkey(testnet)
 	}
+	return btc.AddrVerPubkey(testnet)
 }
 
 // version byte for P2SH addresses
-func ver_script() byte {
+func verScript() byte {
 	// for litecoin the version is identical
 	return btc.AddrVerScript(testnet)
 }
 
 // version byte for private key addresses
-func ver_secret() byte {
-	return ver_pubkey() + 0x80
+func verSecret() byte {
+	return verPubkey() + 0x80
 }
 
 // get BtcAddr from pk_script
-func addr_from_pkscr(scr []byte) *btc.BtcAddr {
+func addrFromPkscr(scr []byte) *btc.BtcAddr {
 	if litecoin {
 		return ltc.NewAddrFromPkScript(scr, testnet)
-	} else {
-		return btc.NewAddrFromPkScript(scr, testnet)
 	}
+	return btc.NewAddrFromPkScript(scr, testnet)
 }
 
 // make sure the version byte in the given address is what we expect
-func assert_address_version(a *btc.BtcAddr) {
+func assertAddressVersion(a *btc.BtcAddr) {
 	if a.SegwitProg != nil {
 		if a.SegwitProg.HRP != btc.GetSegwitHRP(testnet) {
 			println("Sending address", a.String(), "has an incorrect HRP string", a.SegwitProg.HRP)
 			cleanExit(1)
 		}
-	} else if a.Version != ver_pubkey() && a.Version != ver_script() {
+	} else if a.Version != verPubkey() && a.Version != verScript() {
 		println("Sending address", a.String(), "has an incorrect version", a.Version)
 		cleanExit(1)
 	}

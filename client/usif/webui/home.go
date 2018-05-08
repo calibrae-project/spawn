@@ -39,7 +39,7 @@ func pHome(w http.ResponseWriter, r *http.Request) {
 		common.LockCfg()
 		dat, _ := json.MarshalIndent(&common.CFG, "", "    ")
 		common.UnlockCfg()
-		s = strings.Replace(s, "{CONFIG_FILE}", strings.Replace(string(dat), ",\"", ", \"", -1), 1)
+		s = strings.Replace(s, "{ConfigFile}", strings.Replace(string(dat), ",\"", ", \"", -1), 1)
 	}
 
 	s = strings.Replace(s, "<!--PUB_AUTH_KEY-->", common.PublicKey, 1)

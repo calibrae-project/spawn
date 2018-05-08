@@ -16,7 +16,7 @@ func signMessage() {
 	var hash []byte
 	var signkey *btc.PrivateAddr
 
-	signkey = address_to_key(*signaddr)
+	signkey = addressToKey(*signaddr)
 	if signkey == nil {
 		println("You do not have a private key for", *signaddr)
 		return

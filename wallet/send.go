@@ -36,7 +36,7 @@ func parseSpend() {
 			println("NewAddrFromString:", e.Error())
 			cleanExit(1)
 		}
-		assert_address_version(a)
+		assertAddressVersion(a)
 
 		am, er := btc.StringToSatoshis(tmp[1])
 		if er != nil {
@@ -79,7 +79,7 @@ func parseBatch() {
 				println("NewAddrFromString:", e.Error())
 				cleanExit(1)
 			}
-			assert_address_version(a)
+			assertAddressVersion(a)
 
 			am, e := btc.StringToSatoshis(tmp[1])
 			if e != nil {

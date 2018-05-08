@@ -74,8 +74,8 @@ func cleanExit(code int) {
 	for k := range keys {
 		sys.ClearBuffer(keys[k].Key)
 	}
-	if type2_secret != nil {
-		sys.ClearBuffer(type2_secret)
+	if type2Secret != nil {
+		sys.ClearBuffer(type2Secret)
 	}
 	os.Exit(code)
 }
@@ -115,30 +115,30 @@ func main() {
 
 	// dump public key or secret scan key?
 	if *pubkey != "" {
-		make_wallet()
+		makeWallet()
 		cleanExit(0)
 	}
 
 	// list public addresses?
 	if *list {
-		make_wallet()
-		dump_addrs()
+		makeWallet()
+		dumpAddrs()
 		cleanExit(0)
 	}
 
 	// dump privete key?
 	if *dumppriv != "" {
-		make_wallet()
-		dump_prvkey()
+		makeWallet()
+		dumpPrivKey()
 		cleanExit(0)
 	}
 
 	// sign a message or a hash?
 	if *signaddr != "" {
-		make_wallet()
+		makeWallet()
 		signMessage()
 		if *send == "" {
-			// Don't load_balance if he did not want to spend coins as well
+			// Don't loadBalance if he did not want to spend coins as well
 			cleanExit(0)
 		}
 	}
@@ -151,7 +151,7 @@ func main() {
 			cleanExit(0)
 		}
 
-		make_wallet()
+		makeWallet()
 
 		// multisig sign with a specific key?
 		if *multisign != "" {
@@ -160,24 +160,24 @@ func main() {
 		}
 
 		// this must be signing of a raw trasnaction
-		load_balance()
-		process_rawTx()
+		loadBalance()
+		processRawTx()
 		cleanExit(0)
 	}
 
 	// make the wallet nad print balance
-	make_wallet()
-	if e := load_balance(); e != nil {
+	makeWallet()
+	if e := loadBalance(); e != nil {
 		fmt.Println("ERROR:", e.Error())
 		cleanExit(1)
 	}
 
 	// send command?
 	if sendRequest() {
-		make_signed_tx()
+		makeSignedTx()
 		cleanExit(0)
 	}
 
-	show_balance()
+	showBalance()
 	cleanExit(0)
 }

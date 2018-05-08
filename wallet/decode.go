@@ -178,7 +178,7 @@ func dumpRawTx() {
 			fmt.Printf("%4d) %s sl=%d seq=%08x\n", i, tx.TxIn[i].Input.String(),
 				len(tx.TxIn[i].ScriptSig), tx.TxIn[i].Sequence)
 
-			if intx := tx_from_balance(btc.NewUint256(tx.TxIn[i].Input.Hash[:]), false); intx != nil {
+			if intx := txFromBalance(btc.NewUint256(tx.TxIn[i].Input.Hash[:]), false); intx != nil {
 				val := intx.TxOut[tx.TxIn[i].Input.Vout].Value
 				totin += val
 				fmt.Printf("%15s BTC\n", btc.UintToBtc(val))
@@ -212,9 +212,9 @@ func dumpRawTx() {
 	for i := range tx.TxOut {
 		totout += tx.TxOut[i].Value
 		fmt.Printf("%4d) %20s BTC ", i, btc.UintToBtc(tx.TxOut[i].Value))
-		addr := addr_from_pkscr(tx.TxOut[i].Pk_script)
+		addr := addrFromPkscr(tx.TxOut[i].Pk_script)
 		if addr != nil {
-			if addr.Version == ver_script() {
+			if addr.Version == verScript() {
 				fmt.Println("to scriptH", addr.String())
 			} else {
 				fmt.Println("to address", addr.String())

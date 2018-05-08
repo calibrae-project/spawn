@@ -1,42 +1,43 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"testing"
 	"io/ioutil"
+	"os"
+	"testing"
 )
 
 const (
-	SECRET = "test_secret"
-	SEED_PASS = "qwerty12345"
-	CONFIG_FILE = "test_wallet.cfg"
+	// Secret -
+	Secret = "test_secret"
+	// SeedPass -
+	SeedPass = "qwerty12345"
+	// ConfigFile -
+	ConfigFile = "test_wallet.cfg"
 
 	OTHERS = "test_others"
 )
 
-
 func start() error {
-	PassSeedFilename = SECRET
+	PassSeedFilename = Secret
 	RawKeysFilename = OTHERS
-	os.Setenv("Spawn_WALLET_CONFIG", CONFIG_FILE)
-	return ioutil.WriteFile(SECRET, []byte(SEED_PASS), 0600)
+	os.Setenv("Spawn_WALLET_CONFIG", ConfigFile)
+	return ioutil.WriteFile(Secret, []byte(SeedPass), 0600)
 }
 
-func reset_wallet() {
+func resetWallet() {
 	keys = nil
-	type2_secret = nil
+	type2Secret = nil
 }
 
 func stop() {
-	os.Remove(SECRET)
+	os.Remove(Secret)
 	os.Remove(OTHERS)
 }
 
-
-func mkwal_check(t *testing.T, exp string) {
-	reset_wallet()
-	make_wallet()
+func mkWalCheck(t *testing.T, exp string) {
+	resetWallet()
+	makeWallet()
 	if int(keycnt) != len(keys) {
 		t.Error("keys - wrong number")
 	}
@@ -44,7 +45,6 @@ func mkwal_check(t *testing.T, exp string) {
 		t.Error("Expected address mismatch", keys[keycnt-1].BtcAddr.String(), exp)
 	}
 }
-
 
 func TestMakeWallet(t *testing.T) {
 	defer stop()
@@ -58,53 +58,52 @@ func TestMakeWallet(t *testing.T) {
 	waltype = 1
 	uncompressed = false
 	testnet = false
-	mkwal_check(t, "1DkMmYRVUXvjR1QkrWQTQCgMvaApewxU43")
+	mkWalCheck(t, "1DkMmYRVUXvjR1QkrWQTQCgMvaApewxU43")
 
 	testnet = true
-	mkwal_check(t, "mtGK4bWUHZMzC7tNa5NqE7tgnZmXaYtpdy")
+	mkWalCheck(t, "mtGK4bWUHZMzC7tNa5NqE7tgnZmXaYtpdy")
 
 	uncompressed = true
-	mkwal_check(t, "mifm3evqJAgknC5WnK8Cq6xs1riR5oEcpT")
+	mkWalCheck(t, "mifm3evqJAgknC5WnK8Cq6xs1riR5oEcpT")
 
 	testnet = false
-	mkwal_check(t, "149okbqrV9FW15bu4k9q1BkY9s7iE2ny2Y")
+	mkWalCheck(t, "149okbqrV9FW15bu4k9q1BkY9s7iE2ny2Y")
 
 	// Type-2
 	waltype = 2
 	uncompressed = false
 	testnet = false
-	mkwal_check(t, "12jYVgCNDB63t3J8HhtBwQzs5Qjcu5G6j4")
+	mkWalCheck(t, "12jYVgCNDB63t3J8HhtBwQzs5Qjcu5G6j4")
 
 	testnet = true
-	mkwal_check(t, "mhFVnjHM2CXJf9mk1GrZmLDBwQLKn65QNw")
+	mkWalCheck(t, "mhFVnjHM2CXJf9mk1GrZmLDBwQLKn65QNw")
 
 	uncompressed = true
-	mkwal_check(t, "mmPAAMPpuSqvkBs6oYFbN5E9fQPwRFYggW")
+	mkWalCheck(t, "mmPAAMPpuSqvkBs6oYFbN5E9fQPwRFYggW")
 
 	testnet = false
-	mkwal_check(t, "16sCsJJr6RQfy5PV5yHDYA1poQoEbRwA7F")
+	mkWalCheck(t, "16sCsJJr6RQfy5PV5yHDYA1poQoEbRwA7F")
 
 	// Type-3
 	waltype = 3
 	uncompressed = false
 	testnet = false
-	mkwal_check(t, "1M8UbAaJ132nzgWQEhBxhydswWgHpASA2R")
+	mkWalCheck(t, "1M8UbAaJ132nzgWQEhBxhydswWgHpASA2R")
 
 	testnet = true
-	mkwal_check(t, "n1eRtDfGp4U3mnz1xGALXtrCoWGzhjrDDr")
+	mkWalCheck(t, "n1eRtDfGp4U3mnz1xGALXtrCoWGzhjrDDr")
 
 	uncompressed = true
-	mkwal_check(t, "morWAwVM5Btv2v3k3SMgtHFSR6VWgkwukW")
+	mkWalCheck(t, "morWAwVM5Btv2v3k3SMgtHFSR6VWgkwukW")
 
 	testnet = false
-	mkwal_check(t, "19LYstQNGATfFoa8KsPK4N37Z6tojngQaX")
+	mkWalCheck(t, "19LYstQNGATfFoa8KsPK4N37Z6tojngQaX")
 }
 
-
-func import_check(t *testing.T, pk, exp string) {
+func importCheck(t *testing.T, pk, exp string) {
 	ioutil.WriteFile(OTHERS, []byte(fmt.Sprintln(pk, exp+"lab")), 0600)
-	reset_wallet()
-	make_wallet()
+	resetWallet()
+	makeWallet()
 	if int(keycnt)+1 != len(keys) {
 		t.Error("keys - wrong number")
 	}
@@ -116,7 +115,6 @@ func import_check(t *testing.T, pk, exp string) {
 		t.Error("Expected address mismatch", keys[0].BtcAddr.String(), exp)
 	}
 }
-
 
 func TestImportPriv(t *testing.T) {
 	defer stop()
@@ -130,13 +128,13 @@ func TestImportPriv(t *testing.T) {
 	keycnt = 1
 
 	// compressed key
-	import_check(t, "KzAqX6gJsmvZmJjNrHk3UDZrgDytgF88KzE21TnGVXPC6e3zRHGi", "1M8UbAaJ132nzgWQEhBxhydswWgHpASA2R")
+	importCheck(t, "KzAqX6gJsmvZmJjNrHk3UDZrgDytgF88KzE21TnGVXPC6e3zRHGi", "1M8UbAaJ132nzgWQEhBxhydswWgHpASA2R")
 	if !keys[0].BtcAddr.IsCompressed() {
 		t.Error("Should be compressed")
 	}
 
 	// uncompressed key
-	import_check(t, "5HqNqndG7xYfJu8KkkJ7AjVUfVsiWxT5AyLUpBsi2Upe5c2WaRj", "1AV28sMrWe81SgBK21o3KjznwUd5dTngnp")
+	importCheck(t, "5HqNqndG7xYfJu8KkkJ7AjVUfVsiWxT5AyLUpBsi2Upe5c2WaRj", "1AV28sMrWe81SgBK21o3KjznwUd5dTngnp")
 	if keys[0].BtcAddr.IsCompressed() {
 		t.Error("Should be uncompressed")
 	}
