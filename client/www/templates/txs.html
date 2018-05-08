@@ -641,16 +641,16 @@ function handlehover(event, pos, item) {
 			var rec = mp[item.dataIndex]
 
 			var str = ''
-			if (typeof(rec.Current_tx_spb)!="number") {
+			if (typeof(rec.CurrentTxSpb)!="number") {
 				str += (rec[1]/1000).toFixed(2) + ' SPB'
 				str += ' @ ' + (rec[0]/4e6).toFixed(2) + 'BL'
 			} else {
-				str += rec.Current_tx_spb.toFixed(2) + ' SPB'
+				str += rec.CurrentTxSpb.toFixed(2) + ' SPB'
 
-				str += ' -  Tx #'+(rec.Txs_so_far+1)
-				str += ' ('+parseInt(rec.Current_tx_weight/4)+' B'
-				str += ' @ ' + (rec.Real_len_so_far/1e6).toFixed(2) + 'M)'
-				str += ' - ' + ((parseInt(new Date().getTime())/1000 - rec.Time_received)/60).toFixed(1) +' min old'
+				str += ' -  Tx #'+(rec.TxsSoFar+1)
+				str += ' ('+parseInt(rec.CurrentTxWeight/4)+' B'
+				str += ' @ ' + (rec.RealLenSoFar/1e6).toFixed(2) + 'M)'
+				str += ' - ' + ((parseInt(new Date().getTime())/1000 - rec.TimeReceived)/60).toFixed(1) +' min old'
 			}
 			showTooltip(item.pageX, item.pageY, str)
 		}
@@ -663,7 +663,7 @@ function handlehover(event, pos, item) {
 function handleclick(event, pos, item) {
 	if (!loading_in_progress && !mempool_new_sort.checked && !tx_decoding_in_progress) {
 		var rec = mp[item.dataIndex]
-		decode_tx_id(rec.Current_tx_id)
+		decode_tx_id(rec.CurrentTxID)
 	}
 }
 
@@ -724,31 +724,31 @@ function show_mempool_fees() {
 						lenforfee = mp[i][0]
 					}
 
-					cur_spb = (mp[i][1])/1000
-					if (cur_spb > prv_spb) {
-						cur_spb = prv_spb
+					currSpb = (mp[i][1])/1000
+					if (currSpb > prv_spb) {
+						currSpb = prv_spb
 					} else {
-						prv_spb = cur_spb
+						prv_spb = currSpb
 					}
-					plot_data[0].data.push([mp[i][0], cur_spb])
+					plot_data[0].data.push([mp[i][0], currSpb])
 				}
 			} else {
 				for (var i=0; i<mp.length; i++) {
-					if (mp[i].Current_tx_spb>max_spb) {
-						max_spb = mp[i].Current_tx_spb
+					if (mp[i].CurrentTxSpb>max_spb) {
+						max_spb = mp[i].CurrentTxSpb
 					}
-					if (mp[i].Weight_so_far < 4e6) {
-						feesfrom1stblock = mp[i].Fees_so_far
-						lenforfee = mp[i].Weight_so_far
+					if (mp[i].WeightSoFar < 4e6) {
+						feesfrom1stblock = mp[i].FeesSoFar
+						lenforfee = mp[i].WeightSoFar
 					}
 
-					cur_spb = mp[i].Current_tx_spb
-					if (cur_spb > prv_spb) {
-						cur_spb = prv_spb
+					currSpb = mp[i].CurrentTxSpb
+					if (currSpb > prv_spb) {
+						currSpb = prv_spb
 					} else {
-						prv_spb = cur_spb
+						prv_spb = currSpb
 					}
-					plot_data[0].data.push([mp[i].Weight_so_far+mp[i].Current_tx_weight, cur_spb])
+					plot_data[0].data.push([mp[i].WeightSoFar+mp[i].CurrentTxWeight, currSpb])
 				}
 
 			}

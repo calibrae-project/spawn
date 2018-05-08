@@ -75,7 +75,7 @@ func pCfg(w http.ResponseWriter, r *http.Request) {
 
 	// for any other GET we need a matching session-id
 	if !checksid(r) {
-		new_session_id(w)
+		newSessionID(w)
 		return
 	}
 

@@ -217,11 +217,11 @@ func dlPayment(w http.ResponseWriter, r *http.Request) {
 	}
 	err = "Bad request"
 error:
-	s := load_template("send_error.html")
-	write_html_head(w, r)
+	s := loadTemplate("send_error.html")
+	writeHTMLHead(w, r)
 	s = strings.Replace(s, "<!--ERROR_MSG-->", err, 1)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
 func pSnd(w http.ResponseWriter, r *http.Request) {
@@ -230,13 +230,13 @@ func pSnd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !common.GetBool(&common.WalletON) {
-		p_wallet_is_off(w, r)
+		pWalletIsOff(w, r)
 		return
 	}
 
-	s := load_template("send.html")
+	s := loadTemplate("send.html")
 
-	write_html_head(w, r)
+	writeHTMLHead(w, r)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }

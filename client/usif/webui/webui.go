@@ -40,16 +40,16 @@ func ipchecker(r *http.Request) bool {
 	return false
 }
 
-func load_template(fn string) string {
+func loadTemplate(fn string) string {
 	dat, _ := ioutil.ReadFile("www/templates/" + fn)
 	return string(dat)
 }
 
-func templ_add(tmpl string, id string, val string) string {
+func templateAdd(tmpl string, id string, val string) string {
 	return strings.Replace(tmpl, id, val+id, 1)
 }
 
-func p_webui(w http.ResponseWriter, r *http.Request) {
+func pWebUI(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -89,7 +89,7 @@ func checksid(r *http.Request) bool {
 	return r.Form["sid"][0] == sid(r)
 }
 
-func new_session_id(w http.ResponseWriter) (sessid string) {
+func newSessionID(w http.ResponseWriter) (sessid string) {
 	var sid [16]byte
 	rand.Read(sid[:])
 	sessid = hex.EncodeToString(sid[:])
@@ -97,15 +97,15 @@ func new_session_id(w http.ResponseWriter) (sessid string) {
 	return
 }
 
-func write_html_head(w http.ResponseWriter, r *http.Request) {
+func writeHTMLHead(w http.ResponseWriter, r *http.Request) {
 	startTime = time.Now()
 
 	sessid := sid(r)
 	if sessid == "" {
-		sessid = new_session_id(w)
+		sessid = newSessionID(w)
 	}
 
-	s := load_template("page_head.html")
+	s := loadTemplate("page_head.html")
 	s = strings.Replace(s, "{PAGE_TITLE}", common.CFG.WebUI.Title, 1)
 	s = strings.Replace(s, "/*_SESSION_ID_*/", "var sid = '"+sessid+"'", 1)
 	s = strings.Replace(s, "/*_AVERAGE_FEE_SPB_*/", fmt.Sprint("var avg_fee_spb = ", common.GetAverageFee()), 1)
@@ -129,13 +129,13 @@ func write_html_head(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(s))
 }
 
-func write_html_tail(w http.ResponseWriter) {
-	s := load_template("page_tail.html")
+func writeHTMLTail(w http.ResponseWriter) {
+	s := loadTemplate("page_tail.html")
 	s = strings.Replace(s, "<!--LOAD_TIME-->", time.Now().Sub(startTime).String(), 1)
 	w.Write([]byte(s))
 }
 
-func p_help(w http.ResponseWriter, r *http.Request) {
+func pHelp(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -151,39 +151,40 @@ func p_help(w http.ResponseWriter, r *http.Request) {
 	}
 broken_topic:
 
-	page := load_template(fname)
-	write_html_head(w, r)
+	page := loadTemplate(fname)
+	writeHTMLHead(w, r)
 	w.Write([]byte(page))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
-func p_wallet_is_off(w http.ResponseWriter, r *http.Request) {
-	s := load_template("wallet_off.html")
-	write_html_head(w, r)
+func pWalletIsOff(w http.ResponseWriter, r *http.Request) {
+	s := loadTemplate("wallet_off.html")
+	writeHTMLHead(w, r)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
+// ServerThread -
 func ServerThread(iface string) {
-	http.HandleFunc("/webui/", p_webui)
+	http.HandleFunc("/webui/", pWebUI)
 
-	http.HandleFunc("/wal", p_wal)
+	http.HandleFunc("/wal", pWal)
 	http.HandleFunc("/snd", pSnd)
-	http.HandleFunc("/balance.json", json_balance)
+	http.HandleFunc("/balance.json", jsonBalance)
 	http.HandleFunc("/payment.zip", dlPayment)
-	http.HandleFunc("/balance.zip", dl_balance)
+	http.HandleFunc("/balance.zip", dlBalance)
 
 	http.HandleFunc("/net", pNet)
-	http.HandleFunc("/txs", p_txs)
+	http.HandleFunc("/txs", pTxs)
 	http.HandleFunc("/blocks", pBlocks)
 	http.HandleFunc("/miners", pMiners)
 	http.HandleFunc("/counts", pCounts)
 	http.HandleFunc("/cfg", pCfg)
-	http.HandleFunc("/help", p_help)
+	http.HandleFunc("/help", pHelp)
 
-	http.HandleFunc("/txs2s.xml", xml_txs2s)
-	http.HandleFunc("/txsre.xml", xml_txsre)
-	http.HandleFunc("/txw4i.xml", xml_txw4i)
+	http.HandleFunc("/txs2s.xml", xmlTxs2s)
+	http.HandleFunc("/txsre.xml", xmlTxSre)
+	http.HandleFunc("/txw4i.xml", xmlTxW4i)
 	http.HandleFunc("/rawTx", rawTx)
 
 	http.HandleFunc("/", pHome)
@@ -191,19 +192,19 @@ func ServerThread(iface string) {
 	http.HandleFunc("/counts.json", jsonCounts)
 	http.HandleFunc("/system.json", jsonSystem)
 	http.HandleFunc("/bwidth.json", jsonBandwidth)
-	http.HandleFunc("/txstat.json", json_txstat)
+	http.HandleFunc("/txstat.json", jsonTxStat)
 	http.HandleFunc("/netcon.json", jsonNetCon)
 	http.HandleFunc("/blocks.json", jsonBlocks)
 	http.HandleFunc("/peerst.json", jsonPeersT)
 	http.HandleFunc("/bwchar.json", jsonBWChar)
-	http.HandleFunc("/mempoolStats.json", json_mempool_stats)
-	http.HandleFunc("/mempool_fees.json", json_mempool_fees)
+	http.HandleFunc("/mempoolStats.json", jsonMempoolStats)
+	http.HandleFunc("/mempool_fees.json", jsonMempoolFees)
 	http.HandleFunc("/blkver.json", jsonBlkVer)
 	http.HandleFunc("/miners.json", jsonMiners)
 	http.HandleFunc("/blfees.json", jsonBlockFees)
-	http.HandleFunc("/walsta.json", json_wallet_status)
+	http.HandleFunc("/walsta.json", jsonWalletStatus)
 
-	http.HandleFunc("/mempool_fees.txt", txt_mempool_fees)
+	http.HandleFunc("/mempool_fees.txt", txtMempoolFees)
 
 	http.ListenAndServe(iface, nil)
 }

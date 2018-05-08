@@ -20,7 +20,7 @@ func pNet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	netPage := load_template("net.html")
+	netPage := loadTemplate("net.html")
 
 	network.MutexNet.Lock()
 	netPage = strings.Replace(netPage, "{LISTEN_TCP}", fmt.Sprint(common.IsListenTCP(), network.TCPServerStarted), 1)
@@ -31,9 +31,9 @@ func pNet(w http.ResponseWriter, r *http.Request) {
 	d, _ := ioutil.ReadFile(common.SpawnHomeDir + "friends.txt")
 	netPage = strings.Replace(netPage, "{FRIENDS_TXT}", html.EscapeString(string(d)), 1)
 
-	write_html_head(w, r)
+	writeHTMLHead(w, r)
 	w.Write([]byte(netPage))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
 func jsonNetCon(w http.ResponseWriter, r *http.Request) {

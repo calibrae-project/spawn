@@ -21,13 +21,13 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
-func p_wal(w http.ResponseWriter, r *http.Request) {
+func pWal(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
 
 	if !common.GetBool(&common.WalletON) {
-		p_wallet_is_off(w, r)
+		pWalletIsOff(w, r)
 		return
 	}
 
@@ -40,11 +40,11 @@ func p_wal(w http.ResponseWriter, r *http.Request) {
 		str = "var segwit_active=false"
 	}
 	common.Last.Mutex.Unlock()
-	page := load_template("wallet.html")
+	page := loadTemplate("wallet.html")
 	page = strings.Replace(page, "/*WALLET_JS_VARS*/", str, 1)
-	write_html_head(w, r)
+	writeHTMLHead(w, r)
 	w.Write([]byte(page))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
 func getaddrtype(aa *btc.BtcAddr) string {
@@ -60,7 +60,7 @@ func getaddrtype(aa *btc.BtcAddr) string {
 	return "unknown"
 }
 
-func json_balance(w http.ResponseWriter, r *http.Request) {
+func jsonBalance(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) || !common.GetBool(&common.WalletON) {
 		return
 	}
@@ -87,7 +87,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type OneOut struct {
-		TxId     string
+		TxID     string
 		Vout     uint32
 		Value    uint64
 		Height   uint32
@@ -124,11 +124,11 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 	usif.LocksChan <- lck
 	lck.In.Wait()
 
-	var addr_map map[string]string
+	var addrMap map[string]string
 
 	if mempool {
 		// make addrs -> idx
-		addr_map = make(map[string]string, 2*len(addrs))
+		addrMap = make(map[string]string, 2*len(addrs))
 	}
 
 	for _, a := range addrs {
@@ -160,7 +160,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 					newrec.Outs = append(newrec.Outs, OneOut{
-						TxId: btc.NewUint256(u.TxPrevOut.Hash[:]).String(), Vout: u.Vout,
+						TxID: btc.NewUint256(u.TxPrevOut.Hash[:]).String(), Vout: u.Vout,
 						Value: u.Value, Height: u.MinedAt, Coinbase: u.Coinbase,
 						Message: html.EscapeString(string(u.Message)), Addr: a, Spending: spending,
 						RawTx: rawtx, AddrType: getaddrtype(aa)})
@@ -171,7 +171,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 		out[a] = newrec
 
 		if mempool {
-			addr_map[string(aa.OutScript())] = a
+			addrMap[string(aa.OutScript())] = a
 		}
 
 		/* For P2KH addr, we wlso check its segwit's P2SH-P2WPKH and Native P2WPKH */
@@ -206,7 +206,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 						newrec.Outs = append(newrec.Outs, OneOut{
-							TxId: txid.String(), Vout: u.Vout,
+							TxID: txid.String(), Vout: u.Vout,
 							Value: u.Value, Height: u.MinedAt, Coinbase: u.Coinbase,
 							Message: html.EscapeString(string(u.Message)), Addr: as,
 							Spending: spending, RawTx: rawtx, AddrType: "P2SH-P2WPKH"})
@@ -214,7 +214,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if mempool {
-				addr_map[string(aa.OutScript())] = a
+				addrMap[string(aa.OutScript())] = a
 			}
 
 			// Native SegWit if applicable
@@ -244,7 +244,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 						newrec.Outs = append(newrec.Outs, OneOut{
-							TxId: txid.String(), Vout: u.Vout,
+							TxID: txid.String(), Vout: u.Vout,
 							Value: u.Value, Height: u.MinedAt, Coinbase: u.Coinbase,
 							Message: html.EscapeString(string(u.Message)), Addr: as,
 							Spending: spending, RawTx: rawtx, AddrType: "P2WPKH"})
@@ -252,7 +252,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if mempool {
-				addr_map[string(aa.OutScript())] = a
+				addrMap[string(aa.OutScript())] = a
 			}
 
 		}
@@ -263,7 +263,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 		network.TxMutex.Lock()
 		for _, t2s := range network.TransactionsToSend {
 			for vo, to := range t2s.TxOut {
-				if a, ok := addr_map[string(to.Pk_script)]; ok {
+				if a, ok := addrMap[string(to.Pk_script)]; ok {
 					newrec := out[a]
 					newrec.PendingValue += to.Value
 					newrec.PendingCnt++
@@ -271,7 +271,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 						po := &btc.TxPrevOut{Hash: t2s.Hash.Hash, Vout: uint32(vo)}
 						_, spending := network.SpentOutputs[po.UIdx()]
 						newrec.PendingOuts = append(newrec.PendingOuts, OneOut{
-							TxId: t2s.Hash.String(), Vout: uint32(vo),
+							TxID: t2s.Hash.String(), Vout: uint32(vo),
 							Value: to.Value, Spending: spending})
 					}
 				}
@@ -291,7 +291,7 @@ func json_balance(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func dl_balance(w http.ResponseWriter, r *http.Request) {
+func dlBalance(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) || !common.GetBool(&common.WalletON) {
 		return
 	}
@@ -321,7 +321,7 @@ func dl_balance(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	type one_unsp_rec struct {
+	type oneUnspRec struct {
 		btc.TxPrevOut
 		Value    uint64
 		Addr     string
@@ -399,7 +399,7 @@ func dl_balance(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func json_wallet_status(w http.ResponseWriter, r *http.Request) {
+func jsonWalletStatus(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}

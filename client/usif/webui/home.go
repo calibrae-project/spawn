@@ -33,7 +33,7 @@ func pHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s := load_template("home.html")
+	s := loadTemplate("home.html")
 
 	if !common.CFG.WebUI.ServerMode {
 		common.LockCfg()
@@ -44,9 +44,9 @@ func pHome(w http.ResponseWriter, r *http.Request) {
 
 	s = strings.Replace(s, "<!--PUB_AUTH_KEY-->", common.PublicKey, 1)
 
-	write_html_head(w, r)
+	writeHTMLHead(w, r)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
 func jsonStatus(w http.ResponseWriter, r *http.Request) {

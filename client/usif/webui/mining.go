@@ -48,9 +48,9 @@ func pMiners(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	write_html_head(w, r)
-	w.Write([]byte(load_template("miners.html")))
-	write_html_tail(w)
+	writeHTMLHead(w, r)
+	w.Write([]byte(loadTemplate("miners.html")))
+	writeHTMLTail(w)
 }
 
 func jsonBlkVer(w http.ResponseWriter, r *http.Request) {

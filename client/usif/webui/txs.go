@@ -19,7 +19,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/script"
 )
 
-func p_txs(w http.ResponseWriter, r *http.Request) {
+func pTxs(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -48,11 +48,11 @@ func p_txs(w http.ResponseWriter, r *http.Request) {
 		usif.UiChannel <- req
 	}
 
-	s := load_template("txs.html")
+	s := loadTemplate("txs.html")
 
 	wg.Wait()
 	if txloadresult != "" {
-		ld := load_template("txs_load.html")
+		ld := loadTemplate("txs_load.html")
 		ld = strings.Replace(ld, "{TX_RAW_DATA}", txloadresult, 1)
 		s = strings.Replace(s, "<!--TX_LOAD-->", ld, 1)
 	}
@@ -69,12 +69,13 @@ func p_txs(w http.ResponseWriter, r *http.Request) {
 		s = strings.Replace(s, "<!--TX_ROUTE_ENABLED-->", "Disabled", 1)
 	}
 
-	write_html_head(w, r)
+	writeHTMLHead(w, r)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
-func output_tx_xml(w http.ResponseWriter, tx *btc.Tx) {
+// outputTxXML -
+func outputTxXML(w http.ResponseWriter, tx *btc.Tx) {
 	w.Write([]byte("<input_list>"))
 	for i := range tx.TxIn {
 		w.Write([]byte("<input>"))
@@ -142,7 +143,7 @@ func output_tx_xml(w http.ResponseWriter, tx *btc.Tx) {
 	w.Write([]byte("</output_list>"))
 }
 
-func tx_xml(w http.ResponseWriter, v *network.OneTxToSend, verbose bool) {
+func txXML(w http.ResponseWriter, v *network.OneTxToSend, verbose bool) {
 	w.Write([]byte("<tx><status>OK</status>"))
 	fmt.Fprint(w, "<id>", v.Tx.Hash.String(), "</id>")
 	fmt.Fprint(w, "<version>", v.Tx.Version, "</version>")
@@ -160,7 +161,7 @@ func tx_xml(w http.ResponseWriter, v *network.OneTxToSend, verbose bool) {
 	fmt.Fprint(w, "<lock_time>", v.Lock_time, "</lock_time>")
 	fmt.Fprint(w, "<witness_cnt>", len(v.SegWit), "</witness_cnt>")
 	if verbose {
-		output_tx_xml(w, v.Tx)
+		outputTxXML(w, v.Tx)
 	}
 	fmt.Fprint(w, "<own>", v.Local, "</own>")
 	fmt.Fprint(w, "<firstseen>", v.Firstseen.Unix(), "</firstseen>")
@@ -176,13 +177,13 @@ func tx_xml(w http.ResponseWriter, v *network.OneTxToSend, verbose bool) {
 	w.Write([]byte("</tx>"))
 }
 
-func output_utxo_tx_xml(w http.ResponseWriter, minedid, minedat string) {
+func outputUXTOTxXML(w http.ResponseWriter, minedid, minedat string) {
 	txid := btc.NewUint256FromString(minedid)
 	if txid == nil {
 		return
 	}
 
-	block_number, er := strconv.ParseUint(minedat, 10, 32)
+	blockNumber, er := strconv.ParseUint(minedat, 10, 32)
 	if er != nil {
 		return
 	}
@@ -195,11 +196,11 @@ func output_utxo_tx_xml(w http.ResponseWriter, minedid, minedat string) {
 
 	w.Write([]byte("<tx>"))
 	fmt.Fprint(w, "<id>", minedid, "</id>")
-	if dat, er := common.GetRawTx(uint32(block_number), txid); er == nil {
+	if dat, er := common.GetRawTx(uint32(blockNumber), txid); er == nil {
 		w.Write([]byte("<status>OK</status>"))
 		w.Write([]byte(fmt.Sprint("<size>", len(dat), "</size>")))
 		tx, _ := btc.NewTx(dat)
-		output_tx_xml(w, tx)
+		outputTxXML(w, tx)
 	} else {
 		w.Write([]byte("<status>Not found</status>"))
 	}
@@ -216,7 +217,7 @@ func (tl sortedTxList) Len() int      { return len(tl) }
 func (tl sortedTxList) Swap(i, j int) { tl[i], tl[j] = tl[j], tl[i] }
 func (tl sortedTxList) Less(i, j int) bool {
 	var res bool
-	switch txs2s_sort {
+	switch tx2sSort {
 	case "age":
 		res = tl[j].Firstseen.UnixNano() > tl[i].Firstseen.UnixNano()
 	case "siz":
@@ -240,26 +241,25 @@ func (tl sortedTxList) Less(i, j int) bool {
 	case "ver":
 		res = int(tl[j].VerifyTime) < int(tl[i].VerifyTime)
 	case "swc":
-		sw_compr_i := float64(int(tl[i].Size)-int(tl[i].NoWitSize)) / float64(tl[i].Size)
-		sw_compr_j := float64(int(tl[j].Size)-int(tl[j].NoWitSize)) / float64(tl[j].Size)
-		res = sw_compr_i > sw_compr_j
+		swComprI := float64(int(tl[i].Size)-int(tl[i].NoWitSize)) / float64(tl[i].Size)
+		swComprJ := float64(int(tl[j].Size)-int(tl[j].NoWitSize)) / float64(tl[j].Size)
+		res = swComprI > swComprJ
 	default: /*spb*/
-		spb_i := float64(tl[i].Fee) / float64(tl[i].Weight())
-		spb_j := float64(tl[j].Fee) / float64(tl[j].Weight())
-		res = spb_j < spb_i
+		spbI := float64(tl[i].Fee) / float64(tl[i].Weight())
+		spbJ := float64(tl[j].Fee) / float64(tl[j].Weight())
+		res = spbJ < spbI
 	}
-	if txs2s_sort_desc {
+	if tx2sSortDesc {
 		return res
-	} else {
-		return !res
 	}
+	return !res
 }
 
-var txs2s_count int = 1000
-var txs2s_sort string = "spb"
-var txs2s_sort_desc bool = true
+var tx2sCount = 1000
+var tx2sSort = "spb"
+var tx2sSortDesc = true
 
-func xml_txs2s(w http.ResponseWriter, r *http.Request) {
+func xmlTxs2s(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -267,7 +267,7 @@ func xml_txs2s(w http.ResponseWriter, r *http.Request) {
 	w.Header()["Content-Type"] = []string{"text/xml"}
 
 	if len(r.Form["minedid"]) > 0 && len(r.Form["minedat"]) > 0 {
-		output_utxo_tx_xml(w, r.Form["minedid"][0], r.Form["minedat"][0])
+		outputUXTOTxXML(w, r.Form["minedid"][0], r.Form["minedat"][0])
 		return
 	}
 
@@ -279,7 +279,7 @@ func xml_txs2s(w http.ResponseWriter, r *http.Request) {
 		network.TxMutex.Lock()
 		defer network.TxMutex.Unlock()
 		if t2s, ok := network.TransactionsToSend[txid.BIdx()]; ok {
-			tx_xml(w, t2s, true)
+			txXML(w, t2s, true)
 		} else {
 			w.Write([]byte("<tx>"))
 			fmt.Fprint(w, "<id>", txid.String(), "</id>")
@@ -340,15 +340,15 @@ func xml_txs2s(w http.ResponseWriter, r *http.Request) {
 		if len(r.Form["cnt"]) > 0 {
 			u, e := strconv.ParseUint(r.Form["cnt"][0], 10, 32)
 			if e == nil && u > 0 && u < 10e3 {
-				txs2s_count = int(u)
+				tx2sCount = int(u)
 			}
 		}
 
 		if len(r.Form["sort"]) > 0 && len(r.Form["sort"][0]) == 3 {
-			txs2s_sort = r.Form["sort"][0]
+			tx2sSort = r.Form["sort"][0]
 		}
 
-		txs2s_sort_desc = len(r.Form["descending"]) > 0
+		tx2sSortDesc = len(r.Form["descending"]) > 0
 	}
 
 	network.TxMutex.Lock()
@@ -367,14 +367,14 @@ func xml_txs2s(w http.ResponseWriter, r *http.Request) {
 	sort.Sort(sorted)
 
 	w.Write([]byte("<txpool>"))
-	for cnt = 0; cnt < len(sorted) && cnt < txs2s_count; cnt++ {
+	for cnt = 0; cnt < len(sorted) && cnt < tx2sCount; cnt++ {
 		v := sorted[cnt]
-		tx_xml(w, v, false)
+		txXML(w, v, false)
 	}
 	w.Write([]byte("</txpool>"))
 }
 
-func xml_txsre(w http.ResponseWriter, r *http.Request) {
+func xmlTxSre(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -394,7 +394,7 @@ func xml_txsre(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("</txbanned>"))
 }
 
-func xml_txw4i(w http.ResponseWriter, r *http.Request) {
+func xmlTxW4i(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -451,7 +451,7 @@ func rawTx(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func json_txstat(w http.ResponseWriter, r *http.Request) {
+func jsonTxStat(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -476,7 +476,7 @@ func json_txstat(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("}\n"))
 }
 
-func txt_mempool_fees(w http.ResponseWriter, r *http.Request) {
+func txtMempoolFees(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
@@ -484,7 +484,7 @@ func txt_mempool_fees(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(usif.MemoryPoolFees()))
 }
 
-func json_mempool_stats(w http.ResponseWriter, r *http.Request) {
+func jsonMempoolStats(w http.ResponseWriter, r *http.Request) {
 	var division, maxweight uint64
 	var e error
 
@@ -528,17 +528,17 @@ func json_mempool_stats(w http.ResponseWriter, r *http.Request) {
 		sorted = network.GetSortedMempool()
 	}
 
-	type one_stat_row struct {
-		Txs_so_far        uint
-		Real_len_so_far   uint
-		Weight_so_far     uint
-		Current_tx_weight uint
-		Current_tx_spb    float64
-		Current_tx_id     string
-		Time_received     uint
-		Fees_so_far       uint64
+	type oneStatRow struct {
+		TxsSoFar        uint
+		RealLenSoFar    uint
+		WeightSoFar     uint
+		CurrentTxWeight uint
+		CurrentTxSpb    float64
+		CurrentTxID     string
+		TimeReceived    uint
+		FeesSoFar       uint64
 	}
-	var mempoolStats []one_stat_row
+	var mempoolStats []oneStatRow
 
 	var totweight, reallen, totfee uint64
 	for cnt := 0; cnt < len(sorted); cnt++ {
@@ -548,16 +548,16 @@ func json_mempool_stats(w http.ResponseWriter, r *http.Request) {
 		totfee += v.Fee
 
 		if cnt == 0 || cnt+1 == len(sorted) || (newtotweight/division) != (totweight/division) {
-			cur_spb := float64(v.Fee) / (float64(v.Weight() / 4.0))
-			mempoolStats = append(mempoolStats, one_stat_row{
-				Txs_so_far:        uint(cnt),
-				Real_len_so_far:   uint(reallen),
-				Weight_so_far:     uint(totweight),
-				Current_tx_weight: uint(v.Weight()),
-				Current_tx_spb:    cur_spb,
-				Current_tx_id:     v.Hash.String(),
-				Fees_so_far:       totfee,
-				Time_received:     uint(v.Firstseen.Unix())})
+			currSpb := float64(v.Fee) / (float64(v.Weight() / 4.0))
+			mempoolStats = append(mempoolStats, oneStatRow{
+				TxsSoFar:        uint(cnt),
+				RealLenSoFar:    uint(reallen),
+				WeightSoFar:     uint(totweight),
+				CurrentTxWeight: uint(v.Weight()),
+				CurrentTxSpb:    currSpb,
+				CurrentTxID:     v.Hash.String(),
+				FeesSoFar:       totfee,
+				TimeReceived:    uint(v.Firstseen.Unix())})
 		}
 		totweight = newtotweight
 		if totweight >= maxweight {
@@ -574,7 +574,7 @@ func json_mempool_stats(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func json_mempool_fees(w http.ResponseWriter, r *http.Request) {
+func jsonMempoolFees(w http.ResponseWriter, r *http.Request) {
 	var division, maxweight uint64
 	var e error
 

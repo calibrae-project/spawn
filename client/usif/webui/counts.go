@@ -33,10 +33,10 @@ func pCounts(w http.ResponseWriter, r *http.Request) {
 	if !ipchecker(r) {
 		return
 	}
-	s := load_template("counts.html")
-	write_html_head(w, r)
+	s := loadTemplate("counts.html")
+	writeHTMLHead(w, r)
 	w.Write([]byte(s))
-	write_html_tail(w)
+	writeHTMLTail(w)
 }
 
 func jsonCounts(w http.ResponseWriter, r *http.Request) {

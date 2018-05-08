@@ -11,7 +11,7 @@
 <style>
 td.inpid {
 	text-align: right;
-	//font-size: 100%;
+	font-size: 100%;
 	font-family: monospace;
 }
 td.P2SH-P2WPKH {
@@ -177,7 +177,7 @@ function fetch_wallet_balance(name) {
 								ty = ad.length > 45 ? "P2WSH" : "P2WPKH"
 							}
 						}
-						outs.push({'block':rec.Outs[ii].Height, 'txid':rec.Outs[ii].TxId,
+						outs.push({'block':rec.Outs[ii].Height, 'txid':rec.Outs[ii].TxID,
 							'vout':rec.Outs[ii].Vout, 'value':rec.Outs[ii].Value,
 							'addr':wallet[i].addr, 'label':wallet[i].label,
 							'addr2':rec.Outs[ii].Addr,  'msg':rec.Outs[ii].Message, 'type':ty})
