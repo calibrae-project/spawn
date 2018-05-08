@@ -112,11 +112,11 @@ check_pass:
 			break
 		}
 	}
-	outpass := make([]byte, n+len(secret_seed))
-	if len(secret_seed) > 0 {
-		copy(outpass, secret_seed)
+	outpass := make([]byte, n+len(secretSeed))
+	if len(secretSeed) > 0 {
+		copy(outpass, secretSeed)
 	}
-	copy(outpass[len(secret_seed):], pass[:n])
+	copy(outpass[len(secretSeed):], pass[:n])
 	sys.ClearBuffer(pass[:n])
 	return outpass
 }
@@ -148,7 +148,7 @@ func get_change_addr() (chng *btc.BtcAddr) {
 	return
 }
 
-func rawTx_from_file(fn string) *btc.Tx {
+func rawTxFromFile(fn string) *btc.Tx {
 	dat := sys.GetRawData(fn)
 	if dat == nil {
 		fmt.Println("Cannot fetch raw transaction data")

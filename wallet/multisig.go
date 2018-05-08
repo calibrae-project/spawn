@@ -12,7 +12,7 @@ const MultiToSignOut = "multi2sign.txt"
 
 // add P2SH pre-signing data into a raw tx
 func make_p2sh() {
-	tx := rawTx_from_file(*rawtx)
+	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		fmt.Println("ERROR: Cannot decode the raw transaction")
 		return
@@ -97,7 +97,7 @@ func multisig_reorder(tx *btc.Tx) (all_signed bool) {
 
 // sign a multisig transaction with a specific key
 func multisig_sign() {
-	tx := rawTx_from_file(*rawtx)
+	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		println("ERROR: Cannot decode the raw multisig transaction")
 		println("Always use -msign <addr> along with -raw multi2sign.txt")
@@ -135,5 +135,5 @@ func multisig_sign() {
 	// Now re-order the signatures as they shall be:
 	multisig_reorder(tx)
 
-	write_tx_file(tx)
+	writeTxFile(tx)
 }

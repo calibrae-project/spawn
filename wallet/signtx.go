@@ -91,7 +91,7 @@ func sign_tx(tx *btc.Tx) (all_signed bool) {
 	return
 }
 
-func write_tx_file(tx *btc.Tx) {
+func writeTxFile(tx *btc.Tx) {
 	var signedrawtx []byte
 	if tx.SegWit != nil {
 		signedrawtx = tx.SerializeNew()
@@ -189,7 +189,7 @@ func make_signed_tx() {
 	}
 
 	signed := sign_tx(tx)
-	write_tx_file(tx)
+	writeTxFile(tx)
 
 	if apply2bal && signed {
 		apply_to_balance(tx)
@@ -198,12 +198,12 @@ func make_signed_tx() {
 
 // sign raw transaction with all the keys we have
 func process_rawTx() {
-	tx := rawTx_from_file(*rawtx)
+	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		fmt.Println("ERROR: Cannot decode the raw transaction")
 		return
 	}
 
 	sign_tx(tx)
-	write_tx_file(tx)
+	writeTxFile(tx)
 }

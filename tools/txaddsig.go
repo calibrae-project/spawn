@@ -11,7 +11,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-func rawTx_from_file(fn string) *btc.Tx {
+func rawTxFromFile(fn string) *btc.Tx {
 	d, er := ioutil.ReadFile(fn)
 	if er != nil {
 		fmt.Println(er.Error())
@@ -32,7 +32,7 @@ func rawTx_from_file(fn string) *btc.Tx {
 	return tx
 }
 
-func write_tx_file(tx *btc.Tx) {
+func writeTxFile(tx *btc.Tx) {
 	signedrawtx := tx.Serialize()
 	tx.SetHash(signedrawtx)
 
@@ -56,7 +56,7 @@ func main() {
 		fmt.Println(" 4) Hex dump of the public key")
 		return
 	}
-	tx := rawTx_from_file(os.Args[1])
+	tx := rawTxFromFile(os.Args[1])
 	if tx == nil {
 		return
 	}
@@ -92,5 +92,5 @@ func main() {
 
 	tx.TxIn[in].ScriptSig = buf.Bytes()
 
-	write_tx_file(tx)
+	writeTxFile(tx)
 }

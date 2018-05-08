@@ -9,7 +9,7 @@ import (
 )
 
 // hex dump with max 32 bytes per line
-func hex_dump(d []byte) (s string) {
+func hexDump(d []byte) (s string) {
 	for {
 		le := 32
 		if len(d) < le {
@@ -23,7 +23,7 @@ func hex_dump(d []byte) (s string) {
 	}
 }
 
-func dump_raw_sigscript(d []byte) bool {
+func dumpRawSigScript(d []byte) bool {
 	ss, er := btc.ScriptToText(d)
 	if er != nil {
 		println(er.Error())
@@ -44,9 +44,8 @@ func dump_raw_sigscript(d []byte) bool {
 				fmt.Printf("       HashType%d = %02x\n", i+1, ms.Signatures[i].HashType)
 			}
 			return len(ms.Signatures) >= int(ms.SigsNeeded)
-		} else {
-			println(er.Error())
 		}
+		println(er.Error())
 	}
 
 	fmt.Println("      SigScript:")
@@ -73,7 +72,7 @@ func dump_raw_sigscript(d []byte) bool {
 	return true
 }
 
-func dump_sigscript(d []byte) bool {
+func dumpSigScript(d []byte) bool {
 	if len(d) == 0 {
 		fmt.Println("       WARNING: Empty sigScript")
 		return false
@@ -83,16 +82,16 @@ func dump_sigscript(d []byte) bool {
 	// ECDSA Signature
 	le, _ := rd.ReadByte()
 	if le < 0x40 {
-		return dump_raw_sigscript(d)
+		return dumpRawSigScript(d)
 	}
 	sd := make([]byte, le)
 	_, er := rd.Read(sd)
 	if er != nil {
-		return dump_raw_sigscript(d)
+		return dumpRawSigScript(d)
 	}
 	sig, er := btc.NewSignature(sd)
 	if er != nil {
-		return dump_raw_sigscript(d)
+		return dumpRawSigScript(d)
 	}
 	fmt.Printf("       R = %64s\n", hex.EncodeToString(sig.R.Bytes()))
 	fmt.Printf("       S = %64s\n", hex.EncodeToString(sig.S.Bytes()))
@@ -102,7 +101,7 @@ func dump_sigscript(d []byte) bool {
 	le, er = rd.ReadByte()
 	if er != nil {
 		fmt.Println("       WARNING: PublicKey not present")
-		fmt.Print(hex_dump(d))
+		fmt.Print(hexDump(d))
 		return false
 	}
 
@@ -110,7 +109,7 @@ func dump_sigscript(d []byte) bool {
 	_, er = rd.Read(sd)
 	if er != nil {
 		fmt.Println("       WARNING: PublicKey too short", er.Error())
-		fmt.Print(hex_dump(d))
+		fmt.Print(hexDump(d))
 		return false
 	}
 
@@ -118,7 +117,7 @@ func dump_sigscript(d []byte) bool {
 	key, er := btc.NewPublicKey(sd)
 	if er != nil {
 		fmt.Println("       WARNING: PublicKey broken", er.Error())
-		fmt.Print(hex_dump(d))
+		fmt.Print(hexDump(d))
 		return false
 	}
 	fmt.Printf("       X = %64s\n", key.X.String())
@@ -128,14 +127,14 @@ func dump_sigscript(d []byte) bool {
 
 	if rd.Len() != 0 {
 		fmt.Println("       WARNING: Extra bytes at the end of sigScript")
-		fmt.Print(hex_dump(d[len(d)-rd.Len():]))
+		fmt.Print(hexDump(d[len(d)-rd.Len():]))
 	}
 	return true
 }
 
 // dump raw transaction
-func dump_rawTx() {
-	tx := rawTx_from_file(*dumptxfn)
+func dumpRawTx() {
+	tx := rawTxFromFile(*dumptxfn)
 	if tx == nil {
 		fmt.Println("ERROR: Cannot decode the raw transaction")
 		return
@@ -188,7 +187,7 @@ func dump_rawTx() {
 			}
 
 			if len(tx.TxIn[i].ScriptSig) > 0 {
-				if !dump_sigscript(tx.TxIn[i].ScriptSig) {
+				if !dumpSigScript(tx.TxIn[i].ScriptSig) {
 					unsigned++
 				}
 			} else {

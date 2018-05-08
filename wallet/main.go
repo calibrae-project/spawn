@@ -84,7 +84,7 @@ func main() {
 	println("This program comes with ABSOLUTELY NO WARRANTY")
 	println()
 
-	parse_config()
+	parseConfig()
 	if flag.Lookup("h") != nil {
 		flag.PrintDefaults()
 		os.Exit(0)
@@ -107,7 +107,7 @@ func main() {
 
 	// decode raw transaction?
 	if *dumptxfn != "" {
-		dump_rawTx()
+		dumpRawTx()
 		return
 	}
 
