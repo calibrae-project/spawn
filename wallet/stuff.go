@@ -222,7 +222,7 @@ func verSecret() byte {
 	return verPubkey() + 0x80
 }
 
-// get Addr from pk_script
+// get Addr from PkScript
 func addrFromPkscr(scr []byte) *btc.Addr {
 	if litecoin {
 		return ltc.NewAddrFromPkScript(scr, testnet)

@@ -5,9 +5,10 @@ import (
 	"fmt"
 )
 
+// AllUnspentTx -
 type AllUnspentTx []*OneUnspentTx
 
-// Returned by GetUnspentFromPkScr
+// OneUnspentTx - Returned by GetUnspentFromPkScr
 type OneUnspentTx struct {
 	TxPrevOut
 	Value   uint64
@@ -46,12 +47,14 @@ func (ou *OneUnspentTx) String() (s string) {
 	return
 }
 
+// UnspentTextLine -
 func (ou *OneUnspentTx) UnspentTextLine() (s string) {
 	s = fmt.Sprintf("%s # %.8f BTC @ %s%s, block %d", ou.TxPrevOut.String(),
 		float64(ou.Value)/1e8, ou.DestAddr(), ou.Addr.Label(), ou.MinedAt)
 	return
 }
 
+// DestAddr -
 func (ou *OneUnspentTx) DestAddr() string {
 	if ou.destAddr == "" {
 		return ou.Addr.String()

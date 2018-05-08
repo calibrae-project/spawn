@@ -188,7 +188,7 @@ func (a *Addr) Label() (s string) {
 	return
 }
 
-// Owns - Check if a pk_script send coins to this address
+// Owns - Check if a PkScript send coins to this address
 func (a *Addr) Owns(scr []byte) (yes bool) {
 	// The most common spend script
 	if len(scr) == 25 && scr[0] == 0x76 && scr[1] == 0xa9 && scr[2] == 0x14 && scr[23] == 0x88 && scr[24] == 0xac {

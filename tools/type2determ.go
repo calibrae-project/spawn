@@ -1,35 +1,35 @@
 // This tool outpus Type-2 deterministic addresses, as described here:
 // https://bitcointalk.org/index.php?topic=19137.0
-// At input it takes "A_public_key" and "secret" - both values as hex encoded strings.
+// At input it takes "A_publicKey" and "secret" - both values as hex encoded strings.
 // Optionally, you can add a third parameter - number of public keys you want to calculate.
 package main
 
 import (
-	"os"
-	"fmt"
-	"strconv"
 	"encoding/hex"
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
-
 
 func main() {
 	var testnet bool
 
 	if len(os.Args) < 3 {
-		fmt.Println("Specify secret, public_key and optionaly number of addresses you want.")
+		fmt.Println("Specify secret, publicKey and optionaly number of addresses you want.")
 		fmt.Println("Use a negative value for number of addresses, to work with Testnet addresses.")
 		return
 	}
-	public_key, er := hex.DecodeString(os.Args[2])
+	publicKey, er := hex.DecodeString(os.Args[2])
 	if er != nil {
-		println("Error parsing public_key:", er.Error())
+		println("Error parsing publicKey:", er.Error())
 		os.Exit(1)
 	}
 
-	if len(public_key)==33 && (public_key[0]==2 || public_key[0]==3) {
+	if len(publicKey) == 33 && (publicKey[0] == 2 || publicKey[0] == 3) {
 		fmt.Println("Compressed")
-	} else if len(public_key)==65 && (public_key[0]==4) {
+	} else if len(publicKey) == 65 && (publicKey[0] == 4) {
 		fmt.Println("Uncompressed")
 	} else {
 		println("Incorrect public key")
@@ -60,15 +60,15 @@ func main() {
 	}
 
 	fmt.Println("# Type-2")
-	fmt.Println("#", hex.EncodeToString(public_key))
+	fmt.Println("#", hex.EncodeToString(publicKey))
 	fmt.Println("#", hex.EncodeToString(secret))
 
-	for i:=1; i<=int(n); i++ {
-		fmt.Println(btc.NewAddrFromPubkey(public_key, btc.AddrVerPubkey(testnet)).String(), "TypB", i)
+	for i := 1; i <= int(n); i++ {
+		fmt.Println(btc.NewAddrFromPubkey(publicKey, btc.AddrVerPubkey(testnet)).String(), "TypB", i)
 		if i >= int(n) {
 			break
 		}
 
-		public_key = btc.DeriveNextPublic(public_key, secret)
+		publicKey = btc.DeriveNextPublic(publicKey, secret)
 	}
 }

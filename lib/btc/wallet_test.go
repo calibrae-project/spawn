@@ -30,29 +30,29 @@ func TestDeterministicWalletType2(t *testing.T) {
 	secret := make([]byte, 32)
 	rand.Read(secret)
 
-	private_key := make([]byte, 32)
-	rand.Read(private_key)
+	privateKey := make([]byte, 32)
+	rand.Read(privateKey)
 
-	public_key := PublicFromPrivate(private_key, true)
+	publicKey := PublicFromPrivate(privateKey, true)
 	for i := 0; i < 50; i++ {
-		private_key = DeriveNextPrivate(private_key, secret)
-		if private_key == nil {
+		privateKey = DeriveNextPrivate(privateKey, secret)
+		if privateKey == nil {
 			t.Fatal("DeriveNextPrivate fail")
 		}
 
-		public_key = DeriveNextPublic(public_key, secret)
-		if public_key == nil {
+		publicKey = DeriveNextPublic(publicKey, secret)
+		if publicKey == nil {
 			t.Fatal("DeriveNextPublic fail")
 		}
 
 		// verify the public key matching the private key
-		pub2 := PublicFromPrivate(private_key, true)
-		if !bytes.Equal(public_key, pub2) {
-			t.Error(i, "public key mismatch", hex.EncodeToString(pub2), hex.EncodeToString(public_key))
+		pub2 := PublicFromPrivate(privateKey, true)
+		if !bytes.Equal(publicKey, pub2) {
+			t.Error(i, "public key mismatch", hex.EncodeToString(pub2), hex.EncodeToString(publicKey))
 		}
 
 		// make sure that you can sign and verify with it
-		if e := VerifyKeyPair(private_key, public_key); e != nil {
+		if e := VerifyKeyPair(privateKey, publicKey); e != nil {
 			t.Error(i, "verify key failed", e.Error())
 		}
 	}

@@ -8,21 +8,21 @@ import (
 	"github.com/calibrae-project/spawn/lib/secp256k1"
 )
 
-// Get ECDSA public key in bitcoin protocol format, from the give private key
-func PublicFromPrivate(priv_key []byte, compressed bool) (res []byte) {
+// PublicFromPrivate - Get ECDSA public key in bitcoin protocol format, from the give private key
+func PublicFromPrivate(privKey []byte, compressed bool) (res []byte) {
 	if compressed {
 		res = make([]byte, 33)
 	} else {
 		res = make([]byte, 65)
 	}
 
-	if !secp256k1.BaseMultiply(priv_key, res) {
+	if !secp256k1.BaseMultiply(privKey, res) {
 		res = nil
 	}
 	return
 }
 
-// Verify the secret key's range and if a test message signed with it verifies OK
+// VerifyKeyPair - Verify the secret key's range and if a test message signed with it verifies OK
 // Returns nil if everything looks OK
 func VerifyKeyPair(priv []byte, publ []byte) error {
 	var sig Signature
@@ -54,7 +54,7 @@ func VerifyKeyPair(priv []byte, publ []byte) error {
 	return nil
 }
 
-// B_private_key = ( A_private_key + secret ) % N
+// DeriveNextPrivate - B_privateKey = ( A_privateKey + secret ) % N
 // Used for implementing Type-2 determinitic keys
 func DeriveNextPrivate(p, s []byte) (toreturn []byte) {
 	var prv, secret big.Int
@@ -66,7 +66,7 @@ func DeriveNextPrivate(p, s []byte) (toreturn []byte) {
 	return
 }
 
-// B_public_key = G * secret + A_public_key
+// DeriveNextPublic - B_publicKey = G * secret + A_publicKey
 // Used for implementing Type-2 determinitic keys
 func DeriveNextPublic(public, secret []byte) (out []byte) {
 	out = make([]byte, len(public))
@@ -74,7 +74,7 @@ func DeriveNextPublic(public, secret []byte) (out []byte) {
 	return
 }
 
-// returns one TxOut record
+// NewSpendOutputs - returns one TxOut record
 func NewSpendOutputs(addr *Addr, amount uint64, testnet bool) ([]*TxOut, error) {
 	out := new(TxOut)
 	out.Value = amount
@@ -82,13 +82,14 @@ func NewSpendOutputs(addr *Addr, amount uint64, testnet bool) ([]*TxOut, error) 
 	return []*TxOut{out}, nil
 }
 
-// Base58 encoded private address with checksum and it's corresponding public key/address
+// PrivateAddr - Base58 encoded private address with checksum and it's corresponding public key/address
 type PrivateAddr struct {
 	Version byte
 	Key     []byte
 	*Addr
 }
 
+// NewPrivateAddr -
 func NewPrivateAddr(key []byte, ver byte, compr bool) (ad *PrivateAddr) {
 	ad = new(PrivateAddr)
 	ad.Version = ver
@@ -101,6 +102,7 @@ func NewPrivateAddr(key []byte, ver byte, compr bool) (ad *PrivateAddr) {
 	return
 }
 
+// DecodePrivateAddr -
 func DecodePrivateAddr(s string) (*PrivateAddr, error) {
 	pkb := DecodeBase58(s)
 
