@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	block_height uint64
-	blockHash    []byte
+	blockHeight uint64
+	blockHash   []byte
 )
 
-func load_map4() (ndb map[qdb.KeyType][]byte) {
+func loadMap4() (ndb map[qdb.KeyType][]byte) {
 	var odb *qdb.DB
 	ndb = make(map[qdb.KeyType][]byte, 21e6)
 	for i := 0; i < 16; i++ {
@@ -42,8 +42,8 @@ func load_map4() (ndb map[qdb.KeyType][]byte) {
 	return
 }
 
-func load_lastBlock() {
-	var maxbl_fn string
+func loadLastBlock() {
+	var maxBlFn string
 
 	fis, _ := ioutil.ReadDir("unspent4/")
 	var maxbl, undobl int
@@ -53,7 +53,7 @@ func load_lastBlock() {
 			cb, er := strconv.ParseUint(ss[0], 10, 32)
 			if er == nil && int(cb) > maxbl {
 				maxbl = int(cb)
-				maxbl_fn = fi.Name()
+				maxBlFn = fi.Name()
 				if len(ss) == 2 && ss[1] == "tmp" {
 					undobl = maxbl
 				}
@@ -69,10 +69,10 @@ func load_lastBlock() {
 		return
 	}
 
-	block_height = uint64(maxbl)
+	blockHeight = uint64(maxbl)
 	blockHash = make([]byte, 32)
 
-	f, _ := os.Open("unspent4/" + maxbl_fn)
+	f, _ := os.Open("unspent4/" + maxBlFn)
 	f.Read(blockHash)
 	f.Close()
 
@@ -88,7 +88,7 @@ func save_map(ndb map[qdb.KeyType][]byte) {
 
 	countDownFrom = len(ndb) / 100
 	wr := bufio.NewWriter(of)
-	binary.Write(wr, binary.LittleEndian, uint64(block_height))
+	binary.Write(wr, binary.LittleEndian, uint64(blockHeight))
 	wr.Write(blockHash)
 	binary.Write(wr, binary.LittleEndian, uint64(len(ndb)))
 	for k, v := range ndb {
@@ -123,15 +123,15 @@ func main() {
 		return
 	}
 
-	load_lastBlock()
+	loadLastBlock()
 	if len(blockHash) != 32 {
 		fmt.Println("ERROR: Could not recover last block's data from the input database", len(blockHash))
 		return
 	}
 
-	fmt.Println("Loading input database. Block", block_height, btc.NewUint256(blockHash).String())
+	fmt.Println("Loading input database. Block", blockHeight, btc.NewUint256(blockHash).String())
 	sta = time.Now()
-	ndb := load_map4()
+	ndb := loadMap4()
 	fmt.Println(len(ndb), "records loaded in", time.Now().Sub(sta).String())
 
 	sta = time.Now()

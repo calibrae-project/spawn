@@ -80,7 +80,7 @@ type NewUnspentOpts struct {
 
 // NewUnspentDB -
 func NewUnspentDB(opts *NewUnspentOpts) (db *UnspentDB) {
-	//var maxbl_fn string
+	//var maxBlFn string
 	db = new(UnspentDB)
 	db.dirUXTO = opts.Dir
 	db.dirUndo = db.dirUXTO + "undo" + string(os.PathSeparator)

@@ -130,7 +130,7 @@ func GetUnspentFromBlockcypher(addr *btc.Addr, currency string) (res utxo.AllUns
 			TxID   string `json:"txHash"`
 			Vout   uint32 `json:"tx_output_n"`
 			Value  uint64 `json:"value"`
-			Height uint32 `json:"block_height"`
+			Height uint32 `json:"blockHeight"`
 		} `json:"txrefs"`
 	}
 

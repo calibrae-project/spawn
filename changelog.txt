@@ -157,7 +157,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * Got rid of "qdb" for UTXO.
 * New package "lib/utxo" extracted from "lib/chain"
 * Announce a new block to peers before its fully verified (like Core 0.14.0 / net protocol 70015)
-* bdb: -purgeto <block_height> to purge all blocks up to given height
+* bdb: -purgeto <blockHeight> to purge all blocks up to given height
 * client: does not offer to import core's blocks-db anymore
 * Optimized the way new blocks are written to disk (verification should be faster now)
 * Client: New TextUI command "purge", to purge unspendable records from UTXO-db
