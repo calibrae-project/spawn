@@ -2,6 +2,7 @@ package rpcapi
 
 import (
 	"encoding/hex"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 	//"github.com/calibrae-project/spawn/client/common"
 )
@@ -18,20 +19,23 @@ import (
 }
 */
 
+// ValidAddressResponse -
 type ValidAddressResponse struct {
-	IsValid bool `json:"isvalid"`
-	Address string `json:"address"`
+	IsValid      bool   `json:"isvalid"`
+	Address      string `json:"address"`
 	ScriptPubKey string `json:"scriptPubKey"`
-	IsMine bool `json:"ismine"`
-	IsWatchOnly bool `json:"iswatchonly"`
-	IsScript bool `json:"isscript"`
+	IsMine       bool   `json:"ismine"`
+	IsWatchOnly  bool   `json:"iswatchonly"`
+	IsScript     bool   `json:"isscript"`
 }
 
+// InvalidAddressResponse -
 type InvalidAddressResponse struct {
 	IsValid bool `json:"isvalid"`
 }
 
-func ValidateAddress(addr string) (interface{}) {
+// ValidateAddress -
+func ValidateAddress(addr string) interface{} {
 	a, e := btc.NewAddrFromString(addr)
 	if e != nil {
 		return new(InvalidAddressResponse)

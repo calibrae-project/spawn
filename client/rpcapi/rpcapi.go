@@ -14,32 +14,36 @@ import (
 	"github.com/calibrae-project/spawn/client/common"
 )
 
-type RpcError struct {
+// RPCError -
+type RPCError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
-type RpcResponse struct {
+// RPCResponse -
+type RPCResponse struct {
 	ID     interface{} `json:"id"`
 	Result interface{} `json:"result"`
 	Error  interface{} `json:"error"`
 }
 
-type RpcCommand struct {
+// RPCCommand -
+type RPCCommand struct {
 	ID     interface{} `json:"id"`
 	Method string      `json:"method"`
 	Params interface{} `json:"params"`
 }
 
-func process_rpc(b []byte) (out []byte) {
+// processRPC -
+func processRPC(b []byte) (out []byte) {
 	ioutil.WriteFile("rpc_cmd.json", b, 0777)
-	ex_cmd := exec.Command("C:\\Tools\\DEV\\Git\\mingw64\\bin\\curl.EXE",
+	exCmd := exec.Command("C:\\Tools\\DEV\\Git\\mingw64\\bin\\curl.EXE",
 		"--user", "Spawnrpc:Spawnpwd", "--data-binary", "@rpc_cmd.json", "http://127.0.0.1:18332/")
-	out, _ = ex_cmd.Output()
+	out, _ = exCmd.Output()
 	return
 }
 
-func my_handler(w http.ResponseWriter, r *http.Request) {
+func myHandler(w http.ResponseWriter, r *http.Request) {
 	u, p, ok := r.BasicAuth()
 	if !ok {
 		println("No HTTP Authentication data")
@@ -60,57 +64,57 @@ func my_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var RpcCmd RpcCommand
+	var RPCCmd RPCCommand
 	jd := json.NewDecoder(bytes.NewReader(b))
 	jd.UseNumber()
-	e = jd.Decode(&RpcCmd)
+	e = jd.Decode(&RPCCmd)
 	if e != nil {
 		println(e.Error())
 	}
 
-	var resp RpcResponse
-	resp.ID = RpcCmd.ID
-	switch RpcCmd.Method {
+	var resp RPCResponse
+	resp.ID = RPCCmd.ID
+	switch RPCCmd.Method {
 	case "getblocktemplate":
-		var resp_my RpcGetBlockTemplateResp
+		var respMy RPCGetBlockTemplateResp
 
-		GetNextBlockTemplate(&resp_my.Result)
+		GetNextBlockTemplate(&respMy.Result)
 
 		if false {
-			var resp_ok RpcGetBlockTemplateResp
-			bitcoind_result := process_rpc(b)
-			//ioutil.WriteFile("getblocktemplate_resp.json", bitcoind_result, 0777)
+			var respOK RPCGetBlockTemplateResp
+			BitcoindResult := processRPC(b)
+			//ioutil.WriteFile("getblocktemplate_resp.json", BitcoindResult, 0777)
 
 			//fmt.Print("getblocktemplate...", sto.Sub(sta).String(), string(b))
 
-			jd = json.NewDecoder(bytes.NewReader(bitcoind_result))
+			jd = json.NewDecoder(bytes.NewReader(BitcoindResult))
 			jd.UseNumber()
-			e = jd.Decode(&resp_ok)
+			e = jd.Decode(&respOK)
 
-			if resp_my.Result.PreviousBlockHash != resp_ok.Result.PreviousBlockHash {
-				println("satoshi @", resp_ok.Result.PreviousBlockHash, resp_ok.Result.Height)
-				println("Spawn  @", resp_my.Result.PreviousBlockHash, resp_my.Result.Height)
+			if respMy.Result.PreviousBlockHash != respOK.Result.PreviousBlockHash {
+				println("satoshi @", respOK.Result.PreviousBlockHash, respOK.Result.Height)
+				println("Spawn  @", respMy.Result.PreviousBlockHash, respMy.Result.Height)
 			} else {
-				println(".", len(resp_my.Result.Transactions), resp_my.Result.Coinbasevalue)
-				if resp_my.Result.Mintime != resp_ok.Result.Mintime {
-					println("\007Mintime:", resp_my.Result.Mintime, resp_ok.Result.Mintime)
+				println(".", len(respMy.Result.Transactions), respMy.Result.Coinbasevalue)
+				if respMy.Result.Mintime != respOK.Result.Mintime {
+					println("\007Mintime:", respMy.Result.Mintime, respOK.Result.Mintime)
 				}
-				if resp_my.Result.Bits != resp_ok.Result.Bits {
-					println("\007Bits:", resp_my.Result.Bits, resp_ok.Result.Bits)
+				if respMy.Result.Bits != respOK.Result.Bits {
+					println("\007Bits:", respMy.Result.Bits, respOK.Result.Bits)
 				}
-				if resp_my.Result.Target != resp_ok.Result.Target {
-					println("\007Target:", resp_my.Result.Target, resp_ok.Result.Target)
+				if respMy.Result.Target != respOK.Result.Target {
+					println("\007Target:", respMy.Result.Target, respOK.Result.Target)
 				}
 			}
 		}
 
-		b, _ = json.Marshal(&resp_my)
-		//ioutil.WriteFile("json/"+RpcCmd.Method+"_resp_my.json", b, 0777)
+		b, _ = json.Marshal(&respMy)
+		//ioutil.WriteFile("json/"+RPCCmd.Method+"_resp_my.json", b, 0777)
 		w.Write(append(b, 0x0a))
 		return
 
 	case "validateaddress":
-		switch uu := RpcCmd.Params.(type) {
+		switch uu := RPCCmd.Params.(type) {
 		case []interface{}:
 			if len(uu) == 1 {
 				resp.Result = ValidateAddress(uu[0].(string))
@@ -121,12 +125,12 @@ func my_handler(w http.ResponseWriter, r *http.Request) {
 
 	case "submitblock":
 		//ioutil.WriteFile("submitblock.json", b, 0777)
-		SubmitBlock(&RpcCmd, &resp, b)
+		SubmitBlock(&RPCCmd, &resp, b)
 
 	default:
-		fmt.Println("Method:", RpcCmd.Method, len(b))
-		//w.Write(bitcoind_result)
-		resp.Error = RpcError{Code: -32601, Message: "Method not found"}
+		fmt.Println("Method:", RPCCmd.Method, len(b))
+		//w.Write(BitcoindResult)
+		resp.Error = RPCError{Code: -32601, Message: "Method not found"}
 	}
 
 	b, e = json.Marshal(&resp)
@@ -134,13 +138,14 @@ func my_handler(w http.ResponseWriter, r *http.Request) {
 		println("json.Marshal(&resp):", e.Error())
 	}
 
-	//ioutil.WriteFile(RpcCmd.Method+"_resp.json", b, 0777)
+	//ioutil.WriteFile(RPCCmd.Method+"_resp.json", b, 0777)
 	w.Write(append(b, 0x0a))
 }
 
+// StartServer -
 func StartServer(port uint32) {
 	fmt.Println("Starting RPC server at port", port)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", my_handler)
+	mux.HandleFunc("/", myHandler)
 	http.ListenAndServe(fmt.Sprint("127.0.0.1:", port), mux)
 }

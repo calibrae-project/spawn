@@ -224,7 +224,7 @@ func HandleNetBlock(newbl *network.BlockRcvd) {
 }
 
 // HandleRPCblock -
-func HandleRPCblock(msg *rpcapi.BlockSubmited) {
+func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 	common.CountSafe("RPCNewBlock")
 
 	network.MutexRcv.Lock()
@@ -430,7 +430,7 @@ func main() {
 				common.Busy()
 				HandleNetBlock(newbl)
 
-			case rpcbl := <-rpcapi.RpcBlocks:
+			case rpcbl := <-rpcapi.RPCBlocks:
 				common.Busy()
 				HandleRPCblock(rpcbl)
 
@@ -449,7 +449,7 @@ func main() {
 				common.Busy()
 				HandleNetBlock(newbl)
 
-			case rpcbl := <-rpcapi.RpcBlocks:
+			case rpcbl := <-rpcapi.RPCBlocks:
 				common.Busy()
 				HandleRPCblock(rpcbl)
 

@@ -11,8 +11,10 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-const MAX_TXS_LEN = 999e3 // 999KB, with 1KB margin to not exceed 1MB with conibase
+// MaxTxsLength - 999KB, with 1KB margin to not exceed 1MB with conibase
+const MaxTxsLength = 999e3 //
 
+// OneTransaction -
 type OneTransaction struct {
 	Data    string `json:"data"`
 	Hash    string `json:"hash"`
@@ -21,6 +23,7 @@ type OneTransaction struct {
 	Sigops  uint64 `json:"sigops"`
 }
 
+// GetBlockTemplateResp -
 type GetBlockTemplateResp struct {
 	Capabilities      []string         `json:"capabilities"`
 	Version           uint32           `json:"version"`
@@ -42,12 +45,14 @@ type GetBlockTemplateResp struct {
 	Height        uint     `json:"height"`
 }
 
-type RpcGetBlockTemplateResp struct {
+// RPCGetBlockTemplateResp -
+type RPCGetBlockTemplateResp struct {
 	ID     interface{}          `json:"id"`
 	Result GetBlockTemplateResp `json:"result"`
 	Error  interface{}          `json:"error"`
 }
 
+// GetNextBlockTemplate -
 func GetNextBlockTemplate(r *GetBlockTemplateResp) {
 	var zer [32]byte
 
@@ -77,36 +82,37 @@ func GetNextBlockTemplate(r *GetBlockTemplateResp) {
 	r.Bits = fmt.Sprintf("%08x", bits)
 	r.Height = uint(height)
 
-	last_given_time = uint32(r.Curtime)
-	last_given_mintime = uint32(r.Mintime)
+	lastGivenTime = uint32(r.Curtime)
+	lastGivenMinTime = uint32(r.Mintime)
 
 	common.Last.Mutex.Unlock()
 }
 
 /* memory pool transaction sorting stuff */
-type one_mining_tx struct {
+type oneMiningTx struct {
 	*network.OneTxToSend
 	depends []uint
 	startat int
 }
 
-type sortedTxList []*one_mining_tx
+type sortedTxList []*oneMiningTx
 
 func (tl sortedTxList) Len() int           { return len(tl) }
 func (tl sortedTxList) Swap(i, j int)      { tl[i], tl[j] = tl[j], tl[i] }
 func (tl sortedTxList) Less(i, j int) bool { return tl[j].Fee < tl[i].Fee }
 
-var txs_so_far map[[32]byte]uint
+var txsSoFar map[[32]byte]uint
 var totlen int
 var sigops uint64
 
-func get_next_tranche_of_txs(height, timestamp uint32) (res sortedTxList) {
+// getNextTrancheOfTxs -
+func getNextTrancheOfTxs(height, timestamp uint32) (res sortedTxList) {
 	var unsp *btc.TxOut
-	var all_inputs_found bool
+	var allInputsFound bool
 	for _, v := range network.TransactionsToSend {
 		tx := v.Tx
 
-		if _, ok := txs_so_far[tx.Hash.Hash]; ok {
+		if _, ok := txsSoFar[tx.Hash.Hash]; ok {
 			continue
 		}
 
@@ -126,16 +132,16 @@ func get_next_tranche_of_txs(height, timestamp uint32) (res sortedTxList) {
 		}
 		sigops += v.SigopsCost
 
-		all_inputs_found = true
+		allInputsFound = true
 		var depends []uint
 		for i := range tx.TxIn {
 			unsp = common.BlockChain.Unspent.UnspentGet(&tx.TxIn[i].Input)
 			if unsp == nil {
 				// not found in the confirmed blocks
-				// check if txid is in txs_so_far
-				if idx, ok := txs_so_far[tx.TxIn[i].Input.Hash]; !ok {
-					// also not in txs_so_far
-					all_inputs_found = false
+				// check if txid is in txsSoFar
+				if idx, ok := txsSoFar[tx.TxIn[i].Input.Hash]; !ok {
+					// also not in txsSoFar
+					allInputsFound = false
 					break
 				} else {
 					depends = append(depends, idx)
@@ -143,13 +149,14 @@ func get_next_tranche_of_txs(height, timestamp uint32) (res sortedTxList) {
 			}
 		}
 
-		if all_inputs_found {
-			res = append(res, &one_mining_tx{OneTxToSend: v, depends: depends, startat: 1 + len(txs_so_far)})
+		if allInputsFound {
+			res = append(res, &oneMiningTx{OneTxToSend: v, depends: depends, startat: 1 + len(txsSoFar)})
 		}
 	}
 	return
 }
 
+// GetTransactions -
 func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees uint64) {
 
 	network.TxMutex.Lock()
@@ -157,28 +164,28 @@ func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees ui
 
 	var cnt int
 	var sorted sortedTxList
-	txs_so_far = make(map[[32]byte]uint)
+	txsSoFar = make(map[[32]byte]uint)
 	totlen = 0
 	sigops = 0
 	//println("\ngetting txs from the pool of", len(network.TransactionsToSend), "...")
 	for {
-		new_piece := get_next_tranche_of_txs(height, timestamp)
-		if new_piece.Len() == 0 {
+		newPiece := getNextTrancheOfTxs(height, timestamp)
+		if newPiece.Len() == 0 {
 			break
 		}
-		//println("adding another", len(new_piece))
-		sort.Sort(new_piece)
+		//println("adding another", len(newPiece))
+		sort.Sort(newPiece)
 
-		for i := 0; i < len(new_piece); i++ {
-			txs_so_far[new_piece[i].Tx.Hash.Hash] = uint(1 + len(sorted) + i)
+		for i := 0; i < len(newPiece); i++ {
+			txsSoFar[newPiece[i].Tx.Hash.Hash] = uint(1 + len(sorted) + i)
 		}
 
-		sorted = append(sorted, new_piece...)
+		sorted = append(sorted, newPiece...)
 	}
-	/*if len(txs_so_far)!=len(network.TransactionsToSend) {
-		println("ERROR: txs_so_far len", len(txs_so_far), " - please report!")
+	/*if len(txsSoFar)!=len(network.TransactionsToSend) {
+		println("ERROR: txsSoFar len", len(txsSoFar), " - please report!")
 	}*/
-	txs_so_far = nil // leave it for the garbage collector
+	txsSoFar = nil // leave it for the garbage collector
 
 	res = make([]OneTransaction, len(sorted))
 	for cnt = 0; cnt < len(sorted); cnt++ {
