@@ -1,34 +1,34 @@
 package main
 
 import (
-	"os"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
-	"encoding/hex"
-	"encoding/base64"
+	"os"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 	"github.com/calibrae-project/spawn/lib/others/ltc"
 )
 
-
 // this function signs either a message or a raw hash
-func sign_message() {
+func signMessage() {
 	var hash []byte
 	var signkey *btc.PrivateAddr
 
 	signkey = address_to_key(*signaddr)
-	if signkey==nil {
+	if signkey == nil {
 		println("You do not have a private key for", *signaddr)
 		return
 	}
 
-	if *signhash!="" {
+	if *signhash != "" {
 		hash, er := hex.DecodeString(*signhash)
 		if er != nil {
 			println("Incorrect content of -hash parameter")
 			println(er.Error())
 			return
-		} else if len(hash)>0 {
+		} else if len(hash) > 0 {
 			txsig := new(btc.Signature)
 			txsig.HashType = 0x01
 			r, s, e := btc.EcdsaSign(signkey.Key, hash)
@@ -45,7 +45,7 @@ func sign_message() {
 	}
 
 	var msg []byte
-	if *message=="" {
+	if *message == "" {
 		msg, _ = ioutil.ReadAll(os.Stdin)
 	} else {
 		msg = []byte(*message)
@@ -80,14 +80,14 @@ func sign_message() {
 
 	rpk := btcsig.RecoverPublicKey(hash[:], 0)
 	sa := btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.BtcAddr.Version)
-	if sa.Hash160==signkey.BtcAddr.Hash160 {
+	if sa.Hash160 == signkey.BtcAddr.Hash160 {
 		fmt.Println(base64.StdEncoding.EncodeToString(sb[:]))
 		return
 	}
 
 	rpk = btcsig.RecoverPublicKey(hash[:], 1)
 	sa = btc.NewAddrFromPubkey(rpk.Bytes(signkey.IsCompressed()), signkey.BtcAddr.Version)
-	if sa.Hash160==signkey.BtcAddr.Hash160 {
+	if sa.Hash160 == signkey.BtcAddr.Hash160 {
 		sb[0]++
 		fmt.Println(base64.StdEncoding.EncodeToString(sb[:]))
 		return

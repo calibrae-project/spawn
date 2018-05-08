@@ -8,10 +8,11 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
+// MultiToSignOut -
 const MultiToSignOut = "multi2sign.txt"
 
 // add P2SH pre-signing data into a raw tx
-func make_p2sh() {
+func makeP2sh() {
 	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		fmt.Println("ERROR: Cannot decode the raw transaction")
@@ -47,8 +48,8 @@ func make_p2sh() {
 // reorder signatures to meet order of the keys
 // remove signatuers made by the same keys
 // remove exessive signatures (keeps transaction size down)
-func multisig_reorder(tx *btc.Tx) (all_signed bool) {
-	all_signed = true
+func multisigReorder(tx *btc.Tx) (allSigned bool) {
+	allSigned = true
 	for i := range tx.TxIn {
 		ms, _ := btc.NewMultiSigFromScript(tx.TxIn[i].ScriptSig)
 		if ms == nil {
@@ -89,14 +90,14 @@ func multisig_reorder(tx *btc.Tx) (all_signed bool) {
 		tx.TxIn[i].ScriptSig = ms.Bytes()
 
 		if len(sigs) < int(ms.SigsNeeded) {
-			all_signed = false
+			allSigned = false
 		}
 	}
 	return
 }
 
 // sign a multisig transaction with a specific key
-func multisig_sign() {
+func multisigSign() {
 	tx := rawTxFromFile(*rawtx)
 	if tx == nil {
 		println("ERROR: Cannot decode the raw multisig transaction")
@@ -133,7 +134,7 @@ func multisig_sign() {
 	}
 
 	// Now re-order the signatures as they shall be:
-	multisig_reorder(tx)
+	multisigReorder(tx)
 
 	writeTxFile(tx)
 }

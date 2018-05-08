@@ -10,9 +10,9 @@ import (
 )
 
 // prepare a signed transaction
-func sign_tx(tx *btc.Tx) (all_signed bool) {
+func sign_tx(tx *btc.Tx) (allSigned bool) {
 	var multisig_done bool
-	all_signed = true
+	allSigned = true
 
 	// go through each input
 	for in := range tx.TxIn {
@@ -24,7 +24,7 @@ func sign_tx(tx *btc.Tx) (all_signed bool) {
 					r, s, e := btc.EcdsaSign(k.Key, hash)
 					if e != nil {
 						println("ERROR in sign_tx:", e.Error())
-						all_signed = false
+						allSigned = false
 					} else {
 						btcsig := &btc.Signature{HashType: 0x01}
 						btcsig.R.Set(r)
@@ -40,14 +40,14 @@ func sign_tx(tx *btc.Tx) (all_signed bool) {
 			uo := getUO(&tx.TxIn[in].Input)
 			if uo == nil {
 				println("ERROR: Unkown input:", tx.TxIn[in].Input.String(), "- missing balance folder?")
-				all_signed = false
+				allSigned = false
 				continue
 			}
 			adr := addr_from_pkscr(uo.Pk_script)
 			if adr == nil {
 				fmt.Println("WARNING: Don't know how to sign input number", in)
 				fmt.Println(" Pk_script:", hex.EncodeToString(uo.Pk_script))
-				all_signed = false
+				allSigned = false
 				continue
 			}
 
@@ -59,7 +59,7 @@ func sign_tx(tx *btc.Tx) (all_signed bool) {
 			k_idx := hash_to_key_idx(adr.Hash160[:])
 			if k_idx < 0 {
 				fmt.Println("WARNING: You do not have key for", adr.String(), "at input", in)
-				all_signed = false
+				allSigned = false
 				continue
 			}
 			var er error
@@ -74,17 +74,17 @@ func sign_tx(tx *btc.Tx) (all_signed bool) {
 			}
 			if er != nil {
 				fmt.Println("ERROR: Sign failed for input number", in, er.Error())
-				all_signed = false
+				allSigned = false
 			}
 		}
 	}
 
 	// reorder signatures if we signed any multisig inputs
-	if multisig_done && !multisig_reorder(tx) {
-		all_signed = false
+	if multisig_done && !multisigReorder(tx) {
+		allSigned = false
 	}
 
-	if !all_signed {
+	if !allSigned {
 		fmt.Println("WARNING: Not all the inputs have been signed")
 	}
 
