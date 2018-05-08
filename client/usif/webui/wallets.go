@@ -263,7 +263,7 @@ func jsonBalance(w http.ResponseWriter, r *http.Request) {
 		network.TxMutex.Lock()
 		for _, t2s := range network.TransactionsToSend {
 			for vo, to := range t2s.TxOut {
-				if a, ok := addrMap[string(to.Pk_script)]; ok {
+				if a, ok := addrMap[string(to.PkScript)]; ok {
 					newrec := out[a]
 					newrec.PendingValue += to.Value
 					newrec.PendingCnt++

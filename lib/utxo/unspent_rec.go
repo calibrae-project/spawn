@@ -168,7 +168,7 @@ func OneUtxoRec(key UtxoKeyType, dat []byte, vout uint32) *btc.TxOut {
 
 		if uint32(idx) == vout {
 			res.Value = uint64(u64)
-			res.Pk_script = dat[off : off+i]
+			res.PkScript = dat[off : off+i]
 			return &res
 		}
 		off += i

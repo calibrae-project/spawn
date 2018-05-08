@@ -497,7 +497,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 					atomic.AddUint32(&verErrCount, 1)
 				}
 				wg.Done()
-			}(pos[i].Pk_script, pos[i].Value, i, tx)
+			}(pos[i].PkScript, pos[i].Value, i, tx)
 		}
 
 		wg.Wait()
@@ -518,10 +518,10 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 	}
 
 	for i := range tx.TxIn {
-		if btc.IsP2SH(pos[i].Pk_script) {
+		if btc.IsP2SH(pos[i].PkScript) {
 			sigops += btc.WitnessScaleFactor * btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig)
 		}
-		sigops += uint(tx.CountWitnessSigOps(i, pos[i].Pk_script))
+		sigops += uint(tx.CountWitnessSigOps(i, pos[i].PkScript))
 	}
 
 	if rbfTxList != nil {

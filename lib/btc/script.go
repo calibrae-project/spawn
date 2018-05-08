@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// RawToStack -
 func RawToStack(sig []byte) []byte {
 	if len(sig) == 1 {
 		if sig[0] == 0x81 {
@@ -69,6 +70,7 @@ func int2scr(v int64) []byte {
 	return RawToStack(sig)
 }
 
+// DecodeScript -
 func DecodeScript(pk string) (out []byte, e error) {
 	xx := strings.Split(pk, " ")
 	for i := range xx {
@@ -294,6 +296,7 @@ func DecodeScript(pk string) (out []byte, e error) {
 	return
 }
 
+// ScriptToText -
 func ScriptToText(p []byte) (out []string, e error) {
 	var opcnt, idx int
 	for idx < len(p) {

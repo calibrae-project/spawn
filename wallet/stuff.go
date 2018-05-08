@@ -137,7 +137,7 @@ func getChangeAddr() (chng *btc.Addr) {
 	// If change address not specified, send it back to the first input
 	for idx := range unspentOuts {
 		uo := getUO(&unspentOuts[idx].TxPrevOut)
-		if k := pkscrToKey(uo.Pk_script); k != nil {
+		if k := pkscrToKey(uo.PkScript); k != nil {
 			chng = k.Addr
 			return
 		}

@@ -12,17 +12,23 @@ import (
 )
 
 const (
-	SIGHASH_ALL          = 1
-	SIGHASH_NONE         = 2
-	SIGHASH_SINGLE       = 3
-	SIGHASH_ANYONECANPAY = 0x80
+	// SigHashAll -
+	SigHashAll = 1
+	// SigHashNone -
+	SigHashNone = 2
+	// SigHashSingle -
+	SigHashSingle = 3
+	// SigHashAnyoneCanPay -
+	SigHashAnyoneCanPay = 0x80
 )
 
+// TxPrevOut -
 type TxPrevOut struct {
 	Hash [32]byte
 	Vout uint32
 }
 
+// TxIn -
 type TxIn struct {
 	Input     TxPrevOut
 	ScriptSig []byte
@@ -30,20 +36,22 @@ type TxIn struct {
 	//PrvOut *TxOut  // this field is used only during verification
 }
 
+// TxOut -
 type TxOut struct {
 	Value       uint64
-	Pk_script   []byte
+	PkScript    []byte
 	BlockHeight uint32
 	VoutCount   uint32 // number of outputs in the transaction that it came from
 	WasCoinbase bool
 }
 
+// Tx -
 type Tx struct {
-	Version   uint32
-	TxIn      []*TxIn
-	TxOut     []*TxOut
-	SegWit    [][][]byte
-	Lock_time uint32
+	Version  uint32
+	TxIn     []*TxIn
+	TxOut    []*TxOut
+	SegWit   [][][]byte
+	LockTime uint32
 
 	// These three fields should be set in block.go:
 	Raw             []byte
@@ -55,17 +63,19 @@ type Tx struct {
 
 	wTxID Uint256
 
-	hash_lock    sync.Mutex
+	hashLock     sync.Mutex
 	hashPrevouts []byte
 	hashSequence []byte
 	hashOutputs  []byte
 }
 
+// AddrValue -
 type AddrValue struct {
 	Value  uint64
 	Addr20 [20]byte
 }
 
+// UIdx -
 func (po *TxPrevOut) UIdx() uint64 {
 	return binary.LittleEndian.Uint64(po.Hash[:8]) ^ uint64(po.Vout)
 }
@@ -73,16 +83,16 @@ func (po *TxPrevOut) UIdx() uint64 {
 func (to *TxOut) String(testnet bool) (s string) {
 	s = fmt.Sprintf("%.8f BTC", float64(to.Value)/1e8)
 	s += fmt.Sprint(" in block ", to.BlockHeight)
-	a := NewAddrFromPkScript(to.Pk_script, testnet)
+	a := NewAddrFromPkScript(to.PkScript, testnet)
 	if a != nil {
 		s += " to " + a.String()
 	} else {
-		s += " pkScr:" + hex.EncodeToString(to.Pk_script)
+		s += " pkScr:" + hex.EncodeToString(to.PkScript)
 	}
 	return
 }
 
-// Non-SegWit format
+// WriteSerialized - Non-SegWit format
 func (t *Tx) WriteSerialized(wr io.Writer) {
 	// Version
 	binary.Write(wr, binary.LittleEndian, t.Version)
@@ -101,22 +111,22 @@ func (t *Tx) WriteSerialized(wr io.Writer) {
 	WriteVlen(wr, uint64(len(t.TxOut)))
 	for i := range t.TxOut {
 		binary.Write(wr, binary.LittleEndian, t.TxOut[i].Value)
-		WriteVlen(wr, uint64(len(t.TxOut[i].Pk_script)))
-		wr.Write(t.TxOut[i].Pk_script[:])
+		WriteVlen(wr, uint64(len(t.TxOut[i].PkScript)))
+		wr.Write(t.TxOut[i].PkScript[:])
 	}
 
-	//Lock_time
-	binary.Write(wr, binary.LittleEndian, t.Lock_time)
+	//LockTime
+	binary.Write(wr, binary.LittleEndian, t.LockTime)
 }
 
-// Non-SegWit format
+// Serialize - Non-SegWit format
 func (t *Tx) Serialize() []byte {
 	wr := new(bytes.Buffer)
 	t.WriteSerialized(wr)
 	return wr.Bytes()
 }
 
-// Return the transaction's hash, that is about to get signed/verified
+// SignatureHash - Return the transaction's hash, that is about to get signed/verified
 func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 	// Remove any OP_CODESEPARATOR
 	var idx int
@@ -139,7 +149,7 @@ func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 
 	binary.Write(sha, binary.LittleEndian, uint32(t.Version))
 
-	if (hashType & SIGHASH_ANYONECANPAY) != 0 {
+	if (hashType & SigHashAnyoneCanPay) != 0 {
 		sha.Write([]byte{1}) // only 1 input
 		// The one input:
 		sha.Write(t.TxIn[nIn].Input.Hash[:])
@@ -160,7 +170,7 @@ func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 				sha.Write([]byte{0})
 			}
 
-			if (ht == SIGHASH_NONE || ht == SIGHASH_SINGLE) && i != nIn {
+			if (ht == SigHashNone || ht == SigHashSingle) && i != nIn {
 				sha.Write([]byte{0, 0, 0, 0})
 			} else {
 				binary.Write(sha, binary.LittleEndian, uint32(t.TxIn[i].Sequence))
@@ -168,9 +178,9 @@ func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 		}
 	}
 
-	if ht == SIGHASH_NONE {
+	if ht == SigHashNone {
 		sha.Write([]byte{0})
-	} else if ht == SIGHASH_SINGLE {
+	} else if ht == SigHashSingle {
 		nOut := nIn
 		if nOut >= len(t.TxOut) {
 			// Return 1 as the satoshi client (utils.IsOn't ask me why 1, and not something else)
@@ -181,18 +191,18 @@ func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 			sha.Write([]byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0})
 		}
 		binary.Write(sha, binary.LittleEndian, uint64(t.TxOut[nOut].Value))
-		WriteVlen(sha, uint64(len(t.TxOut[nOut].Pk_script)))
-		sha.Write(t.TxOut[nOut].Pk_script)
+		WriteVlen(sha, uint64(len(t.TxOut[nOut].PkScript)))
+		sha.Write(t.TxOut[nOut].PkScript)
 	} else {
 		WriteVlen(sha, uint64(len(t.TxOut)))
 		for i := range t.TxOut {
 			binary.Write(sha, binary.LittleEndian, uint64(t.TxOut[i].Value))
-			WriteVlen(sha, uint64(len(t.TxOut[i].Pk_script)))
-			sha.Write(t.TxOut[i].Pk_script)
+			WriteVlen(sha, uint64(len(t.TxOut[i].PkScript)))
+			sha.Write(t.TxOut[i].PkScript)
 		}
 	}
 
-	binary.Write(sha, binary.LittleEndian, t.Lock_time)
+	binary.Write(sha, binary.LittleEndian, t.LockTime)
 	binary.Write(sha, binary.LittleEndian, hashType)
 	tmp := sha.Sum(nil)
 	sha.Reset()
@@ -200,7 +210,7 @@ func (t *Tx) SignatureHash(scriptCode []byte, nIn int, hashType int32) []byte {
 	return sha.Sum(nil)
 }
 
-// Signs a specified transaction input
+// Sign - Signs a specified transaction input
 func (tx *Tx) Sign(in int, pk_script []byte, hash_type byte, pubkey, priv_key []byte) error {
 	if in >= len(tx.TxIn) {
 		return errors.New("tx.Sign() - input index overflow")
@@ -251,7 +261,7 @@ func (tx *Tx) Sign(in int, pk_script []byte, hash_type byte, pubkey, priv_key []
 	return nil // no error
 }
 
-// Signs a specified transaction input
+// SignWitness - Signs a specified transaction input
 func (tx *Tx) SignWitness(in int, pk_script []byte, amount uint64, hash_type byte, pubkey, priv_key []byte) error {
 	if in >= len(tx.TxIn) {
 		return errors.New("tx.Sign() - input index overflow")
@@ -297,6 +307,7 @@ func (tx *Tx) SignWitness(in int, pk_script []byte, amount uint64, hash_type byt
 	return nil // no error
 }
 
+// String -
 func (t *TxPrevOut) String() (s string) {
 	for i := 0; i < 32; i++ {
 		s += fmt.Sprintf("%02x", t.Hash[31-i])
@@ -305,10 +316,12 @@ func (t *TxPrevOut) String() (s string) {
 	return
 }
 
+// IsNull -
 func (in *TxPrevOut) IsNull() bool {
 	return allZeros(in.Hash[:]) && in.Vout == 0xffffffff
 }
 
+// IsCoinBase -
 func (tx *Tx) IsCoinBase() bool {
 	if len(tx.TxIn) == 1 {
 		inp := tx.TxIn[0].Input
@@ -319,6 +332,7 @@ func (tx *Tx) IsCoinBase() bool {
 	return false
 }
 
+// CheckTransaction -
 func (tx *Tx) CheckTransaction() error {
 	// Basic checks that utils.IsOn't depend on any context
 	if len(tx.TxIn) == 0 {
@@ -349,17 +363,18 @@ func (tx *Tx) CheckTransaction() error {
 	return nil
 }
 
+// IsFinal -
 func (tx *Tx) IsFinal(blockheight, timestamp uint32) bool {
-	if tx.Lock_time == 0 {
+	if tx.LockTime == 0 {
 		return true
 	}
 
-	if tx.Lock_time < LockTimeThreshold {
-		if tx.Lock_time < blockheight {
+	if tx.LockTime < LockTimeThreshold {
+		if tx.LockTime < blockheight {
 			return true
 		}
 	} else {
-		if tx.Lock_time < timestamp {
+		if tx.LockTime < timestamp {
 			return true
 		}
 	}
@@ -373,7 +388,7 @@ func (tx *Tx) IsFinal(blockheight, timestamp uint32) bool {
 	return true
 }
 
-// Decode a raw transaction output from a given bytes slice.
+// NewTxOut - Decode a raw transaction output from a given bytes slice.
 // Returns the output and the size it took in the buffer.
 func NewTxOut(b []byte) (txout *TxOut, offs int) {
 	var le, n int
@@ -389,14 +404,14 @@ func NewTxOut(b []byte) (txout *TxOut, offs int) {
 	}
 	offs += n
 
-	txout.Pk_script = make([]byte, le)
-	copy(txout.Pk_script[:], b[offs:offs+le])
+	txout.PkScript = make([]byte, le)
+	copy(txout.PkScript[:], b[offs:offs+le])
 	offs += le
 
 	return
 }
 
-// Decode a raw transaction input from a given bytes slice.
+// NewTxIn - Decode a raw transaction input from a given bytes slice.
 // Returns the input and the size it took in the buffer.
 func NewTxIn(b []byte) (txin *TxIn, offs int) {
 	var le, n int
@@ -424,7 +439,7 @@ func NewTxIn(b []byte) (txin *TxIn, offs int) {
 	return
 }
 
-// Decode a raw transaction from a given bytes slice.
+// NewTx - Decode a raw transaction from a given bytes slice.
 // Returns the transaction and the size it took in the buffer.
 // WARNING: This function does not set Tx.Hash, Tx.Size and Tx.Raw
 func NewTx(b []byte) (tx *Tx, offs int) {
@@ -495,12 +510,13 @@ func NewTx(b []byte) (tx *Tx, offs int) {
 		}
 	}
 
-	tx.Lock_time = binary.LittleEndian.Uint32(b[offs : offs+4])
+	tx.LockTime = binary.LittleEndian.Uint32(b[offs : offs+4])
 	offs += 4
 
 	return
 }
 
+// TxInSize -
 func TxInSize(b []byte) int {
 	le, n := VLen(b[36:])
 	if n == 0 {
@@ -509,6 +525,7 @@ func TxInSize(b []byte) int {
 	return 36 + n + le + 4
 }
 
+// TxOutSize -
 func TxOutSize(b []byte) int {
 	le, n := VLen(b[8:])
 	if n == 0 {
@@ -517,6 +534,7 @@ func TxOutSize(b []byte) int {
 	return 8 + n + le
 }
 
+// TxSize -
 func TxSize(b []byte) (offs int) {
 	defer func() { // In case if the buffer was too short, to recover from a panic
 		if r := recover(); r != nil {
@@ -574,11 +592,12 @@ func TxSize(b []byte) (offs int) {
 		}
 	}
 
-	offs += 4 // Lock_time
+	offs += 4 // LockTime
 
 	return
 }
 
+// GetKeyAndSig -
 func (txin *TxIn) GetKeyAndSig() (sig *Signature, key *PublicKey, e error) {
 	sig, e = NewSignature(txin.ScriptSig[1 : 1+txin.ScriptSig[0]])
 	if e != nil {
@@ -589,28 +608,30 @@ func (txin *TxIn) GetKeyAndSig() (sig *Signature, key *PublicKey, e error) {
 	return
 }
 
+// GetLegacySigOpCount -
 func (tx *Tx) GetLegacySigOpCount() (nSigOps uint) {
 	for i := 0; i < len(tx.TxIn); i++ {
 		nSigOps += GetSigOpCount(tx.TxIn[i].ScriptSig, false)
 	}
 	for i := 0; i < len(tx.TxOut); i++ {
-		nSigOps += GetSigOpCount(tx.TxOut[i].Pk_script, false)
+		nSigOps += GetSigOpCount(tx.TxOut[i].PkScript, false)
 	}
 	return
 }
 
+// WitnessSigHash -
 func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType int32) []byte {
 	var nullHash [32]byte
 	var hashPrevouts []byte
 	var hashSequence []byte
 	var hashOutputs []byte
 
-	tx.hash_lock.Lock()
-	defer tx.hash_lock.Unlock()
+	tx.hashLock.Lock()
+	defer tx.hashLock.Unlock()
 
 	sha := sha256.New()
 
-	if (hashType & SIGHASH_ANYONECANPAY) == 0 {
+	if (hashType & SigHashAnyoneCanPay) == 0 {
 		if tx.hashPrevouts == nil {
 			for _, vin := range tx.TxIn {
 				sha.Write(vin.Input.Hash[:])
@@ -627,7 +648,7 @@ func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType
 		hashPrevouts = nullHash[:]
 	}
 
-	if (hashType&SIGHASH_ANYONECANPAY) == 0 && (hashType&0x1f) != SIGHASH_SINGLE && (hashType&0x1f) != SIGHASH_NONE {
+	if (hashType&SigHashAnyoneCanPay) == 0 && (hashType&0x1f) != SigHashSingle && (hashType&0x1f) != SigHashNone {
 		if tx.hashSequence == nil {
 			for _, vin := range tx.TxIn {
 				binary.Write(sha, binary.LittleEndian, vin.Sequence)
@@ -643,12 +664,12 @@ func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType
 		hashSequence = nullHash[:]
 	}
 
-	if (hashType&0x1f) != SIGHASH_SINGLE && (hashType&0x1f) != SIGHASH_NONE {
+	if (hashType&0x1f) != SigHashSingle && (hashType&0x1f) != SigHashNone {
 		if tx.hashOutputs == nil {
 			for _, vout := range tx.TxOut {
 				binary.Write(sha, binary.LittleEndian, vout.Value)
-				WriteVlen(sha, uint64(len(vout.Pk_script)))
-				sha.Write(vout.Pk_script)
+				WriteVlen(sha, uint64(len(vout.PkScript)))
+				sha.Write(vout.PkScript)
 			}
 			hashOutputs = sha.Sum(nil)
 			sha.Reset()
@@ -657,10 +678,10 @@ func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType
 			sha.Reset()
 		}
 		hashOutputs = tx.hashOutputs
-	} else if (hashType&0x1f) == SIGHASH_SINGLE && nIn < len(tx.TxOut) {
+	} else if (hashType&0x1f) == SigHashSingle && nIn < len(tx.TxOut) {
 		binary.Write(sha, binary.LittleEndian, tx.TxOut[nIn].Value)
-		WriteVlen(sha, uint64(len(tx.TxOut[nIn].Pk_script)))
-		sha.Write(tx.TxOut[nIn].Pk_script)
+		WriteVlen(sha, uint64(len(tx.TxOut[nIn].PkScript)))
+		sha.Write(tx.TxOut[nIn].PkScript)
 		hashOutputs = sha.Sum(nil)
 		sha.Reset()
 		sha.Write(hashOutputs)
@@ -682,7 +703,7 @@ func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType
 	binary.Write(sha, binary.LittleEndian, tx.TxIn[nIn].Sequence)
 	sha.Write(hashOutputs)
 
-	binary.Write(sha, binary.LittleEndian, tx.Lock_time)
+	binary.Write(sha, binary.LittleEndian, tx.LockTime)
 	binary.Write(sha, binary.LittleEndian, hashType)
 
 	hashPrevouts = sha.Sum(nil)
@@ -691,6 +712,7 @@ func (tx *Tx) WitnessSigHash(scriptCode []byte, amount uint64, nIn int, hashType
 	return sha.Sum(nil)
 }
 
+// CountWitnessSigOps -
 func (tx *Tx) CountWitnessSigOps(inp int, scriptPubKey []byte) uint {
 	scriptSig := tx.TxIn[inp].ScriptSig
 	var witness [][]byte
@@ -720,6 +742,7 @@ func (tx *Tx) CountWitnessSigOps(inp int, scriptPubKey []byte) uint {
 	return 0
 }
 
+// SetHash -
 func (tx *Tx) SetHash(raw []byte) {
 	if raw == nil {
 		raw = tx.Raw
@@ -731,15 +754,16 @@ func (tx *Tx) SetHash(raw []byte) {
 	tx.Size = uint32(len(raw))
 	if tx.SegWit != nil {
 		tx.wTxID.Hash = h
-		nowit_raw := tx.Serialize()
-		tx.Hash.Calc(nowit_raw)
-		tx.NoWitSize = uint32(len(nowit_raw))
+		noWitRaw := tx.Serialize()
+		tx.Hash.Calc(noWitRaw)
+		tx.NoWitSize = uint32(len(noWitRaw))
 	} else {
 		tx.Hash.Hash = h
 		tx.NoWitSize = tx.Size
 	}
 }
 
+// WTxID -
 func (t *Tx) WTxID() *Uint256 {
 	if t.SegWit == nil {
 		return &t.Hash
@@ -748,10 +772,12 @@ func (t *Tx) WTxID() *Uint256 {
 	}
 }
 
+// Weight -
 func (tx *Tx) Weight() int {
 	return 3*int(tx.NoWitSize) + int(tx.Size)
 }
 
+// VSize -
 func (tx *Tx) VSize() int {
 	if tx.NoWitSize == tx.Size {
 		return int(tx.Size)
@@ -759,7 +785,7 @@ func (tx *Tx) VSize() int {
 	return (3*int(tx.NoWitSize+1) + int(tx.Size)) >> 2
 }
 
-// SegWit format
+// WriteSerializedNew - SegWit format
 func (t *Tx) WriteSerializedNew(wr io.Writer) {
 	if t.SegWit == nil {
 		t.WriteSerialized(wr)
@@ -786,8 +812,8 @@ func (t *Tx) WriteSerializedNew(wr io.Writer) {
 	WriteVlen(wr, uint64(len(t.TxOut)))
 	for i := range t.TxOut {
 		binary.Write(wr, binary.LittleEndian, t.TxOut[i].Value)
-		WriteVlen(wr, uint64(len(t.TxOut[i].Pk_script)))
-		wr.Write(t.TxOut[i].Pk_script[:])
+		WriteVlen(wr, uint64(len(t.TxOut[i].PkScript)))
+		wr.Write(t.TxOut[i].PkScript[:])
 	}
 
 	// Witness
@@ -799,11 +825,11 @@ func (t *Tx) WriteSerializedNew(wr io.Writer) {
 		}
 	}
 
-	//Lock_time
-	binary.Write(wr, binary.LittleEndian, t.Lock_time)
+	//LockTime
+	binary.Write(wr, binary.LittleEndian, t.LockTime)
 }
 
-// SegWit format
+// SerializeNew - SegWit format
 func (t *Tx) SerializeNew() []byte {
 	wr := new(bytes.Buffer)
 	t.WriteSerializedNew(wr)

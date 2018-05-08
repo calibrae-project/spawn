@@ -1168,8 +1168,8 @@ func evalScript(p []byte, amount uint64, stack *scrStack, tx *btc.Tx, inp int, v
 					return false
 				}
 
-				if !((tx.Lock_time < LockTimeThreshold && locktime < LockTimeThreshold) ||
-					(tx.Lock_time >= LockTimeThreshold && locktime >= LockTimeThreshold)) {
+				if !((tx.LockTime < LockTimeThreshold && locktime < LockTimeThreshold) ||
+					(tx.LockTime >= LockTimeThreshold && locktime >= LockTimeThreshold)) {
 					if DebugError {
 						fmt.Println("OP_CHECKLOCKTIMEVERIFY: broken lock value")
 					}
@@ -1177,12 +1177,12 @@ func evalScript(p []byte, amount uint64, stack *scrStack, tx *btc.Tx, inp int, v
 				}
 
 				if DBG_SCR {
-					fmt.Println("locktime > int64(tx.Lock_time)", locktime, int64(tx.Lock_time))
+					fmt.Println("locktime > int64(tx.LockTime)", locktime, int64(tx.LockTime))
 					fmt.Println(" ... seq", len(tx.TxIn), inp, tx.TxIn[inp].Sequence)
 				}
 
 				// Actually compare the specified lock time with the transaction.
-				if locktime > int64(tx.Lock_time) {
+				if locktime > int64(tx.LockTime) {
 					if DebugError {
 						fmt.Println("OP_CHECKLOCKTIMEVERIFY: Locktime requirement not satisfied")
 					}
@@ -1409,8 +1409,8 @@ func IsDefinedHashtypeSignature(sig []byte) bool {
 	if len(sig) == 0 {
 		return false
 	}
-	htype := sig[len(sig)-1] & (btc.SIGHASH_ANYONECANPAY ^ 0xff)
-	if htype < btc.SIGHASH_ALL || htype > btc.SIGHASH_SINGLE {
+	htype := sig[len(sig)-1] & (btc.SigHashAnyoneCanPay ^ 0xff)
+	if htype < btc.SigHashAll || htype > btc.SigHashSingle {
 		return false
 	}
 	return true

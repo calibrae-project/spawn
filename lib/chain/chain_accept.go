@@ -198,8 +198,8 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 						}
 						tmp := new(utxo.UtxoTxOut)
 						tmp.Value = tout.Value
-						tmp.PKScr = make([]byte, len(tout.Pk_script))
-						copy(tmp.PKScr, tout.Pk_script)
+						tmp.PKScr = make([]byte, len(tout.PkScript))
+						copy(tmp.PKScr, tout.PkScript)
 						urec.Outs[inp.Vout] = tmp
 					}
 				}
@@ -211,14 +211,14 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 							atomic.AddUint32(&verErrCount, 1)
 						}
 						wg.Done()
-					}(tout.Pk_script, tout.Value, j, bl.Txs[i])
+					}(tout.PkScript, tout.Value, j, bl.Txs[i])
 				}
 
-				if btc.IsP2SH(tout.Pk_script) {
+				if btc.IsP2SH(tout.PkScript) {
 					sigopscost += uint32(btc.WitnessScaleFactor * btc.GetP2SHSigOpCount(bl.Txs[i].TxIn[j].ScriptSig))
 				}
 
-				sigopscost += uint32(bl.Txs[i].CountWitnessSigOps(j, tout.Pk_script))
+				sigopscost += uint32(bl.Txs[i].CountWitnessSigOps(j, tout.PkScript))
 
 				txinsum += tout.Value
 			}
@@ -286,7 +286,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 					rec.InBlock = changes.Height
 					rec.Outs = make([]*utxo.UtxoTxOut, len(v))
 				}
-				rec.Outs[i] = &utxo.UtxoTxOut{Value: v[i].Value, PKScr: v[i].Pk_script}
+				rec.Outs[i] = &utxo.UtxoTxOut{Value: v[i].Value, PKScr: v[i].PkScript}
 			}
 		}
 		if rec != nil {

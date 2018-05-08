@@ -38,7 +38,7 @@ func makeP2sh() {
 	for i := range tx.TxIn {
 		if *input < 0 || i == *input {
 			tx.TxIn[i].ScriptSig = sd
-			fmt.Println("Input number", i, " - hash to sign:", hex.EncodeToString(tx.SignatureHash(d, i, btc.SIGHASH_ALL)))
+			fmt.Println("Input number", i, " - hash to sign:", hex.EncodeToString(tx.SignatureHash(d, i, btc.SigHashAll)))
 		}
 	}
 	ioutil.WriteFile(MultiToSignOut, []byte(hex.EncodeToString(tx.Serialize())), 0666)
@@ -55,7 +55,7 @@ func multisigReorder(tx *btc.Tx) (allSigned bool) {
 		if ms == nil {
 			continue
 		}
-		hash := tx.SignatureHash(ms.P2SH(), i, btc.SIGHASH_ALL)
+		hash := tx.SignatureHash(ms.P2SH(), i, btc.SigHashAll)
 
 		var sigs []*btc.Signature
 		for ki := range ms.PublicKeys {
@@ -117,7 +117,7 @@ func multisigSign() {
 			println("WARNING: Input", i, "- not multisig:", er.Error())
 			continue
 		}
-		hash := tx.SignatureHash(ms.P2SH(), i, btc.SIGHASH_ALL)
+		hash := tx.SignatureHash(ms.P2SH(), i, btc.SigHashAll)
 		//fmt.Println("Input number", i, len(ms.Signatures), " - hash to sign:", hex.EncodeToString(hash))
 
 		r, s, e := btc.EcdsaSign(k.Key, hash)

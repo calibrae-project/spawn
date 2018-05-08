@@ -65,7 +65,7 @@ func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64,
 			}
 		}
 		if po != nil {
-			ok := script.VerifyTxScript(po.Pk_script, po.Value, i, tx, script.VER_P2SH|script.VER_DERSIG|script.VER_CLTV)
+			ok := script.VerifyTxScript(po.PkScript, po.Value, i, tx, script.VER_P2SH|script.VER_DERSIG|script.VER_CLTV)
 			if !ok {
 				s += fmt.Sprintln("\nERROR: The transacion does not have a valid signature.")
 				e = errors.New("Invalid signature")
@@ -73,18 +73,18 @@ func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64,
 			totinp += po.Value
 
 			ads := "???"
-			if ad := btc.NewAddrFromPkScript(po.Pk_script, common.Testnet); ad != nil {
+			if ad := btc.NewAddrFromPkScript(po.PkScript, common.Testnet); ad != nil {
 				ads = ad.String()
 			}
 			s += fmt.Sprintf(" %15.8f BTC @ %s", float64(po.Value)/1e8, ads)
 
-			if btc.IsP2SH(po.Pk_script) {
+			if btc.IsP2SH(po.PkScript) {
 				so := btc.WitnessScaleFactor * btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig)
 				s += fmt.Sprintf("  + %d sigops", so)
 				sigops += so
 			}
 
-			swo := tx.CountWitnessSigOps(i, po.Pk_script)
+			swo := tx.CountWitnessSigOps(i, po.PkScript)
 			if swo > 0 {
 				s += fmt.Sprintf("  + %d segops", swo)
 				sigops += swo
@@ -99,11 +99,11 @@ func DecodeTxSops(tx *btc.Tx) (s string, missinginp bool, totinp, totout uint64,
 	s += fmt.Sprintln(len(tx.TxOut), "Output(s):")
 	for i := range tx.TxOut {
 		totout += tx.TxOut[i].Value
-		adr := btc.NewAddrFromPkScript(tx.TxOut[i].Pk_script, common.Testnet)
+		adr := btc.NewAddrFromPkScript(tx.TxOut[i].PkScript, common.Testnet)
 		if adr != nil {
 			s += fmt.Sprintf(" %15.8f BTC to adr %s\n", float64(tx.TxOut[i].Value)/1e8, adr.String())
 		} else {
-			s += fmt.Sprintf(" %15.8f BTC to scr %s\n", float64(tx.TxOut[i].Value)/1e8, hex.EncodeToString(tx.TxOut[i].Pk_script))
+			s += fmt.Sprintf(" %15.8f BTC to scr %s\n", float64(tx.TxOut[i].Value)/1e8, hex.EncodeToString(tx.TxOut[i].PkScript))
 		}
 	}
 	if missinginp {

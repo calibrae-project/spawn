@@ -6,18 +6,21 @@ import (
 	"fmt"
 )
 
+// MultiSig -
 type MultiSig struct {
 	SigsNeeded uint
 	Signatures []*Signature
 	PublicKeys [][]byte
 }
 
+// NewMultiSig -
 func NewMultiSig(n uint) (res *MultiSig) {
 	res = new(MultiSig)
 	res.SigsNeeded = n
 	return
 }
 
+// NewMultiSigFromP2SH -
 func NewMultiSigFromP2SH(p []byte) (*MultiSig, error) {
 	res := new(MultiSig)
 	er := res.ApplyP2SH(p)
@@ -27,6 +30,7 @@ func NewMultiSigFromP2SH(p []byte) (*MultiSig, error) {
 	return res, nil
 }
 
+// NewMultiSigFromScript -
 func NewMultiSigFromScript(p []byte) (*MultiSig, error) {
 	r := new(MultiSig)
 
@@ -58,7 +62,7 @@ func NewMultiSigFromScript(p []byte) (*MultiSig, error) {
 			stage = 6
 
 		default:
-			return nil, errors.New(fmt.Sprintf("NewMultiSigFromScript: Unexpected opcode 0x%02X at the end of script", opcode))
+			return nil, errors.New("NewMultiSigFromScript: Unexpected opcode 0x" + fmt.Sprintf("%02X", opcode) + " at the end of script")
 		}
 	}
 
@@ -69,7 +73,8 @@ func NewMultiSigFromScript(p []byte) (*MultiSig, error) {
 	return r, nil
 }
 
-func (r *MultiSig) ApplyP2SH(p []byte) error {
+// ApplyP2SH -
+func (ms *MultiSig) ApplyP2SH(p []byte) error {
 	var idx, stage int
 	stage = 2
 	for idx < len(p) {
@@ -84,20 +89,20 @@ func (r *MultiSig) ApplyP2SH(p []byte) error {
 			if opcode < OP_1 || opcode > OP_16 {
 				return errors.New(fmt.Sprint("ApplyP2SH: Unexpected number of required signatures ", opcode-OP_1+1))
 			}
-			r.SigsNeeded = uint(opcode - OP_1 + 1)
+			ms.SigsNeeded = uint(opcode - OP_1 + 1)
 			stage = 3
 
 		case 3: // Look for public keys
 			if len(pv) == 33 && (pv[0]|1) == 3 || len(pv) == 65 && pv[0] == 4 {
-				r.PublicKeys = append(r.PublicKeys, pv)
+				ms.PublicKeys = append(ms.PublicKeys, pv)
 				break
 			}
 			stage = 4
 			fallthrough
 
 		case 4: // Look for number of public keys
-			if opcode-OP_1+1 != len(r.PublicKeys) {
-				return errors.New(fmt.Sprint("ApplyP2SH: Number of public keys mismatch ", opcode-OP_1+1, "/", len(r.PublicKeys)))
+			if opcode-OP_1+1 != len(ms.PublicKeys) {
+				return errors.New(fmt.Sprint("ApplyP2SH: Number of public keys mismatch ", opcode-OP_1+1, "/", len(ms.PublicKeys)))
 			}
 			stage = 5
 
@@ -105,7 +110,7 @@ func (r *MultiSig) ApplyP2SH(p []byte) error {
 			if opcode == OP_CHECKMULTISIG {
 				stage = 6
 			} else {
-				return errors.New(fmt.Sprintf("ApplyP2SH: Unexpected opcode 0x%02X at the end of script", opcode))
+				return errors.New("ApplyP2SH: Unexpected opcode 0x" + fmt.Sprintf("%02X", opcode) + "at the end of script")
 			}
 		}
 	}
@@ -117,6 +122,7 @@ func (r *MultiSig) ApplyP2SH(p []byte) error {
 	return nil
 }
 
+// P2SH -
 func (ms *MultiSig) P2SH() []byte {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(ms.SigsNeeded - 1 + OP_1))
@@ -130,6 +136,7 @@ func (ms *MultiSig) P2SH() []byte {
 	return buf.Bytes()
 }
 
+// Bytes -
 func (ms *MultiSig) Bytes() []byte {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(OP_FALSE)
@@ -144,6 +151,7 @@ func (ms *MultiSig) Bytes() []byte {
 	return buf.Bytes()
 }
 
+// PkScript -
 func (ms *MultiSig) PkScript() (pkscr []byte) {
 	pkscr = make([]byte, 23)
 	pkscr[0] = 0xa9
@@ -153,6 +161,7 @@ func (ms *MultiSig) PkScript() (pkscr []byte) {
 	return
 }
 
+// Addr -
 func (ms *MultiSig) Addr(testnet bool) *Addr {
 	var h [20]byte
 	RimpHash(ms.P2SH(), h[:])

@@ -212,7 +212,7 @@ func dumpRawTx() {
 	for i := range tx.TxOut {
 		totout += tx.TxOut[i].Value
 		fmt.Printf("%4d) %20s BTC ", i, btc.UintToBtc(tx.TxOut[i].Value))
-		addr := addrFromPkscr(tx.TxOut[i].Pk_script)
+		addr := addrFromPkscr(tx.TxOut[i].PkScript)
 		if addr != nil {
 			if addr.Version == verScript() {
 				fmt.Println("to scriptH", addr.String())
@@ -221,22 +221,22 @@ func dumpRawTx() {
 			}
 		} else {
 			if tx.TxOut[i].Value > 0 {
-				fmt.Println("WARNING!!! These coins go to non-standard Pk_script:")
+				fmt.Println("WARNING!!! These coins go to non-standard PkScript:")
 			} else {
-				fmt.Println("NULL output to Pk_script:")
+				fmt.Println("NULL output to PkScript:")
 			}
-			ss, er := btc.ScriptToText(tx.TxOut[i].Pk_script)
+			ss, er := btc.ScriptToText(tx.TxOut[i].PkScript)
 			if er == nil {
 				for i := range ss {
 					fmt.Println("       ", ss[i])
 				}
 			} else {
-				fmt.Println(hex.EncodeToString(tx.TxOut[i].Pk_script))
+				fmt.Println(hex.EncodeToString(tx.TxOut[i].PkScript))
 				fmt.Println(er.Error())
 			}
 		}
 	}
-	fmt.Println("Lock Time:", tx.Lock_time)
+	fmt.Println("Lock Time:", tx.LockTime)
 
 	fmt.Println("Output volume:", btc.UintToBtc(totout), "BTC")
 	if noins == 0 {

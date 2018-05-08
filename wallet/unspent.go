@@ -69,7 +69,7 @@ func loadBalance() error {
 		}
 		if uns := NewUnspRec(l); uns != nil {
 			if uns.key == nil {
-				uns.key = pkscrToKey(getUO(&uns.TxPrevOut).Pk_script)
+				uns.key = pkscrToKey(getUO(&uns.TxPrevOut).PkScript)
 			}
 			unspentOuts = append(unspentOuts, uns)
 		} else {
@@ -91,7 +91,7 @@ func showBalance() {
 			continue
 		}
 
-		if btc.IsP2SH(uo.Pk_script) {
+		if btc.IsP2SH(uo.PkScript) {
 			msBtc += uo.Value
 			multisigInputs++
 			continue
@@ -120,7 +120,7 @@ func applyToBalance(tx *btc.Tx) {
 
 		fmt.Println("Adding", len(tx.TxOut), "new output(s) to the balance/ folder...")
 		for out := range tx.TxOut {
-			if k := pkscrToKey(tx.TxOut[out].Pk_script); k != nil {
+			if k := pkscrToKey(tx.TxOut[out].PkScript); k != nil {
 				uns := new(UnspRec)
 				uns.key = k
 				uns.TxPrevOut.Hash = tx.Hash.Hash

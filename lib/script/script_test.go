@@ -217,8 +217,8 @@ func mkCreditTx(pkScr []byte, value uint64) (inputTx *btc.Tx) {
 	inputTx.Version = 1
 	inputTx.TxIn = []*btc.TxIn{&btc.TxIn{Input: btc.TxPrevOut{Vout: 0xffffffff},
 		ScriptSig: []byte{0, 0}, Sequence: 0xffffffff}}
-	inputTx.TxOut = []*btc.TxOut{&btc.TxOut{Pk_script: pkScr, Value: value}}
-	// Lock_time = 0
+	inputTx.TxOut = []*btc.TxOut{&btc.TxOut{PkScript: pkScr, Value: value}}
+	// LockTime = 0
 	inputTx.SetHash(inputTx.Serialize())
 	return
 }
@@ -229,7 +229,7 @@ func mkSpendTx(inputTx *btc.Tx, sigScr []byte, witness [][]byte) (outputTx *btc.
 	outputTx.TxIn = []*btc.TxIn{&btc.TxIn{Input: btc.TxPrevOut{Hash: btc.Sha2Sum(inputTx.Serialize()), Vout: 0},
 		ScriptSig: sigScr, Sequence: 0xffffffff}}
 	outputTx.TxOut = []*btc.TxOut{&btc.TxOut{Value: inputTx.TxOut[0].Value}}
-	// Lock_time = 0
+	// LockTime = 0
 
 	if len(witness) > 0 {
 		outputTx.SegWit = make([][][]byte, 1)

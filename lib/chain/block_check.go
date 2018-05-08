@@ -217,7 +217,7 @@ func (ch *Chain) PostCheckBlock(bl *btc.Block) (err error) {
 			var i int
 			for i = len(bl.Txs[0].TxOut) - 1; i >= 0; i-- {
 				o := bl.Txs[0].TxOut[i]
-				if len(o.Pk_script) >= 38 && bytes.Equal(o.Pk_script[:6], []byte{0x6a, 0x24, 0xaa, 0x21, 0xa9, 0xed}) {
+				if len(o.PkScript) >= 38 && bytes.Equal(o.PkScript[:6], []byte{0x6a, 0x24, 0xaa, 0x21, 0xa9, 0xed}) {
 					if len(bl.Txs[0].SegWit) != 1 || len(bl.Txs[0].SegWit[0]) != 1 || len(bl.Txs[0].SegWit[0][0]) != 32 {
 						err = errors.New("CheckBlock() : invalid witness nonce size - RPC_Result:bad-witness-nonce-size")
 						println(err.Error())
@@ -231,7 +231,7 @@ func (ch *Chain) PostCheckBlock(bl *btc.Block) (err error) {
 					merkle, _ := btc.GetWitnessMerkle(bl.Txs)
 					withNonce := btc.Sha2Sum(append(merkle, bl.Txs[0].SegWit[0][0]...))
 
-					if !bytes.Equal(withNonce[:], o.Pk_script[6:38]) {
+					if !bytes.Equal(withNonce[:], o.PkScript[6:38]) {
 						err = errors.New("CheckBlock(): Witness Merkle mismatch - RPC_Result:bad-witness-merkle-match")
 						return
 					}

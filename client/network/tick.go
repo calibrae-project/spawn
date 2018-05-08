@@ -194,7 +194,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 			// we do net.Dial() in paralell routine, so we can abort quickly upon request
 			con, e = net.DialTimeout("tcp4", addr, TCPDialTimeout)
 			connDone <- true
-		}(fmt.Sprintf("%d.%d.%d.%d:%d", ad.Ip4[0], ad.Ip4[1], ad.Ip4[2], ad.Ip4[3], ad.Port))
+		}(fmt.Sprintf("%d.%d.%d.%d:%d", ad.IPv4[0], ad.IPv4[1], ad.IPv4[2], ad.IPv4[3], ad.Port))
 
 		for {
 			select {
@@ -255,7 +255,7 @@ func tcpServer() {
 				if e == nil {
 					// Hammering protection
 					HammeringMutex.Lock()
-					ti, ok := RecentlyDisconencted[ad.NetAddr.Ip4]
+					ti, ok := RecentlyDisconencted[ad.NetAddr.IPv4]
 					HammeringMutex.Unlock()
 					if ok && time.Now().Sub(ti) < HammeringMinReconnect {
 						//println(ad.IP(), "is hammering within", time.Now().Sub(ti).String())
@@ -821,7 +821,7 @@ func (c *OneConnection) Run() {
 			common.CountSafe("PeersBanned")
 		} else if c.X.Incomming && !c.MutexGetBool(&c.X.IsSpecial) {
 			HammeringMutex.Lock()
-			RecentlyDisconencted[c.PeerAddr.NetAddr.Ip4] = time.Now()
+			RecentlyDisconencted[c.PeerAddr.NetAddr.IPv4] = time.Now()
 			HammeringMutex.Unlock()
 		}
 	}

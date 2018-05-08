@@ -78,7 +78,7 @@ func DeriveNextPublic(public, secret []byte) (out []byte) {
 func NewSpendOutputs(addr *Addr, amount uint64, testnet bool) ([]*TxOut, error) {
 	out := new(TxOut)
 	out.Value = amount
-	out.Pk_script = addr.OutScript()
+	out.PkScript = addr.OutScript()
 	return []*TxOut{out}, nil
 }
 

@@ -25,7 +25,7 @@ func TxMiner(cbtx *btc.Tx) (string, int) {
 	for i, m := range MinerIDs {
 		if bytes.Equal(m.Tag, []byte("_p2pool_")) { // P2Pool
 			if len(cbtx.TxOut) > 10 &&
-				bytes.Equal(cbtx.TxOut[len(cbtx.TxOut)-1].Pk_script[:2], []byte{0x6A, 0x28}) {
+				bytes.Equal(cbtx.TxOut[len(cbtx.TxOut)-1].PkScript[:2], []byte{0x6A, 0x28}) {
 				return m.Name, i
 			}
 		} else if bytes.Contains(txdat, m.Tag) {
@@ -34,7 +34,7 @@ func TxMiner(cbtx *btc.Tx) (string, int) {
 	}
 
 	for _, txo := range cbtx.TxOut {
-		adr := btc.NewAddrFromPkScript(txo.Pk_script, Testnet)
+		adr := btc.NewAddrFromPkScript(txo.PkScript, Testnet)
 		if adr != nil {
 			return adr.String(), -1
 		}

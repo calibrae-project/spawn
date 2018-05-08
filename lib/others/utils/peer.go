@@ -1,20 +1,19 @@
 package utils
 
 import (
-	"hash/crc64"
 	"encoding/binary"
+	"hash/crc64"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 type OnePeer struct {
 	btc.NetAddr
-	Time uint32  // When seen last time
+	Time   uint32 // When seen last time
 	Banned uint32 // time when this address baned or zero if never
 }
 
-
 var crctab = crc64.MakeTable(crc64.ISO)
-
 
 /*
 Serialized peer record (all values are LSB unless specified otherwise):
@@ -26,7 +25,6 @@ Serialized peer record (all values are LSB unless specified otherwise):
  [30:34] - OPTIONAL: if present, unix timestamp of when the peer was banned
 */
 
-
 func NewPeer(v []byte) (p *OnePeer) {
 	if len(v) < 30 {
 		println("NewPeer: unexpected length", len(v))
@@ -35,15 +33,14 @@ func NewPeer(v []byte) (p *OnePeer) {
 	p = new(OnePeer)
 	p.Time = binary.LittleEndian.Uint32(v[0:4])
 	p.Services = binary.LittleEndian.Uint64(v[4:12])
-	copy(p.Ip6[:], v[12:24])
-	copy(p.Ip4[:], v[24:28])
+	copy(p.IPv6[:], v[12:24])
+	copy(p.IPv4[:], v[24:28])
 	p.Port = binary.BigEndian.Uint16(v[28:30])
-	if len(v)>=34 {
+	if len(v) >= 34 {
 		p.Banned = binary.LittleEndian.Uint32(v[30:34])
 	}
 	return
 }
-
 
 func (p *OnePeer) Bytes() (res []byte) {
 	if p.Banned != 0 {
@@ -54,17 +51,16 @@ func (p *OnePeer) Bytes() (res []byte) {
 	}
 	binary.LittleEndian.PutUint32(res[0:4], p.Time)
 	binary.LittleEndian.PutUint64(res[4:12], p.Services)
-	copy(res[12:24], p.Ip6[:])
-	copy(res[24:28], p.Ip4[:])
+	copy(res[12:24], p.IPv6[:])
+	copy(res[24:28], p.IPv4[:])
 	binary.BigEndian.PutUint16(res[28:30], p.Port)
 	return
 }
 
-
-func (p *OnePeer) UniqID() (uint64) {
+func (p *OnePeer) UniqID() uint64 {
 	h := crc64.New(crctab)
-	h.Write(p.Ip6[:])
-	h.Write(p.Ip4[:])
-	h.Write([]byte{byte(p.Port>>8),byte(p.Port)})
+	h.Write(p.IPv6[:])
+	h.Write(p.IPv4[:])
+	h.Write([]byte{byte(p.Port >> 8), byte(p.Port)})
 	return h.Sum64()
 }

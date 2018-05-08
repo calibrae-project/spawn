@@ -599,7 +599,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 0.5.8 - 2013-07-25
 * Added some more satoshi-script-evaluation compatiblity patches (and unit tests)
 * By default, don't download same block from more than 3 peers simultaneously (CFG.Net.MaxBlockAtOnce)
-* Fixed a critical blockchain parsing issue, with SIGHASH_SINGLE sigs (was rejecting valid blocks)
+* Fixed a critical blockchain parsing issue, with SigHashSingle sigs (was rejecting valid blocks)
 
 0.5.5 - 2013-07-20
 * The wallet now supports Type-2 deterministic keys (use "-t2" switch)

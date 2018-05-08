@@ -46,7 +46,7 @@ func dlPayment(w http.ResponseWriter, r *http.Request) {
 
 		tx := new(btc.Tx)
 		tx.Version = 1
-		tx.Lock_time = 0
+		tx.LockTime = 0
 
 		seq, er := strconv.ParseInt(r.Form["tx_seq"][0], 10, 64)
 		if er != nil || seq < -2 || seq > 0xffffffff {
@@ -72,7 +72,7 @@ func dlPayment(w http.ResponseWriter, r *http.Request) {
 					if er == nil {
 						var po = btc.TxPrevOut{Hash: hash.Hash, Vout: uint32(vout)}
 						if res := common.BlockChain.Unspent.UnspentGet(&po); res != nil {
-							addr := btc.NewAddrFromPkScript(res.Pk_script, common.Testnet)
+							addr := btc.NewAddrFromPkScript(res.PkScript, common.Testnet)
 
 							unsp := &utxo.OneUnspentTx{TxPrevOut: po, Value: res.Value,
 								MinedAt: res.BlockHeight, Coinbase: res.WasCoinbase, Addr: addr}

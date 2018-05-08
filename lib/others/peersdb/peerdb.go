@@ -82,9 +82,9 @@ func NewAddrFromString(ipstr string, force_default_port bool) (p *PeerAddr, e er
 	ip := net.ParseIP(ipstr)
 	if ip != nil && len(ip) == 16 {
 		p = NewEmptyPeer()
-		copy(p.Ip4[:], ip[12:16])
+		copy(p.IPv4[:], ip[12:16])
 		p.Services = Services
-		copy(p.Ip6[:], ip[:12])
+		copy(p.IPv6[:], ip[:12])
 		p.Port = port
 	} else {
 		e = errors.New("Error parsing IP '" + ipstr + "'")
@@ -98,7 +98,7 @@ func NewPeerFromString(ipstr string, force_default_port bool) (p *PeerAddr, e er
 		return
 	}
 
-	if sys.IsIPBlocked(p.Ip4[:]) {
+	if sys.IsIPBlocked(p.IPv4[:]) {
 		e = errors.New(ipstr + " is blocked")
 		return
 	}
@@ -164,7 +164,7 @@ func (p *PeerAddr) Dead() {
 }
 
 func (p *PeerAddr) IP() string {
-	return fmt.Sprintf("%d.%d.%d.%d:%d", p.Ip4[0], p.Ip4[1], p.Ip4[2], p.Ip4[3], p.Port)
+	return fmt.Sprintf("%d.%d.%d.%d:%d", p.IPv4[0], p.IPv4[1], p.IPv4[2], p.IPv4[3], p.Port)
 }
 
 func (p *PeerAddr) String() (s string) {
@@ -205,7 +205,7 @@ func GetBestPeers(limit uint, isConnected func(*PeerAddr) bool) (res manyPeers) 
 	tmp := make(manyPeers, 0)
 	PeerDB.Browse(func(k qdb.KeyType, v []byte) uint32 {
 		ad := NewPeer(v)
-		if ad.Banned == 0 && sys.ValidIp4(ad.Ip4[:]) && !sys.IsIPBlocked(ad.Ip4[:]) {
+		if ad.Banned == 0 && sys.ValidIp4(ad.IPv4[:]) && !sys.IsIPBlocked(ad.IPv4[:]) {
 			if isConnected == nil || !isConnected(ad) {
 				tmp = append(tmp, ad)
 			}
@@ -234,8 +234,8 @@ func initSeeds(seeds []string, port uint16) {
 				if ip != nil && len(ip) == 16 {
 					p := NewEmptyPeer()
 					p.Services = 1
-					copy(p.Ip6[:], ip[:12])
-					copy(p.Ip4[:], ip[12:16])
+					copy(p.IPv6[:], ip[:12])
+					copy(p.IPv4[:], ip[12:16])
 					p.Port = port
 					p.Save()
 				}
@@ -262,10 +262,10 @@ func InitPeers(dir string) {
 		}
 		proxyPeer = NewEmptyPeer()
 		proxyPeer.Services = Services
-		copy(proxyPeer.Ip4[:], oa.IP[12:16])
+		copy(proxyPeer.IPv4[:], oa.IP[12:16])
 		proxyPeer.Port = uint16(oa.Port)
 		fmt.Printf("Connect to bitcoin network via %d.%d.%d.%d:%d\n",
-			proxyPeer.Ip4[0], proxyPeer.Ip4[1], proxyPeer.Ip4[2], proxyPeer.Ip4[3], proxyPeer.Port)
+			proxyPeer.IPv4[0], proxyPeer.IPv4[1], proxyPeer.IPv4[2], proxyPeer.IPv4[3], proxyPeer.Port)
 	} else {
 		go func() {
 			if !Testnet {

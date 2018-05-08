@@ -114,7 +114,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		c.Mutex.Unlock()
 
 		if useThisIP {
-			if bytes.Equal(pl[40:44], c.PeerAddr.Ip4[:]) {
+			if bytes.Equal(pl[40:44], c.PeerAddr.IPv4[:]) {
 				if common.FLAG.Log {
 					ExternalIPmutex.Lock()
 					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
@@ -129,7 +129,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				common.CountSafe("IgnoreExtIP-O")
 				useThisIP = false
 			} else if len(pl) >= 86 && binary.BigEndian.Uint32(pl[66:70]) != 0 &&
-				!bytes.Equal(pl[66:70], c.PeerAddr.Ip4[:]) {
+				!bytes.Equal(pl[66:70], c.PeerAddr.IPv4[:]) {
 				if common.FLAG.Log {
 					ExternalIPmutex.Lock()
 					f, _ := os.OpenFile("badip_log.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)

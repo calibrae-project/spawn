@@ -17,7 +17,7 @@ func signTx(tx *btc.Tx) (allSigned bool) {
 	// go through each input
 	for in := range tx.TxIn {
 		if ms, _ := btc.NewMultiSigFromScript(tx.TxIn[in].ScriptSig); ms != nil {
-			hash := tx.SignatureHash(ms.P2SH(), in, btc.SIGHASH_ALL)
+			hash := tx.SignatureHash(ms.P2SH(), in, btc.SigHashAll)
 			for ki := range ms.PublicKeys {
 				k := publicToKey(ms.PublicKeys[ki])
 				if k != nil {
@@ -43,15 +43,15 @@ func signTx(tx *btc.Tx) (allSigned bool) {
 				allSigned = false
 				continue
 			}
-			adr := addrFromPkscr(uo.Pk_script)
+			adr := addrFromPkscr(uo.PkScript)
 			if adr == nil {
 				fmt.Println("WARNING: Don't know how to sign input number", in)
-				fmt.Println(" Pk_script:", hex.EncodeToString(uo.Pk_script))
+				fmt.Println(" PkScript:", hex.EncodeToString(uo.PkScript))
 				allSigned = false
 				continue
 			}
 
-			ver, segwitProg := btc.IsWitnessProgram(uo.Pk_script)
+			ver, segwitProg := btc.IsWitnessProgram(uo.PkScript)
 			if len(segwitProg) == 20 && ver == 0 {
 				copy(adr.Hash160[:], segwitProg) // native segwith P2WPKH output
 			}
@@ -65,12 +65,12 @@ func signTx(tx *btc.Tx) (allSigned bool) {
 			var er error
 			k := keys[keyIdx]
 			if segwitProg != nil {
-				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
+				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SigHashAll, k.Addr.Pubkey, k.Key)
 			} else if adr.String() == segwit[keyIdx].String() {
 				tx.TxIn[in].ScriptSig = append([]byte{22, 0, 20}, k.Addr.Hash160[:]...)
-				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
+				er = tx.SignWitness(in, k.Addr.OutScript(), uo.Value, btc.SigHashAll, k.Addr.Pubkey, k.Key)
 			} else {
-				er = tx.Sign(in, uo.Pk_script, btc.SIGHASH_ALL, k.Addr.Pubkey, k.Key)
+				er = tx.Sign(in, uo.PkScript, btc.SigHashAll, k.Addr.Pubkey, k.Key)
 			}
 			if er != nil {
 				fmt.Println("ERROR: Sign failed for input number", in, er.Error())
@@ -124,7 +124,7 @@ func makeSignedTx() {
 	// Make an empty transaction
 	tx := new(btc.Tx)
 	tx.Version = 1
-	tx.Lock_time = 0
+	tx.LockTime = 0
 
 	// Select as many inputs as we need to pay the full amount (with the fee)
 	var btcsofar uint64
@@ -185,7 +185,7 @@ func makeSignedTx() {
 		scr.WriteByte(0x6a) // OP_RETURN
 		btc.WritePutLen(scr, uint32(len(*message)))
 		scr.Write([]byte(*message))
-		tx.TxOut = append(tx.TxOut, &btc.TxOut{Value: 0, Pk_script: scr.Bytes()})
+		tx.TxOut = append(tx.TxOut, &btc.TxOut{Value: 0, PkScript: scr.Bytes()})
 	}
 
 	signed := signTx(tx)

@@ -207,7 +207,7 @@ func listUnspent(addr string) {
 	network.TxMutex.Lock()
 	for _, t2s := range network.TransactionsToSend {
 		for vo, to := range t2s.TxOut {
-			if bytes.Equal(to.Pk_script, outscr) {
+			if bytes.Equal(to.PkScript, outscr) {
 				fmt.Println(fmt.Sprintf("Mempool Tx: %15s BTC comming with %s-%03d",
 					btc.UintToBtc(to.Value), t2s.Hash.String(), vo))
 			}

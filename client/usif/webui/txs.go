@@ -93,23 +93,23 @@ func outputTxXML(w http.ResponseWriter, tx *btc.Tx) {
 			po = common.BlockChain.Unspent.UnspentGet(&tx.TxIn[i].Input)
 		}
 		if po != nil {
-			ok := script.VerifyTxScript(po.Pk_script, po.Value, i, tx, script.STANDARD_VERIFY_FLAGS)
+			ok := script.VerifyTxScript(po.PkScript, po.Value, i, tx, script.STANDARD_VERIFY_FLAGS)
 			if !ok {
 				w.Write([]byte("<status>Script FAILED</status>"))
 			} else {
 				w.Write([]byte("<status>OK</status>"))
 			}
 			fmt.Fprint(w, "<value>", po.Value, "</value>")
-			fmt.Fprint(w, "<pkscript>", hex.EncodeToString(po.Pk_script), "</pkscript>")
-			if ad := btc.NewAddrFromPkScript(po.Pk_script, common.Testnet); ad != nil {
+			fmt.Fprint(w, "<pkscript>", hex.EncodeToString(po.PkScript), "</pkscript>")
+			if ad := btc.NewAddrFromPkScript(po.PkScript, common.Testnet); ad != nil {
 				fmt.Fprint(w, "<addr>", ad.String(), "</addr>")
 			}
 			fmt.Fprint(w, "<block>", po.BlockHeight, "</block>")
 
-			if btc.IsP2SH(po.Pk_script) {
+			if btc.IsP2SH(po.PkScript) {
 				fmt.Fprint(w, "<input_sigops>", btc.WitnessScaleFactor*btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig), "</input_sigops>")
 			}
-			fmt.Fprint(w, "<witness_sigops>", tx.CountWitnessSigOps(i, po.Pk_script), "</witness_sigops>")
+			fmt.Fprint(w, "<witness_sigops>", tx.CountWitnessSigOps(i, po.PkScript), "</witness_sigops>")
 		} else {
 			w.Write([]byte("<status>Unknown input</status>"))
 		}
@@ -132,11 +132,11 @@ func outputTxXML(w http.ResponseWriter, tx *btc.Tx) {
 	for i := range tx.TxOut {
 		w.Write([]byte("<output>"))
 		fmt.Fprint(w, "<value>", tx.TxOut[i].Value, "</value>")
-		adr := btc.NewAddrFromPkScript(tx.TxOut[i].Pk_script, common.Testnet)
+		adr := btc.NewAddrFromPkScript(tx.TxOut[i].PkScript, common.Testnet)
 		if adr != nil {
 			fmt.Fprint(w, "<addr>", adr.String(), "</addr>")
 		} else {
-			fmt.Fprint(w, "<addr>", "scr:"+hex.EncodeToString(tx.TxOut[i].Pk_script), "</addr>")
+			fmt.Fprint(w, "<addr>", "scr:"+hex.EncodeToString(tx.TxOut[i].PkScript), "</addr>")
 		}
 		w.Write([]byte("</output>"))
 	}
@@ -158,7 +158,7 @@ func txXML(w http.ResponseWriter, v *network.OneTxToSend, verbose bool) {
 	fmt.Fprint(w, "<sw_compress>", 1000*(int(v.Size)-int(v.NoWitSize))/int(v.Size), "</sw_compress>")
 	fmt.Fprint(w, "<inputs>", len(v.TxIn), "</inputs>")
 	fmt.Fprint(w, "<outputs>", len(v.TxOut), "</outputs>")
-	fmt.Fprint(w, "<lock_time>", v.Lock_time, "</lock_time>")
+	fmt.Fprint(w, "<lock_time>", v.LockTime, "</lock_time>")
 	fmt.Fprint(w, "<witness_cnt>", len(v.SegWit), "</witness_cnt>")
 	if verbose {
 		outputTxXML(w, v.Tx)
