@@ -5,7 +5,8 @@ import (
 	"os"
 )
 
-type QdbIndex struct {
+// Index -
+type Index struct {
 	db                 *DB
 	IdxFilePath        string
 	file               *os.File
@@ -19,8 +20,9 @@ type QdbIndex struct {
 	ExtraSpaceUsed  uint64
 }
 
-func NewDBidx(db *DB, recs uint) (idx *QdbIndex) {
-	idx = new(QdbIndex)
+// NewDBidx -
+func NewDBidx(db *DB, recs uint) (idx *Index) {
+	idx = new(Index)
 	idx.db = db
 	idx.IdxFilePath = db.Dir + "qdbidx."
 	if recs == 0 {
@@ -35,7 +37,7 @@ func NewDBidx(db *DB, recs uint) (idx *QdbIndex) {
 	return
 }
 
-func (idx *QdbIndex) load(walk WalkFunction) {
+func (idx *Index) load(walk WalkFunction) {
 	dats := make(map[uint32][]byte)
 	idx.browse(func(k KeyType, v *oneIdx) bool {
 		if walk != nil || (v.flags&NoCache) == 0 {
@@ -59,15 +61,15 @@ func (idx *QdbIndex) load(walk WalkFunction) {
 	})
 }
 
-func (idx *QdbIndex) size() int {
+func (idx *Index) size() int {
 	return len(idx.Index)
 }
 
-func (idx *QdbIndex) get(k KeyType) *oneIdx {
+func (idx *Index) get(k KeyType) *oneIdx {
 	return idx.Index[k]
 }
 
-func (idx *QdbIndex) memput(k KeyType, rec *oneIdx) {
+func (idx *Index) memput(k KeyType, rec *oneIdx) {
 	if prv, ok := idx.Index[k]; ok {
 		prv.FreeData()
 		dif := uint64(24 + prv.datlen)
@@ -86,7 +88,7 @@ func (idx *QdbIndex) memput(k KeyType, rec *oneIdx) {
 	}
 }
 
-func (idx *QdbIndex) memdel(k KeyType) {
+func (idx *Index) memdel(k KeyType) {
 	if cur, ok := idx.Index[k]; ok {
 		cur.FreeData()
 		dif := uint64(12 + cur.datlen)
@@ -98,7 +100,7 @@ func (idx *QdbIndex) memdel(k KeyType) {
 	}
 }
 
-func (idx *QdbIndex) put(k KeyType, rec *oneIdx) {
+func (idx *Index) put(k KeyType, rec *oneIdx) {
 	idx.memput(k, rec)
 	if idx.db.VolatileMode {
 		return
@@ -106,7 +108,7 @@ func (idx *QdbIndex) put(k KeyType, rec *oneIdx) {
 	idx.addtolog(nil, k, rec)
 }
 
-func (idx *QdbIndex) del(k KeyType) {
+func (idx *Index) del(k KeyType) {
 	idx.memdel(k)
 	if idx.db.VolatileMode {
 		return
@@ -114,7 +116,7 @@ func (idx *QdbIndex) del(k KeyType) {
 	idx.deltolog(nil, k)
 }
 
-func (idx *QdbIndex) browse(walk func(key KeyType, idx *oneIdx) bool) {
+func (idx *Index) browse(walk func(key KeyType, idx *oneIdx) bool) {
 	for k, v := range idx.Index {
 		if !walk(k, v) {
 			break
@@ -122,7 +124,7 @@ func (idx *QdbIndex) browse(walk func(key KeyType, idx *oneIdx) bool) {
 	}
 }
 
-func (idx *QdbIndex) close() {
+func (idx *Index) close() {
 	if idx.file != nil {
 		idx.file.Close()
 		idx.file = nil

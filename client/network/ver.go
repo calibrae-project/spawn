@@ -93,7 +93,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 		c.Node.Timestamp = binary.LittleEndian.Uint64(pl[12:20])
 		c.Node.ReportedIPv4 = binary.BigEndian.Uint32(pl[40:44])
 
-		useThisIP := sys.ValidIp4(pl[40:44])
+		useThisIP := sys.ValidIPv4(pl[40:44])
 
 		if len(pl) >= 86 {
 			le, of := btc.VLen(pl[80:])

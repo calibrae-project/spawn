@@ -71,7 +71,7 @@ type DB struct {
 	Mutex sync.Mutex
 
 	//index:
-	Idx *QdbIndex
+	Idx *Index
 
 	NoSyncMode     bool
 	PendingRecords map[KeyType]bool

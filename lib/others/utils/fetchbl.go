@@ -4,16 +4,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/calibrae-project/spawn/lib/btc"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 // https://blockchain.info/block/000000000000000000871f4f01a389bda59e568ead8d0fd45fc7cc1919d2666e?format=hex
 // https://webbtc.com/block/0000000000000000000cdc0d2a9b33c2d4b34b4d4fa8920f074338d0dc1164dc.bin
 // https://blockexplorer.com/api/rawblock/0000000000000000000cdc0d2a9b33c2d4b34b4d4fa8920f074338d0dc1164dc
 
-// Download (and re-assemble) raw block from blockexplorer.com
+// GetBlockFromExplorer - Download (and re-assemble) raw block from blockexplorer.com
 func GetBlockFromExplorer(hash *btc.Uint256) (rawtx []byte) {
 	url := "http://blockexplorer.com/api/rawblock/" + hash.String()
 	r, er := http.Get(url)
@@ -38,7 +39,7 @@ func GetBlockFromExplorer(hash *btc.Uint256) (rawtx []byte) {
 	return
 }
 
-// Download raw block from webbtc.com
+// GetBlockFromWebBTC - Download raw block from webbtc.com
 func GetBlockFromWebBTC(hash *btc.Uint256) (raw []byte) {
 	url := "https://webbtc.com/block/" + hash.String() + ".bin"
 	r, er := http.Get(url)
@@ -56,7 +57,7 @@ func GetBlockFromWebBTC(hash *btc.Uint256) (raw []byte) {
 	return
 }
 
-// Download raw block from blockexplorer.com
+// GetBlockFromBlockchainInfo - Download raw block from blockexplorer.com
 func GetBlockFromBlockchainInfo(hash *btc.Uint256) (rawtx []byte) {
 	url := "https://blockchain.info/block/" + hash.String() + "?format=hex"
 	r, er := http.Get(url)
@@ -75,6 +76,7 @@ func GetBlockFromBlockchainInfo(hash *btc.Uint256) (rawtx []byte) {
 	return
 }
 
+// IsBlockOK -
 func IsBlockOK(raw []byte, hash *btc.Uint256) (bl *btc.Block) {
 	var er error
 	bl, er = btc.NewBlock(raw)
@@ -94,7 +96,7 @@ func IsBlockOK(raw []byte, hash *btc.Uint256) (bl *btc.Block) {
 	return
 }
 
-// Download raw block from a web server (try one after another)
+// GetBlockFromWeb - Download raw block from a web server (try one after another)
 func GetBlockFromWeb(hash *btc.Uint256) (bl *btc.Block) {
 	var raw []byte
 

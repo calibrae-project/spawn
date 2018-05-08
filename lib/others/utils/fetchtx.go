@@ -4,12 +4,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/calibrae-project/spawn/lib/btc"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/calibrae-project/spawn/lib/btc"
 )
 
-// Download (and re-assemble) raw transaction from blockexplorer.com
+// GetTxFromExplorer - Download (and re-assemble) raw transaction from blockexplorer.com
 func GetTxFromExplorer(txid *btc.Uint256, testnet bool) (rawtx []byte) {
 	var url string
 	if testnet {
@@ -39,8 +40,7 @@ func GetTxFromExplorer(txid *btc.Uint256, testnet bool) (rawtx []byte) {
 	return
 }
 
-
-// Download raw transaction from webbtc.com
+// GetTxFromWebBTC - Download raw transaction from webbtc.com
 func GetTxFromWebBTC(txid *btc.Uint256) (raw []byte) {
 	url := "https://webbtc.com/tx/" + txid.String() + ".bin"
 	r, er := http.Get(url)
@@ -58,7 +58,7 @@ func GetTxFromWebBTC(txid *btc.Uint256) (raw []byte) {
 	return
 }
 
-// Download (and re-assemble) raw transaction from blockexplorer.com
+// GetTxFromBlockchainInfo - Download (and re-assemble) raw transaction from blockexplorer.com
 func GetTxFromBlockchainInfo(txid *btc.Uint256) (rawtx []byte) {
 	url := "https://blockchain.info/tx/" + txid.String() + "?format=hex"
 	r, er := http.Get(url)
@@ -77,8 +77,7 @@ func GetTxFromBlockchainInfo(txid *btc.Uint256) (rawtx []byte) {
 	return
 }
 
-
-// Download (and re-assemble) raw transaction from blockcypher.com
+// GetTxFromBlockcypher - Download (and re-assemble) raw transaction from blockcypher.com
 func GetTxFromBlockcypher(txid *btc.Uint256, currency string) (rawtx []byte) {
 	var url string
 	url = "https://api.blockcypher.com/v1/" + currency + "/main/txs/" + txid.String() + "?limit=1000&instart=1000&outstart=1000&includeHex=true"
@@ -104,8 +103,7 @@ func GetTxFromBlockcypher(txid *btc.Uint256, currency string) (rawtx []byte) {
 	return
 }
 
-
-func verify_txid(txid *btc.Uint256, rawtx []byte) bool {
+func verifyTxID(txid *btc.Uint256, rawtx []byte) bool {
 	tx, _ := btc.NewTx(rawtx)
 	if tx == nil {
 		return false
@@ -114,28 +112,28 @@ func verify_txid(txid *btc.Uint256, rawtx []byte) bool {
 	return txid.Equal(&tx.Hash)
 }
 
-// Download raw transaction from a web server (try one after another)
+// GetTxFromWeb - Download raw transaction from a web server (try one after another)
 func GetTxFromWeb(txid *btc.Uint256) (raw []byte) {
 	raw = GetTxFromExplorer(txid, false)
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromExplorer - OK")
 		return
 	}
 
 	raw = GetTxFromWebBTC(txid)
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromWebBTC - OK")
 		return
 	}
 
 	raw = GetTxFromBlockchainInfo(txid)
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromBlockchainInfo - OK")
 		return
 	}
 
 	raw = GetTxFromBlockcypher(txid, "btc")
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromBlockcypher - OK")
 		return
 	}
@@ -143,17 +141,16 @@ func GetTxFromWeb(txid *btc.Uint256) (raw []byte) {
 	return
 }
 
-
-// Download testnet's raw transaction from a web server
+// GetTestnetTxFromWeb - Download testnet's raw transaction from a web server
 func GetTestnetTxFromWeb(txid *btc.Uint256) (raw []byte) {
 	raw = GetTxFromExplorer(txid, true)
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromExplorer - OK")
 		return
 	}
 
 	raw = GetTxFromBlockcypher(txid, "btc-testnet")
-	if raw != nil && verify_txid(txid, raw) {
+	if raw != nil && verifyTxID(txid, raw) {
 		//println("GetTxFromBlockcypher - OK")
 		return
 	}

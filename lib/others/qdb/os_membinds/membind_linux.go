@@ -27,7 +27,6 @@ import (
 	"unsafe"
 )
 
-
 func gcc_HeapAlloc(le uint32) data_ptr_t {
 	return data_ptr_t(C.my_alloc(C.ulong(le)))
 }
@@ -42,12 +41,12 @@ func gcc_AllocPtr(v []byte) data_ptr_t {
 }
 
 func init() {
-	if membind_use_wrapper {
+	if membindUseWrapper {
 		panic("Another wrapper already initialized")
 	}
 	println("Using malloc() qdb memory bindings")
 	_heap_alloc = gcc_HeapAlloc
 	_heap_free = gcc_HeapFree
 	_heap_store = gcc_AllocPtr
-	membind_use_wrapper = true
+	membindUseWrapper = true
 }

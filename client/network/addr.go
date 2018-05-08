@@ -137,7 +137,7 @@ func (c *OneConnection) ParseAddr(pl []byte) {
 			break
 		}
 		a := peersdb.NewPeer(buf[:])
-		if !sys.ValidIp4(a.IPv4[:]) {
+		if !sys.ValidIPv4(a.IPv4[:]) {
 			common.CountSafe("AddrInvalid")
 			/*if c.Misbehave("AddrLocal", 1) {
 				break

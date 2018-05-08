@@ -8,22 +8,25 @@ import (
 )
 
 var (
+	// DbLockFileName -
 	DbLockFileName string
+	// DbLockFileHndl -
 	DbLockFileHndl *os.File
 )
 
+// LockDatabaseDir -
 func LockDatabaseDir(SpawnHomeDir string) {
 	os.MkdirAll(SpawnHomeDir, 0770)
-	DbLockFileName = SpawnHomeDir+".lock"
+	DbLockFileName = SpawnHomeDir + ".lock"
 	DbLockFileHndl, _ = os.Open(DbLockFileName)
-	if DbLockFileHndl==nil {
+	if DbLockFileHndl == nil {
 		DbLockFileHndl, _ = os.Create(DbLockFileName)
 	}
-	if DbLockFileHndl==nil {
+	if DbLockFileHndl == nil {
 		goto error
 	}
 
-	if e:=syscall.Flock(int(DbLockFileHndl.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); e!=nil {
+	if e := syscall.Flock(int(DbLockFileHndl.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); e != nil {
 		goto error
 	}
 	return
@@ -34,6 +37,7 @@ error:
 	os.Exit(1)
 }
 
+// UnlockDatabaseDir -
 func UnlockDatabaseDir() {
 	syscall.Flock(int(DbLockFileHndl.Fd()), syscall.LOCK_UN)
 	DbLockFileHndl.Close()

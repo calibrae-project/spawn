@@ -2,32 +2,31 @@ package qdb
 
 import (
 	"fmt"
-	"sync"
 	"sort"
+	"sync"
 )
 
 var (
-	counter map[string] uint64 = make(map[string]uint64)
-	counter_mutex sync.Mutex
+	counter      = make(map[string]uint64)
+	counterMutex sync.Mutex
 )
-
 
 func cnt(k string) {
 	cntadd(k, 1)
 }
 
 func cntadd(k string, val uint64) {
-	counter_mutex.Lock()
+	counterMutex.Lock()
 	counter[k] += val
-	counter_mutex.Unlock()
+	counterMutex.Unlock()
 }
 
-
+// GetStats -
 func GetStats() (s string) {
-	counter_mutex.Lock()
+	counterMutex.Lock()
 	ck := make([]string, len(counter))
 	idx := 0
-	for k, _ := range counter {
+	for k := range counter {
 		ck[idx] = k
 		idx++
 	}
@@ -38,6 +37,6 @@ func GetStats() (s string) {
 		v := counter[k]
 		s += fmt.Sprintln(k, ": ", v)
 	}
-	counter_mutex.Unlock()
+	counterMutex.Unlock()
 	return s
 }

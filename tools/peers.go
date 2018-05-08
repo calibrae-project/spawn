@@ -50,7 +50,7 @@ func main() {
 	cnt := 0
 	db.Browse(func(k qdb.KeyType, v []byte) uint32 {
 		np := utils.NewPeer(v)
-		if !sys.ValidIp4(np.IPv4[:]) {
+		if !sys.ValidIPv4(np.IPv4[:]) {
 			return 0
 		}
 		if cnt < len(tmp) {

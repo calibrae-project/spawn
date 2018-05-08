@@ -55,7 +55,7 @@ func readAndCheckFile(fn string) (seq uint32, data []byte) {
 	return
 }
 
-func (idx *QdbIndex) loadneweridx() []byte {
+func (idx *Index) loadneweridx() []byte {
 	s0, d0 := readAndCheckFile(idx.IdxFilePath + "0")
 	s1, d1 := readAndCheckFile(idx.IdxFilePath + "1")
 
@@ -89,7 +89,7 @@ func (idx *QdbIndex) loadneweridx() []byte {
 	}
 }
 
-func (idx *QdbIndex) loaddat(used map[uint32]bool) {
+func (idx *Index) loaddat(used map[uint32]bool) {
 	d := idx.loadneweridx()
 	if d == nil {
 		return
@@ -107,7 +107,7 @@ func (idx *QdbIndex) loaddat(used map[uint32]bool) {
 	return
 }
 
-func (idx *QdbIndex) loadlog(used map[uint32]bool) {
+func (idx *Index) loadlog(used map[uint32]bool) {
 	idx.file, _ = os.OpenFile(idx.IdxFilePath+"log", os.O_RDWR, 0660)
 	if idx.file == nil {
 		return
@@ -147,7 +147,7 @@ func (idx *QdbIndex) loadlog(used map[uint32]bool) {
 	return
 }
 
-func (idx *QdbIndex) checklogfile() {
+func (idx *Index) checklogfile() {
 	if idx.file == nil {
 		idx.file, _ = os.Create(idx.IdxFilePath + "log")
 		binary.Write(idx.file, binary.LittleEndian, uint32(idx.VersionSequence))
@@ -155,7 +155,7 @@ func (idx *QdbIndex) checklogfile() {
 	return
 }
 
-func (idx *QdbIndex) addtolog(wr io.Writer, k KeyType, rec *oneIdx) {
+func (idx *Index) addtolog(wr io.Writer, k KeyType, rec *oneIdx) {
 	if wr == nil {
 		idx.checklogfile()
 		wr = idx.file
@@ -167,7 +167,7 @@ func (idx *QdbIndex) addtolog(wr io.Writer, k KeyType, rec *oneIdx) {
 	binary.Write(wr, binary.LittleEndian, rec.flags)
 }
 
-func (idx *QdbIndex) deltolog(wr io.Writer, k KeyType) {
+func (idx *Index) deltolog(wr io.Writer, k KeyType) {
 	if wr == nil {
 		idx.checklogfile()
 		wr = idx.file
@@ -176,7 +176,7 @@ func (idx *QdbIndex) deltolog(wr io.Writer, k KeyType) {
 	wr.Write([]byte{0, 0, 0, 0})
 }
 
-func (idx *QdbIndex) writedatfile() {
+func (idx *Index) writedatfile() {
 	idx.DatfileIndex = 1 - idx.DatfileIndex
 	idx.VersionSequence++
 
@@ -209,7 +209,7 @@ func (idx *QdbIndex) writedatfile() {
 	os.Remove(fmt.Sprint(idx.IdxFilePath, 1-idx.DatfileIndex))
 }
 
-func (idx *QdbIndex) writebuf(d []byte) {
+func (idx *Index) writebuf(d []byte) {
 	idx.checklogfile()
 	idx.file.Write(d)
 }

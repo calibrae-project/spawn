@@ -225,7 +225,7 @@ func GetBestPeers(limit uint, isConnected func(*PeerAddr) bool) (res manyPeers) 
 	tmp := make(manyPeers, 0)
 	PeerDB.Browse(func(k qdb.KeyType, v []byte) uint32 {
 		ad := NewPeer(v)
-		if ad.Banned == 0 && sys.ValidIp4(ad.IPv4[:]) && !sys.IsIPBlocked(ad.IPv4[:]) {
+		if ad.Banned == 0 && sys.ValidIPv4(ad.IPv4[:]) && !sys.IsIPBlocked(ad.IPv4[:]) {
 			if isConnected == nil || !isConnected(ad) {
 				tmp = append(tmp, ad)
 			}

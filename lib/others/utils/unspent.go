@@ -11,6 +11,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/utxo"
 )
 
+// GetUnspentFromExplorer -
 func GetUnspentFromExplorer(addr *btc.Addr, testnet bool) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 	if testnet {
@@ -60,6 +61,7 @@ func GetUnspentFromExplorer(addr *btc.Addr, testnet bool) (res utxo.AllUnspentTx
 	return
 }
 
+// GetUnspentFromBlockchainInfo -
 func GetUnspentFromBlockchainInfo(addr *btc.Addr) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 	r, er = http.Get("https://blockchain.info/unspent?active=" + addr.String())
@@ -105,6 +107,7 @@ func GetUnspentFromBlockchainInfo(addr *btc.Addr) (res utxo.AllUnspentTx, er err
 	return
 }
 
+// GetUnspentFromBlockcypher -
 func GetUnspentFromBlockcypher(addr *btc.Addr, currency string) (res utxo.AllUnspentTx, er error) {
 	var r *http.Response
 
@@ -154,6 +157,7 @@ func GetUnspentFromBlockcypher(addr *btc.Addr, currency string) (res utxo.AllUns
 	return
 }
 
+// GetUnspent -
 func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 
@@ -172,6 +176,7 @@ func GetUnspent(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	return
 }
 
+// GetUnspentTestnet -
 func GetUnspentTestnet(addr *btc.Addr) (res utxo.AllUnspentTx) {
 	var er error
 

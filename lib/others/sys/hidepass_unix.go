@@ -3,14 +3,13 @@
 package sys
 
 import (
-	"os"
 	"fmt"
-	"syscall"
+	"os"
 	"os/signal"
+	"syscall"
 )
 
-var wsta syscall.WaitStatus = 0
-
+var wsta syscall.WaitStatus
 
 func enterpassext(b []byte) (n int) {
 	si := make(chan os.Signal, 10)
@@ -34,7 +33,6 @@ func enterpassext(b []byte) (n int) {
 	return
 }
 
-
 func echo(fd []uintptr) {
 	pid, e := syscall.ForkExec("/bin/stty", []string{"stty", "echo"}, &syscall.ProcAttr{Dir: "", Files: fd})
 	if e == nil {
@@ -42,13 +40,12 @@ func echo(fd []uintptr) {
 	}
 }
 
-
 func sighndl(fd []uintptr, signal chan os.Signal, br chan bool) {
 	select {
-		case <-signal:
-			echo(fd)
-			os.Exit(-1)
-		case <-br:
+	case <-signal:
+		echo(fd)
+		os.Exit(-1)
+	case <-br:
 	}
 }
 

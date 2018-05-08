@@ -7,6 +7,7 @@ import (
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
+// OnePeer -
 type OnePeer struct {
 	btc.NetAddr
 	Time   uint32 // When seen last time
@@ -25,6 +26,7 @@ Serialized peer record (all values are LSB unless specified otherwise):
  [30:34] - OPTIONAL: if present, unix timestamp of when the peer was banned
 */
 
+// NewPeer -
 func NewPeer(v []byte) (p *OnePeer) {
 	if len(v) < 30 {
 		println("NewPeer: unexpected length", len(v))
@@ -42,6 +44,7 @@ func NewPeer(v []byte) (p *OnePeer) {
 	return
 }
 
+// Bytes -
 func (p *OnePeer) Bytes() (res []byte) {
 	if p.Banned != 0 {
 		res = make([]byte, 34)
@@ -57,6 +60,7 @@ func (p *OnePeer) Bytes() (res []byte) {
 	return
 }
 
+// UniqID -
 func (p *OnePeer) UniqID() uint64 {
 	h := crc64.New(crctab)
 	h.Write(p.IPv6[:])
