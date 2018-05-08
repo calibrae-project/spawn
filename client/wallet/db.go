@@ -32,8 +32,8 @@ type OneAllAddrBal struct {
 }
 
 // GetRec -
-func (ur *OneAllAddrInp) GetRec() (rec *utxo.UtxoRec, vout uint32) {
-	var ind utxo.UtxoKeyType
+func (ur *OneAllAddrInp) GetRec() (rec *utxo.Rec, vout uint32) {
+	var ind utxo.KeyType
 	copy(ind[:], ur[:])
 	common.BlockChain.Unspent.RWMutex.RLock()
 	v := common.BlockChain.Unspent.HashMap[ind]
@@ -46,7 +46,7 @@ func (ur *OneAllAddrInp) GetRec() (rec *utxo.UtxoRec, vout uint32) {
 }
 
 // NewUTXO -
-func NewUTXO(tx *utxo.UtxoRec) {
+func NewUTXO(tx *utxo.Rec) {
 	var uidx [20]byte
 	var rec *OneAllAddrBal
 	var nr OneAllAddrInp
@@ -117,7 +117,7 @@ func NewUTXO(tx *utxo.UtxoRec) {
 	}
 }
 
-func allDelUTXOs(tx *utxo.UtxoRec, outs []bool) {
+func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 	var uidx [20]byte
 	var uidx32 [32]byte
 	var rec *OneAllAddrBal
@@ -215,12 +215,12 @@ func allDelUTXOs(tx *utxo.UtxoRec, outs []bool) {
 }
 
 // TxNotifyAdd -This is called while accepting the block (from the chain's thread)
-func TxNotifyAdd(tx *utxo.UtxoRec) {
+func TxNotifyAdd(tx *utxo.Rec) {
 	NewUTXO(tx)
 }
 
 // TxNotifyDel -This is called while accepting the block (from the chain's thread)
-func TxNotifyDel(tx *utxo.UtxoRec, outs []bool) {
+func TxNotifyDel(tx *utxo.Rec, outs []bool) {
 	allDelUTXOs(tx, outs)
 }
 

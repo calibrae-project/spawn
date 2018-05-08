@@ -1,4 +1,5 @@
 package Spawn
+
 // This file is only to make "go get" working
 
 import (
@@ -6,4 +7,6 @@ import (
 	_ "github.com/golang/snappy"
 	_ "golang.org/x/crypto/ripemd160"
 )
+
+// Version -
 const Version = "1.9.5"

@@ -24,10 +24,10 @@ const (
 	UtxoIdxLen = 8
 )
 
-// UtxoKeyType -
-type UtxoKeyType [UtxoIdxLen]byte
+// KeyType -
+type KeyType [UtxoIdxLen]byte
 
-type UtxoRec struct {
+type Rec struct {
 	TxID     [32]byte
 	Coinbase bool
 	InBlock  uint32
@@ -39,19 +39,19 @@ type UtxoTxOut struct {
 	PKScr []byte
 }
 
-func FullUtxoRec(dat []byte) *UtxoRec {
-	var key UtxoKeyType
+func FullUtxoRec(dat []byte) *Rec {
+	var key KeyType
 	copy(key[:], dat[:UtxoIdxLen])
 	return NewUtxoRec(key, dat[UtxoIdxLen:])
 }
 
 var (
-	sta_rec  UtxoRec
+	sta_rec  Rec
 	rec_outs = make([]*UtxoTxOut, 30001)
 	rec_pool = make([]UtxoTxOut, 30001)
 )
 
-func NewUtxoRecStatic(key UtxoKeyType, dat []byte) *UtxoRec {
+func NewUtxoRecStatic(key KeyType, dat []byte) *Rec {
 	var off, n, i, rec_idx int
 	var u64, idx uint64
 
@@ -98,10 +98,10 @@ func NewUtxoRecStatic(key UtxoKeyType, dat []byte) *UtxoRec {
 	return &sta_rec
 }
 
-func NewUtxoRec(key UtxoKeyType, dat []byte) *UtxoRec {
+func NewUtxoRec(key KeyType, dat []byte) *Rec {
 	var off, n, i int
 	var u64, idx uint64
-	var rec UtxoRec
+	var rec Rec
 
 	off = 32 - UtxoIdxLen
 	copy(rec.TxID[:UtxoIdxLen], key[:])
@@ -135,7 +135,7 @@ func NewUtxoRec(key UtxoKeyType, dat []byte) *UtxoRec {
 	return &rec
 }
 
-func OneUtxoRec(key UtxoKeyType, dat []byte, vout uint32) *btc.TxOut {
+func OneUtxoRec(key KeyType, dat []byte, vout uint32) *btc.TxOut {
 	var off, n, i int
 	var u64, idx uint64
 	var res btc.TxOut
@@ -189,7 +189,7 @@ func vlen2size(uvl uint64) int {
 	return 9
 }
 
-func (rec *UtxoRec) Serialize(full bool) (buf []byte) {
+func (rec *Rec) Serialize(full bool) (buf []byte) {
 	var le, of int
 	var any_out bool
 
@@ -243,11 +243,11 @@ func (rec *UtxoRec) Serialize(full bool) (buf []byte) {
 	return
 }
 
-func (rec *UtxoRec) Bytes() []byte {
+func (rec *Rec) Bytes() []byte {
 	return rec.Serialize(false)
 }
 
-func (r *UtxoRec) ToUnspent(idx uint32, ad *btc.Addr) (nr *OneUnspentTx) {
+func (r *Rec) ToUnspent(idx uint32, ad *btc.Addr) (nr *OneUnspentTx) {
 	nr = new(OneUnspentTx)
 	nr.TxPrevOut.Hash = r.TxID
 	nr.TxPrevOut.Vout = idx

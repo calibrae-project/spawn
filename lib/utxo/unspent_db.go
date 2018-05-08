@@ -25,28 +25,28 @@ var (
 )
 
 // FunctionWalkUnspent -
-type FunctionWalkUnspent func(*UtxoRec)
+type FunctionWalkUnspent func(*Rec)
 
 // CallbackFunctions -
 type CallbackFunctions struct {
 	// If NotifyTx is set, it will be called each time a new unspent
 	// output is being added or removed. When being removed, btc.TxOut is nil.
-	NotifyTxAdd func(*UtxoRec)
-	NotifyTxDel func(*UtxoRec, []bool)
+	NotifyTxAdd func(*Rec)
+	NotifyTxDel func(*Rec, []bool)
 }
 
 // BlockChanges - Used to pass block's changes to UnspentDB
 type BlockChanges struct {
 	Height          uint32
 	LastKnownHeight uint32 // put here zero to disable this feature
-	AddList         []*UtxoRec
+	AddList         []*Rec
 	DeledTxs        map[[32]byte][]bool
-	UndoData        map[[32]byte]*UtxoRec
+	UndoData        map[[32]byte]*Rec
 }
 
 // UnspentDB -
 type UnspentDB struct {
-	HashMap      map[UtxoKeyType][]byte
+	HashMap      map[KeyType][]byte
 	sync.RWMutex // used to access HashMap
 
 	LastBlockHash    []byte
@@ -96,12 +96,12 @@ func NewUnspentDB(opts *NewUnspentOpts) (db *UnspentDB) {
 	os.Remove(db.dirUXTO + "UTXO.db.tmp")
 
 	if opts.Rescan {
-		db.HashMap = make(map[UtxoKeyType][]byte, UXTORecordsPrealloc)
+		db.HashMap = make(map[KeyType][]byte, UXTORecordsPrealloc)
 		return
 	}
 
 	// Load data form disk
-	var k UtxoKeyType
+	var k KeyType
 	var countDown, countDownFrom, perc int
 	var le uint64
 	var u64, totRecs uint64
@@ -139,7 +139,7 @@ redo:
 	countDownFrom = int(u64 / 100)
 	perc = 0
 
-	db.HashMap = make(map[UtxoKeyType][]byte, int(u64))
+	db.HashMap = make(map[KeyType][]byte, int(u64))
 	info = fmt.Sprint("\rLoading ", u64, " transactions from ", fname, " - ")
 
 	for totRecs = 0; totRecs < u64; totRecs++ {
@@ -193,7 +193,7 @@ fatal_error:
 	}
 	db.LastBlockHeight = 0
 	db.LastBlockHash = nil
-	db.HashMap = make(map[UtxoKeyType][]byte, UXTORecordsPrealloc)
+	db.HashMap = make(map[KeyType][]byte, UXTORecordsPrealloc)
 
 	return
 }
@@ -376,7 +376,7 @@ func (db *UnspentDB) UndoBlockTxs(bl *btc.Block, newhash []byte) {
 	}
 
 	fn := fmt.Sprint(db.dirUndo, db.LastBlockHeight)
-	var addback []*UtxoRec
+	var addback []*Rec
 
 	if _, er := os.Stat(fn); er != nil {
 		fn += ".tmp"
@@ -401,7 +401,7 @@ func (db *UnspentDB) UndoBlockTxs(bl *btc.Block, newhash []byte) {
 			db.CB.NotifyTxAdd(tx)
 		}
 
-		var ind UtxoKeyType
+		var ind KeyType
 		copy(ind[:], tx.TxID[:])
 		db.RWMutex.RLock()
 		v := db.HashMap[ind]
@@ -463,7 +463,7 @@ func (db *UnspentDB) Close() {
 
 // UnspentGet - Get given unspent output
 func (db *UnspentDB) UnspentGet(po *btc.TxPrevOut) (res *btc.TxOut) {
-	var ind UtxoKeyType
+	var ind KeyType
 	var v []byte
 	copy(ind[:], po.Hash[:])
 
@@ -479,7 +479,7 @@ func (db *UnspentDB) UnspentGet(po *btc.TxPrevOut) (res *btc.TxOut) {
 
 // TxPresent - Returns true if gived TXID is in UTXO
 func (db *UnspentDB) TxPresent(id *btc.Uint256) (res bool) {
-	var ind UtxoKeyType
+	var ind KeyType
 	copy(ind[:], id.Hash[:])
 	db.RWMutex.RLock()
 	_, res = db.HashMap[ind]
@@ -488,7 +488,7 @@ func (db *UnspentDB) TxPresent(id *btc.Uint256) (res bool) {
 }
 
 func (db *UnspentDB) del(hash []byte, outs []bool) {
-	var ind UtxoKeyType
+	var ind KeyType
 	copy(ind[:], hash)
 	db.RWMutex.RLock()
 	v := db.HashMap[ind]
@@ -521,7 +521,7 @@ func (db *UnspentDB) del(hash []byte, outs []bool) {
 func (db *UnspentDB) commit(changes *BlockChanges) {
 	// Now aplly the unspent changes
 	for _, rec := range changes.AddList {
-		var ind UtxoKeyType
+		var ind KeyType
 		copy(ind[:], rec.TxID[:])
 		if db.CB.NotifyTxAdd != nil {
 			db.CB.NotifyTxAdd(rec)

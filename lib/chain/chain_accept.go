@@ -109,7 +109,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 	var txoutsum, txinsum, sumblockout uint64
 
 	if changes.Height+ch.Unspent.UnwindBufLen >= changes.LastKnownHeight {
-		changes.UndoData = make(map[[32]byte]*utxo.UtxoRec)
+		changes.UndoData = make(map[[32]byte]*utxo.Rec)
 	}
 
 	blUnsp := make(map[[32]byte][]*btc.TxOut, len(bl.Txs))
@@ -185,10 +185,10 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 					spentMap[inp.Vout] = true
 
 					if changes.UndoData != nil {
-						var urec *utxo.UtxoRec
+						var urec *utxo.Rec
 						urec = changes.UndoData[inp.Hash]
 						if urec == nil {
-							urec = new(utxo.UtxoRec)
+							urec = new(utxo.Rec)
 							urec.TxID = inp.Hash
 							urec.Coinbase = tout.WasCoinbase
 							urec.InBlock = tout.BlockHeight
@@ -273,13 +273,13 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 		return
 	}
 
-	var rec *utxo.UtxoRec
-	changes.AddList = make([]*utxo.UtxoRec, 0, len(blUnsp))
+	var rec *utxo.Rec
+	changes.AddList = make([]*utxo.Rec, 0, len(blUnsp))
 	for k, v := range blUnsp {
 		for i := range v {
 			if v[i] != nil {
 				if rec == nil {
-					rec = new(utxo.UtxoRec)
+					rec = new(utxo.Rec)
 					rec.TxID = k
 					rec.Coinbase = v[i].WasCoinbase
 					rec.InBlock = changes.Height
