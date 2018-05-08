@@ -72,8 +72,8 @@ func hostInit() {
 	fmt.Print(string(common.LogBuffer.Bytes()))
 	common.LogBuffer = nil
 
-	if btc.EC_Verify == nil {
-		fmt.Println("Using native secp256k1 lib for EC_Verify (consider installing a speedup)")
+	if btc.ECVerify == nil {
+		fmt.Println("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
 	}
 
 	ext := &chain.NewChanOpts{

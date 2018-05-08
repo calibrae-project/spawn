@@ -7,7 +7,7 @@
 On this page you can find ways to improve performance or lower resource consumptions of your running node.<br>
 <h2>Faster Elliptic Curve verifications</h2>
 You can use external secp256k1 library (written in C and assembler)
-which is up to 4 times faster when it comes to EC_Verify operations.<br>
+which is up to 4 times faster when it comes to ECVerify operations.<br>
 
 In order to use an external library, copy either the file <code>sipadll.go</code> (Windows only)
 or <code>sipasec.go</code> (any OS), from the folder <code>gocoin/client/speedups/</code> to

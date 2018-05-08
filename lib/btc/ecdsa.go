@@ -1,19 +1,19 @@
 package btc
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
 	"errors"
 	"math/big"
 	"sync/atomic"
-	"crypto/rand"
-	"crypto/sha256"
+
 	"github.com/calibrae-project/spawn/lib/secp256k1"
 )
 
 var (
 	ecdsaVerifyCnt uint64
-	EC_Verify func(k, s, h []byte) bool
+	ECVerify       func(k, s, h []byte) bool
 )
-
 
 func EcdsaVerifyCnt() uint64 {
 	return atomic.LoadUint64(&ecdsaVerifyCnt)
@@ -21,15 +21,14 @@ func EcdsaVerifyCnt() uint64 {
 
 func EcdsaVerify(kd []byte, sd []byte, hash []byte) bool {
 	atomic.AddUint64(&ecdsaVerifyCnt, 1)
-	if len(kd)==0 || len(sd)==0 {
+	if len(kd) == 0 || len(sd) == 0 {
 		return false
 	}
-	if EC_Verify!=nil {
-		return EC_Verify(kd, sd, hash)
+	if ECVerify != nil {
+		return ECVerify(kd, sd, hash)
 	}
 	return secp256k1.Verify(kd, sd, hash)
 }
-
 
 func EcdsaSign(priv, hash []byte) (r, s *big.Int, err error) {
 	var sig secp256k1.Signature
@@ -46,14 +45,13 @@ func EcdsaSign(priv, hash []byte) (r, s *big.Int, err error) {
 		rand.Read(buf[:])
 		sha.Write(buf[:])
 		nonce.SetBytes(sha.Sum(nil))
-		if nonce.Sign()>0 && nonce.Cmp(&secp256k1.TheCurve.Order.Int)<0 {
+		if nonce.Sign() > 0 && nonce.Cmp(&secp256k1.TheCurve.Order.Int) < 0 {
 			break
 		}
 	}
 
-	if sig.Sign(&sec, &msg, &nonce, nil)!=1 {
+	if sig.Sign(&sec, &msg, &nonce, nil) != 1 {
 		err = errors.New("ESCDS Sign error()")
 	}
 	return &sig.R.Int, &sig.S.Int, nil
 }
-

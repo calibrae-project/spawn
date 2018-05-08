@@ -29,9 +29,8 @@ int verify(void *pkey, unsigned int pkl, void *sign, unsigned int sil, void *has
 import "C"
 import "unsafe"
 
-
 // Verify ECDSA signature
-func EC_Verify(pkey, sign, hash []byte) int {
+func ECVerify(pkey, sign, hash []byte) int {
 	return int(C.verify(unsafe.Pointer(&pkey[0]), C.uint(len(pkey)),
 		unsafe.Pointer(&sign[0]), C.uint(len(sign)), unsafe.Pointer(&hash[0])))
 }

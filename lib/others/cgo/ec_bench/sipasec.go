@@ -1,14 +1,15 @@
 package main
 
 import (
+	"encoding/hex"
+	"runtime"
 	"sync"
 	"time"
-	"runtime"
-	"encoding/hex"
+
 	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
 )
 
-var CNT int = 250*60
+var CNT int = 250 * 60
 
 func main() {
 	key, _ := hex.DecodeString("040eaebcd1df2df853d66ce0e1b0fda07f67d1cabefde98514aad795b86a6ea66dbeb26b67d7a00e2447baeccc8a4cef7cd3cad67376ac1c5785aeebb4f6441c16")
@@ -18,16 +19,16 @@ func main() {
 	max_routines := make(chan bool, runtime.NumCPU())
 	println("NumCPU:", cap(max_routines))
 	sta := time.Now()
-	for i:=0; i<CNT; i++ {
+	for i := 0; i < CNT; i++ {
 		wg.Add(1)
 		max_routines <- true
 		go func() {
-			if sipasec.EC_Verify(key, sig, msg)!=1 {
+			if sipasec.ECVerify(key, sig, msg) != 1 {
 				println("Verify error")
 				return
 			}
 			wg.Done()
-			<- max_routines
+			<-max_routines
 		}()
 	}
 	wg.Wait()

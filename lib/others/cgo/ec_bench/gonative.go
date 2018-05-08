@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/hex"
 	"sync"
 	"time"
-	"encoding/hex"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
+// CNT -
 var CNT int = 10e3
 
 func main() {
@@ -15,7 +17,7 @@ func main() {
 	msg, _ := hex.DecodeString("3382219555ddbb5b00e0090f469e590ba1eae03c7f28ab937de330aa60294ed6")
 	var wg sync.WaitGroup
 	sta := time.Now()
-	for i:=0; i<CNT; i++ {
+	for i := 0; i < CNT; i++ {
 		wg.Add(1)
 		go func() {
 			if !btc.EcdsaVerify(key, sig, msg) {

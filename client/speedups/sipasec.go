@@ -1,7 +1,7 @@
 package main
 
 /*
-  This is a EC_Verify speedup that is advised for non Windows systems.
+  This is a ECVerify speedup that is advised for non Windows systems.
 
   1) Build and install sipa's secp256k1 lib for your system
 
@@ -16,11 +16,11 @@ import (
 	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
 )
 
-func EC_Verify(k, s, h []byte) bool {
-	return sipasec.EC_Verify(k, s, h) == 1
+func ECVerify(k, s, h []byte) bool {
+	return sipasec.ECVerify(k, s, h) == 1
 }
 
 func init() {
-	common.Log.Println("Using libsecp256k1.a by sipa for EC_Verify")
-	btc.EC_Verify = EC_Verify
+	common.Log.Println("Using libsecp256k1.a by sipa for ECVerify")
+	btc.ECVerify = ECVerify
 }

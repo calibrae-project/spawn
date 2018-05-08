@@ -558,9 +558,9 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * The old native speedup's source code removed.
 
 0.7.3 - 2013-09-19
-* A new (native Go) EC_Verify speedup, based on sipa's secp256k1 code (client/speedup/mygonat.go)
+* A new (native Go) ECVerify speedup, based on sipa's secp256k1 code (client/speedup/mygonat.go)
 * Cosmetic chanegs in WebUI
-* A new (DLL based) EC_Verify speedup for Windows (client/speedup/sipadll.go)
+* A new (DLL based) ECVerify speedup for Windows (client/speedup/sipadll.go)
 
 0.7.1 - 2013-09-10
 * Wallet's random numbers (used for ECDSA_Sign) don't rely on security of "crypt/random" package
@@ -656,7 +656,7 @@ NOTE: Use older wallet version (e.g. 1.9.3) if you had wallet type 2 or 4 alread
 * Arithmetic script opcodes check for the 4 bytes limit at input values
 * Better external IP address discovery and droping connections to self
 * Added a memory cache for blocks database (in btc/blockdb.go)
-* Added sipasec cgo for EC_Verify (over 5 times faster than openssl)
+* Added sipasec cgo for ECVerify (over 5 times faster than openssl)
 
 0.2.15 - 2013-06-18
 * Support for gzip compressed blocks inside blockchain.dat

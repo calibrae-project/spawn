@@ -1,18 +1,17 @@
 package spiadll
 
 import (
-	"unsafe"
 	"syscall"
+	"unsafe"
 )
 
 var (
-	advapi32 = syscall.NewLazyDLL("secp256k1.dll")
-	DLL_EC_Verify = advapi32.NewProc("EC_Verify")
+	advapi32    = syscall.NewLazyDLL("secp256k1.dll")
+	DLLECVerify = advapi32.NewProc("ECVerify")
 )
 
-
-func EC_Verify(pkey, sign, hash []byte) int32 {
-	r1, _, _ := syscall.Syscall6(DLL_EC_Verify.Addr(), 6,
+func ECVerify(pkey, sign, hash []byte) int32 {
+	r1, _, _ := syscall.Syscall6(DLLECVerify.Addr(), 6,
 		uintptr(unsafe.Pointer(&hash[0])), uintptr(32),
 		uintptr(unsafe.Pointer(&sign[0])), uintptr(len(sign)),
 		uintptr(unsafe.Pointer(&pkey[0])), uintptr(len(pkey)))
