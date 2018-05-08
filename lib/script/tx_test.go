@@ -73,7 +73,7 @@ func skip_broken_tests(tx *btc.Tx) bool {
 
 	// Negative output
 	for i := range tx.TxOut {
-		if tx.TxOut[i].Value > btc.MAX_MONEY {
+		if tx.TxOut[i].Value > btc.MaxTokenSupply {
 			return true
 		}
 	}

@@ -46,7 +46,7 @@ const (
 		VER_NULLDUMMY | VER_MINDATA | VER_BLOCK_OPS | VER_CLEANSTACK | VER_CLTV | VER_CSV |
 		VER_WITNESS | VER_WITNESS_PROG | VER_MINIMALIF | VER_NULLFAIL | VER_WITNESS_PUBKEY
 
-	LOCKTIME_THRESHOLD             = 500000000
+	LockTimeThreshold              = 500000000
 	SEQUENCE_LOCKTIME_DISABLE_FLAG = 1 << 31
 
 	SEQUENCE_LOCKTIME_TYPE_FLAG = 1 << 22
@@ -339,7 +339,7 @@ func evalScript(p []byte, amount uint64, stack *scrStack, tx *btc.Tx, inp int, v
 			stack.print()
 		}
 
-		if pushval != nil && len(pushval) > btc.MAX_SCRIPT_ELEMENT_SIZE {
+		if pushval != nil && len(pushval) > btc.MaxScriptElementSize {
 			if DebugError {
 				fmt.Println("pushval too long", len(pushval))
 			}
@@ -1168,8 +1168,8 @@ func evalScript(p []byte, amount uint64, stack *scrStack, tx *btc.Tx, inp int, v
 					return false
 				}
 
-				if !((tx.Lock_time < LOCKTIME_THRESHOLD && locktime < LOCKTIME_THRESHOLD) ||
-					(tx.Lock_time >= LOCKTIME_THRESHOLD && locktime >= LOCKTIME_THRESHOLD)) {
+				if !((tx.Lock_time < LockTimeThreshold && locktime < LockTimeThreshold) ||
+					(tx.Lock_time >= LockTimeThreshold && locktime >= LockTimeThreshold)) {
 					if DebugError {
 						fmt.Println("OP_CHECKLOCKTIMEVERIFY: broken lock value")
 					}

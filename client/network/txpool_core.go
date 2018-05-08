@@ -482,7 +482,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 		}
 	}
 
-	sigops := btc.WITNESS_SCALE_FACTOR * tx.GetLegacySigOpCount()
+	sigops := btc.WitnessScaleFactor * tx.GetLegacySigOpCount()
 
 	if !ntx.trusted { // Verify scripts
 		var wg sync.WaitGroup
@@ -519,7 +519,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 
 	for i := range tx.TxIn {
 		if btc.IsP2SH(pos[i].Pk_script) {
-			sigops += btc.WITNESS_SCALE_FACTOR * btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig)
+			sigops += btc.WitnessScaleFactor * btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig)
 		}
 		sigops += uint(tx.CountWitnessSigOps(i, pos[i].Pk_script))
 	}

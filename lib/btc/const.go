@@ -1,13 +1,22 @@
 package btc
 
-const(
-	COIN = 1e8
-	MAX_MONEY = 21000000 * COIN
-	MAX_BLOCK_WEIGHT = 4e6
+const (
+	// Coin - Precision of one token
+	Coin = 1e8
+	// MaxTokenSupply -
+	MaxTokenSupply = 21000000 * Coin
+	// MaxBlockWeight -
+	MaxBlockWeight = 4e6
+	// MessageMagic -
 	MessageMagic = "Bitcoin Signed Message:\n"
-	LOCKTIME_THRESHOLD = 500000000
-	MAX_SCRIPT_ELEMENT_SIZE = 520
-	MAX_BLOCK_SIGOPS_COST = 80000
-	MAX_PUBKEYS_PER_MULTISIG = 20
-	WITNESS_SCALE_FACTOR = 4
+	// LockTimeThreshold -
+	LockTimeThreshold = 500000000
+	// MaxScriptElementSize -
+	MaxScriptElementSize = 520
+	// MaxBlockSigOpsCost -
+	MaxBlockSigOpsCost = 80000
+	// MaxPubKeysPerMultisig -
+	MaxPubKeysPerMultisig = 20
+	// WitnessScaleFactor -
+	WitnessScaleFactor = 4
 )

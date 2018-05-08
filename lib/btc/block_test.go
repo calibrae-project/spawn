@@ -8,20 +8,20 @@ import (
 	"testing"
 )
 
-const block_hash = "0000000000000000000884ad62c7036a7e2022bca3f0bd68628414150e8a0ea6"
+const blockHash = "0000000000000000000884ad62c7036a7e2022bca3f0bd68628414150e8a0ea6"
 
-var _block_filename = ""
+var _blockFilename = ""
 
-func block_filename() string {
-	if _block_filename == "" {
-		_block_filename = os.TempDir() + string(os.PathSeparator) + block_hash
+func blockFilename() string {
+	if _blockFilename == "" {
+		_blockFilename = os.TempDir() + string(os.PathSeparator) + blockHash
 	}
-	return _block_filename
+	return _blockFilename
 }
 
 // Download block from blockchain.info and store it in the TEMP folder
-func fetch_block(b *testing.B) {
-	url := "https://blockchain.info/block/" + block_hash + "?format=hex"
+func fetchBlock(b *testing.B) {
+	url := "https://blockchain.info/block/" + blockHash + "?format=hex"
 	r, er := http.Get(url)
 	if er == nil {
 		if r.StatusCode == 200 {
@@ -30,7 +30,7 @@ func fetch_block(b *testing.B) {
 			if er == nil {
 				raw, er := hex.DecodeString(string(rawhex))
 				if er == nil {
-					er = ioutil.WriteFile(block_filename(), raw, 0600)
+					er = ioutil.WriteFile(blockFilename(), raw, 0600)
 				}
 			}
 		} else {
@@ -43,10 +43,10 @@ func fetch_block(b *testing.B) {
 }
 
 func BenchmarkBuildTxList(b *testing.B) {
-	raw, e := ioutil.ReadFile(block_filename())
+	raw, e := ioutil.ReadFile(blockFilename())
 	if e != nil {
-		fetch_block(b)
-		if raw, e = ioutil.ReadFile(block_filename()); e != nil {
+		fetchBlock(b)
+		if raw, e = ioutil.ReadFile(blockFilename()); e != nil {
 			b.Fatal(e.Error())
 		}
 	}
@@ -63,10 +63,10 @@ func BenchmarkBuildTxList(b *testing.B) {
 }
 
 func BenchmarkCalcMerkle(b *testing.B) {
-	raw, e := ioutil.ReadFile(block_filename())
+	raw, e := ioutil.ReadFile(blockFilename())
 	if e != nil {
-		fetch_block(b)
-		if raw, e = ioutil.ReadFile(block_filename()); e != nil {
+		fetchBlock(b)
+		if raw, e = ioutil.ReadFile(blockFilename()); e != nil {
 			b.Fatal(e.Error())
 		}
 	}

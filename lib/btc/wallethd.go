@@ -91,12 +91,12 @@ func (w *HDWallet) Serialize() []byte {
 
 // String returns the base58-encoded string form of the wallet.
 func (w *HDWallet) String() string {
-	return Encodeb58(w.Serialize())
+	return EncodeBase58(w.Serialize())
 }
 
 // StringWallet returns a wallet given a base58-encoded extended key
 func StringWallet(data string) (*HDWallet, error) {
-	dbin := Decodeb58(data)
+	dbin := DecodeBase58(data)
 	if err := ByteCheck(dbin); err != nil {
 		return &HDWallet{}, err
 	}
@@ -177,7 +177,7 @@ func MasterKey(seed []byte, testnet bool) *HDWallet {
 
 // StringCheck is a validation check of a base58-encoded extended key.
 func StringCheck(key string) error {
-	return ByteCheck(Decodeb58(key))
+	return ByteCheck(DecodeBase58(key))
 }
 
 // Verifies consistency of a serialized HD address

@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func allzeros(b []byte) bool {
+func allZeros(b []byte) bool {
 	for i := range b {
 		if b[i] != 0 {
 			return false
@@ -22,7 +22,7 @@ func allzeros(b []byte) bool {
 	return true
 }
 
-// Puts var_length field into the given buffer
+// PutVlen - Puts var_length field into the given buffer
 func PutVlen(b []byte, vl int) uint32 {
 	uvl := uint32(vl)
 	if uvl < 0xfd {
@@ -43,6 +43,7 @@ func PutVlen(b []byte, vl int) uint32 {
 	return 5
 }
 
+// PutULe -
 func PutULe(b []byte, uvl uint64) int {
 	if uvl < 0xfd {
 		b[0] = byte(uvl)
@@ -63,7 +64,7 @@ func PutULe(b []byte, uvl uint64) int {
 	return 9
 }
 
-// How many bytes would take to write this VLen
+// VLenSize - How many bytes would take to write this VLen
 func VLenSize(uvl uint64) int {
 	if uvl < 0xfd {
 		return 1
@@ -77,9 +78,9 @@ func VLenSize(uvl uint64) int {
 	return 9
 }
 
-// Returns var_int and number of bytes that the var_int took
+// VLen - Returns var_int and number of bytes that the var_int took
 // If there is not enough bytes in the buffer, it will panic
-func VLen(b []byte) (le int, var_int_siz int) {
+func VLen(b []byte) (le int, varIntSiz int) {
 	switch b[0] {
 	case 0xfd:
 		return int(binary.LittleEndian.Uint16(b[1:3])), 3
@@ -92,9 +93,9 @@ func VLen(b []byte) (le int, var_int_siz int) {
 	}
 }
 
-// Returns var_uint and number of bytes that the var_uint took
+// VULe - Returns var_uint and number of bytes that the var_uint took
 // If there is not enough bytes in the buffer, it will panic
-func VULe(b []byte) (le uint64, var_int_siz int) {
+func VULe(b []byte) (le uint64, varIntSiz int) {
 	switch b[0] {
 	case 0xfd:
 		return uint64(binary.LittleEndian.Uint16(b[1:3])), 3
@@ -107,6 +108,7 @@ func VULe(b []byte) (le uint64, var_int_siz int) {
 	}
 }
 
+// CalcMerkle -
 func CalcMerkle(mtr [][32]byte) (res []byte, mutated bool) {
 	var j, i2 int
 	for siz := len(mtr); siz > 1; siz = (siz + 1) / 2 {
@@ -136,6 +138,7 @@ func CalcMerkle(mtr [][32]byte) (res []byte, mutated bool) {
 	return
 }
 
+// GetWitnessMerkle -
 func GetWitnessMerkle(txs []*Tx) (res []byte, mutated bool) {
 	mtr := make([][32]byte, len(txs), 3*len(txs)) // make the buffer 3 times longer as we use append() inside CalcMerkle
 	//mtr[0] = make([]byte, 32) // null
@@ -146,6 +149,7 @@ func GetWitnessMerkle(txs []*Tx) (res []byte, mutated bool) {
 	return
 }
 
+// ReadAll -
 func ReadAll(rd io.Reader, b []byte) (er error) {
 	var n int
 	for i := 0; i < len(b); i += n {
@@ -157,7 +161,7 @@ func ReadAll(rd io.Reader, b []byte) (er error) {
 	return
 }
 
-// Reads var_len from the given reader
+// ReadVLen - Reads varLen from the given reader
 func ReadVLen(b io.Reader) (res uint64, e error) {
 	var buf [8]byte
 
@@ -183,27 +187,27 @@ func ReadVLen(b io.Reader) (res uint64, e error) {
 	return
 }
 
-// Writes var_length field into the given writer
-func WriteVlen(b io.Writer, var_len uint64) {
-	if var_len < 0xfd {
-		b.Write([]byte{byte(var_len)})
+// WriteVlen - Writes var_length field into the given writer
+func WriteVlen(b io.Writer, varLen uint64) {
+	if varLen < 0xfd {
+		b.Write([]byte{byte(varLen)})
 		return
 	}
-	if var_len < 0x10000 {
+	if varLen < 0x10000 {
 		b.Write([]byte{0xfd})
-		binary.Write(b, binary.LittleEndian, uint16(var_len))
+		binary.Write(b, binary.LittleEndian, uint16(varLen))
 		return
 	}
-	if var_len < 0x100000000 {
+	if varLen < 0x100000000 {
 		b.Write([]byte{0xfe})
-		binary.Write(b, binary.LittleEndian, uint32(var_len))
+		binary.Write(b, binary.LittleEndian, uint32(varLen))
 		return
 	}
 	b.Write([]byte{0xff})
-	binary.Write(b, binary.LittleEndian, var_len)
+	binary.Write(b, binary.LittleEndian, varLen)
 }
 
-// Writes opcode to put a specific number of bytes to stack
+// WritePutLen - Writes opcode to put a specific number of bytes to stack
 func WritePutLen(b io.Writer, dataLen uint32) {
 	switch {
 	case dataLen <= OP_PUSHDATA1:
@@ -222,7 +226,7 @@ func WritePutLen(b io.Writer, dataLen uint32) {
 	}
 }
 
-// Read bitcoin protocol string
+// ReadString - Read bitcoin protocol string
 func ReadString(rd io.Reader) (s string, e error) {
 	var le uint64
 	le, e = ReadVLen(rd)
@@ -237,7 +241,7 @@ func ReadString(rd io.Reader) (s string, e error) {
 	return
 }
 
-// Takes a base64 encoded bitcoin generated signature and decodes it
+// ParseMessageSignature - Takes a base64 encoded bitcoin generated signature and decodes it
 func ParseMessageSignature(encsig string) (nv byte, sig *Signature, er error) {
 	var sd []byte
 
@@ -264,11 +268,12 @@ func ParseMessageSignature(encsig string) (nv byte, sig *Signature, er error) {
 	return
 }
 
+// IsPayToScript -
 func IsPayToScript(scr []byte) bool {
 	return len(scr) == 23 && scr[0] == OP_HASH160 && scr[1] == 0x14 && scr[22] == OP_EQUAL
 }
 
-// Parses a floating number string to return uint64 value expressed in Satoshi's
+// StringToSatoshis - Parses a floating number string to return uint64 value expressed in Satoshi's
 // Using strconv.ParseFloat followed by uint64(val*1e8) is not precise enough.
 func StringToSatoshis(s string) (val uint64, er error) {
 	var big, small uint64
@@ -308,17 +313,17 @@ func StringToSatoshis(s string) (val uint64, er error) {
 	return
 }
 
-// Converts value of satoshis to a BTC-value string (with 8 decimal points)
+// UintToBtc - Converts value of satoshis to a BTC-value string (with 8 decimal points)
 func UintToBtc(val uint64) string {
 	return fmt.Sprintf("%d.%08d", val/1e8, val%1e8)
 }
 
-// Return true if the given PK_script is a standard P2SH
+// IsP2SH - Return true if the given PK_script is a standard P2SH
 func IsP2SH(d []byte) bool {
 	return len(d) == 23 && d[0] == 0xa9 && d[1] == 20 && d[22] == 0x87
 }
 
-// Returns true if the given PK_script is anyhow usefull to Spawn's node
+// IsUsefullOutScript - Returns true if the given PK_script is anyhow usefull to Spawn's node
 func IsUsefullOutScript(v []byte) bool {
 	if len(v) == 25 && v[0] == 0x76 && v[1] == 0xa9 && v[2] == 0x14 && v[23] == 0x88 && v[24] == 0xac {
 		return true // P2KH
@@ -329,6 +334,7 @@ func IsUsefullOutScript(v []byte) bool {
 	return false
 }
 
+// GetOpcode -
 func GetOpcode(b []byte) (opcode int, ret []byte, pc int, e error) {
 	// Read instruction
 	if pc+1 > len(b) {
@@ -376,6 +382,7 @@ func GetOpcode(b []byte) (opcode int, ret []byte, pc int, e error) {
 	return
 }
 
+// GetSigOpCount -
 func GetSigOpCount(scr []byte, fAccurate bool) (n uint) {
 	var pc int
 	var lastOpcode byte = 0xff
@@ -389,9 +396,9 @@ func GetSigOpCount(scr []byte, fAccurate bool) (n uint) {
 			n++
 		} else if opcode == 0xae /*OP_CHECKMULTISIG*/ || opcode == 0xaf /*OP_CHECKMULTISIGVERIFY*/ {
 			if fAccurate && lastOpcode >= 0x51 /*OP_1*/ && lastOpcode <= 0x60 /*OP_16*/ {
-				n += uint(DecodeOP_N(lastOpcode))
+				n += uint(DecodeOpN(lastOpcode))
 			} else {
-				n += MAX_PUBKEYS_PER_MULTISIG
+				n += MaxPubKeysPerMultisig
 			}
 		}
 		lastOpcode = byte(opcode)
@@ -399,13 +406,15 @@ func GetSigOpCount(scr []byte, fAccurate bool) (n uint) {
 	return
 }
 
-func DecodeOP_N(opcode byte) int {
+// DecodeOpN -
+func DecodeOpN(opcode byte) int {
 	if opcode == 0x00 /*OP_0*/ {
 		return 0
 	}
 	return int(opcode) - 0x50 /*OP_1-1*/
 }
 
+// GetP2SHSigOpCount -
 func GetP2SHSigOpCount(scr []byte) uint {
 	// This is a pay-to-script-hash scriptPubKey;
 	// get the last item that the scr
@@ -427,6 +436,7 @@ func GetP2SHSigOpCount(scr []byte) uint {
 	return GetSigOpCount(data, true)
 }
 
+// IsWitnessProgram -
 func IsWitnessProgram(scr []byte) (version int, program []byte) {
 	if len(scr) < 4 || len(scr) > 42 {
 		return
@@ -435,12 +445,13 @@ func IsWitnessProgram(scr []byte) (version int, program []byte) {
 		return
 	}
 	if int(scr[1])+2 == len(scr) {
-		version = DecodeOP_N(scr[0])
+		version = DecodeOpN(scr[0])
 		program = scr[2:]
 	}
 	return
 }
 
+// WitnessSigOps -
 func WitnessSigOps(witversion int, witprogram []byte, witness [][]byte) uint {
 	if witversion == 0 {
 		if len(witprogram) == 20 {
@@ -455,6 +466,7 @@ func WitnessSigOps(witversion int, witprogram []byte, witness [][]byte) uint {
 	return 0
 }
 
+// IsPushOnly -
 func IsPushOnly(scr []byte) bool {
 	idx := 0
 	for idx < len(scr) {

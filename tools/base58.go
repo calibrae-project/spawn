@@ -1,19 +1,20 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"flag"
-	"strings"
-	"io/ioutil"
 	"encoding/hex"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+
 	"github.com/calibrae-project/spawn/lib/btc"
 )
 
 var (
 	decode = flag.Bool("d", false, "run base58 decode (instead of encode)")
 	binary = flag.Bool("b", false, "binary (insted of hex) for decode output")
-	help = flag.Bool("h", false, "print this help")
+	help   = flag.Bool("h", false, "print this help")
 )
 
 func main() {
@@ -24,18 +25,18 @@ func main() {
 	}
 
 	msg, _ := ioutil.ReadAll(os.Stdin)
-	if len(msg)==0 {
+	if len(msg) == 0 {
 		return
 	}
 
 	if *decode {
-		res := btc.Decodeb58(strings.Trim(string(msg), " \t\n\r"))
+		res := btc.DecodeBase58(strings.Trim(string(msg), " \t\n\r"))
 		if *binary {
 			os.Stdout.Write(res)
 		} else {
 			fmt.Println(hex.EncodeToString(res))
 		}
 	} else {
-		fmt.Println(btc.Encodeb58(msg))
+		fmt.Println(btc.EncodeBase58(msg))
 	}
 }

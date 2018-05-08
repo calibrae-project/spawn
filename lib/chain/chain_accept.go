@@ -121,7 +121,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 	for i := range bl.Txs {
 		txoutsum, txinsum = 0, 0
 
-		sigopscost += uint32(btc.WITNESS_SCALE_FACTOR * bl.Txs[i].GetLegacySigOpCount())
+		sigopscost += uint32(btc.WitnessScaleFactor * bl.Txs[i].GetLegacySigOpCount())
 
 		// Check each tx for a valid input, except from the first one
 		if i > 0 {
@@ -215,7 +215,7 @@ func (ch *Chain) commitTxs(bl *btc.Block, changes *utxo.BlockChanges) (sigopscos
 				}
 
 				if btc.IsP2SH(tout.Pk_script) {
-					sigopscost += uint32(btc.WITNESS_SCALE_FACTOR * btc.GetP2SHSigOpCount(bl.Txs[i].TxIn[j].ScriptSig))
+					sigopscost += uint32(btc.WitnessScaleFactor * btc.GetP2SHSigOpCount(bl.Txs[i].TxIn[j].ScriptSig))
 				}
 
 				sigopscost += uint32(bl.Txs[i].CountWitnessSigOps(j, tout.Pk_script))

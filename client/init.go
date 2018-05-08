@@ -40,7 +40,7 @@ func hostInit() {
 		rand.Read(common.SecretKey)
 		ioutil.WriteFile(common.SpawnHomeDir+"authkey", common.SecretKey, 0600)
 	}
-	common.PublicKey = btc.Encodeb58(btc.PublicFromPrivate(common.SecretKey, true))
+	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
 	fmt.Println("Public auth key:", common.PublicKey)
 
 	_Exit := make(chan bool)

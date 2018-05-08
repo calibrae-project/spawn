@@ -1,13 +1,13 @@
 package btc
 
 import (
-//	"math/big"
+	//	"math/big"
 	"encoding/hex"
 	"testing"
 )
 
 func TestPbkyues(t *testing.T) {
-	var tstvcs = []string {
+	var tstvcs = []string{
 		"04CEB28DE33FBC5ED8B343DE5B00E68A53B73653C204D236694BE2C2DD6A959AEB450163075FAE68D21D5EA9E2D07FE8742229AFAF02983034E84C614D16CF7107",
 		"03CEB28DE33FBC5ED8B343DE5B00E68A53B73653C204D236694BE2C2DD6A959AEB",
 
@@ -47,7 +47,7 @@ func TestPbkyues(t *testing.T) {
 		"04C92EF93E2B187248460BDEDD1E340B198BD19B800AF5FBEDC3B0010A42E5B28641F4B7964B1AF6987BAAC2DAD2C6A3C0F1FBADD1ACF652721077A4DF5F502F3A",
 		"02C92EF93E2B187248460BDEDD1E340B198BD19B800AF5FBEDC3B0010A42E5B286",
 	}
-	for i:=0; i<len(tstvcs); i+=2 {
+	for i := 0; i < len(tstvcs); i += 2 {
 		xy, _ := hex.DecodeString(tstvcs[i])
 		x, _ := hex.DecodeString(tstvcs[i+1])
 		k1, e := NewPublicKey(xy)
@@ -71,7 +71,6 @@ func TestPbkyues(t *testing.T) {
 	}
 }
 
-
 /*
 If it was up to me, this test should not pass, but we need to follow the original
 implementation, because such an inconsistent signatures have been mined alredy.
@@ -84,12 +83,11 @@ func TestSignature(t *testing.T) {
 		t.Error(e.Error())
 		return
 	}
-	if s.HashType!=1 {
+	if s.HashType != 1 {
 		t.Error("HashType", s.HashType)
 		return
 	}
 }
-
 
 func BenchmarkKey02swap(b *testing.B) {
 	xy, _ := hex.DecodeString("02BD22E9E7AE9238EBD7937DCAF2887535B13DEB2EF9E95D5FB9225D29BDCD450F")
@@ -126,16 +124,15 @@ func BenchmarkKey04full(b *testing.B) {
 	}
 }
 
-
 type vervec struct {
-	addr string
+	addr      string
 	signature string
-	message string
-	expected bool
+	message   string
+	expected  bool
 }
 
 func TestVerifyMessage(t *testing.T) {
-	var testvcs = []vervec {
+	var testvcs = []vervec{
 		{
 			"13XSgyGGJcUso5f1EK8LZ7j194FtEvTfkn",
 			"H2AoueOjHJ5yX8vX1dFnNqqq/Mm/FX37S+Yry88JadSIA21KNvojW4+fgVqm9UV6YH+VanGgNb8JcNhXi/IYu1o=",
@@ -206,23 +203,23 @@ func TestVerifyMessage(t *testing.T) {
 
 		HashFromMessage([]byte(testvcs[i].message), hash[:])
 
-		compressed := nv>=31
+		compressed := nv >= 31
 		if compressed {
 			nv -= 4
 		}
 
-		var verified_ok bool
+		var verifiedOK bool
 		pub := sig.RecoverPublicKey(hash[:], int(nv-27))
 		if pub != nil {
 			sa := NewAddrFromPubkey(pub.Bytes(compressed), ad.Version)
 			if sa != nil {
-				verified_ok = ad.Hash160==sa.Hash160
+				verifiedOK = ad.Hash160 == sa.Hash160
 			} else {
 				t.Error("NewAddrFromPubkey failed")
 			}
 		}
-		if verified_ok != testvcs[i].expected {
-			t.Error("Result different than expected at index", i, verified_ok, testvcs[i].expected)
+		if verifiedOK != testvcs[i].expected {
+			t.Error("Result different than expected at index", i, verifiedOK, testvcs[i].expected)
 		}
 	}
 }

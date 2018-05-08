@@ -102,10 +102,10 @@ func NewPrivateAddr(key []byte, ver byte, compr bool) (ad *PrivateAddr) {
 }
 
 func DecodePrivateAddr(s string) (*PrivateAddr, error) {
-	pkb := Decodeb58(s)
+	pkb := DecodeBase58(s)
 
 	if pkb == nil {
-		return nil, errors.New("Decodeb58 failed")
+		return nil, errors.New("DecodeBase58 failed")
 	}
 
 	if len(pkb) < 37 {
@@ -136,5 +136,5 @@ func (ad *PrivateAddr) String() string {
 	}
 	ShaHash(buf.Bytes(), ha[:])
 	buf.Write(ha[:4])
-	return Encodeb58(buf.Bytes())
+	return EncodeBase58(buf.Bytes())
 }

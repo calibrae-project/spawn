@@ -47,7 +47,7 @@ func NewAddrFromString(hs string) (a *Addr, e error) {
 		return
 	}
 
-	dec := Decodeb58(hs)
+	dec := DecodeBase58(hs)
 	if dec == nil {
 		e = errors.New("Cannot decode b58 string '" + hs + "'")
 		return
@@ -74,6 +74,7 @@ func NewAddrFromString(hs string) (a *Addr, e error) {
 	return
 }
 
+// NewAddrFromHash160 -
 func NewAddrFromHash160(in []byte, ver byte) (a *Addr) {
 	a = new(Addr)
 	a.Version = ver
@@ -81,6 +82,7 @@ func NewAddrFromHash160(in []byte, ver byte) (a *Addr) {
 	return
 }
 
+// NewAddrFromPubkey -
 func NewAddrFromPubkey(in []byte, ver byte) (a *Addr) {
 	a = new(Addr)
 	a.Pubkey = make([]byte, len(in))
@@ -90,22 +92,23 @@ func NewAddrFromPubkey(in []byte, ver byte) (a *Addr) {
 	return
 }
 
+// AddrVerPubkey -
 func AddrVerPubkey(testnet bool) byte {
 	if testnet {
 		return 111
-	} else {
-		return 0
 	}
+	return 0
 }
 
+// AddrVerScript -
 func AddrVerScript(testnet bool) byte {
 	if testnet {
 		return 196
-	} else {
-		return 5
 	}
+	return 5
 }
 
+// NewAddrFromPkScript -
 func NewAddrFromPkScript(scr []byte, testnet bool) *Addr {
 	// check segwit bech32:
 	if len(scr) == 0 {
@@ -139,7 +142,7 @@ func NewAddrFromPkScript(scr []byte, testnet bool) *Addr {
 	return nil
 }
 
-// Base58 encoded address
+// String - Base58 encoded address
 func (a *Addr) String() string {
 	if a.Enc58str == "" {
 		if a.SegwitProg != nil {
@@ -154,12 +157,13 @@ func (a *Addr) String() string {
 				copy(a.Checksum, sh[:4])
 			}
 			copy(ad[21:25], a.Checksum[:])
-			a.Enc58str = Encodeb58(ad[:])
+			a.Enc58str = EncodeBase58(ad[:])
 		}
 	}
 	return a.Enc58str
 }
 
+// IsCompressed -
 func (a *Addr) IsCompressed() bool {
 	if len(a.Pubkey) == 33 {
 		return true
@@ -170,7 +174,7 @@ func (a *Addr) IsCompressed() bool {
 	return false
 }
 
-// String with a label
+// Label - String with a label
 func (a *Addr) Label() (s string) {
 	if a.Extra.Wallet != "" {
 		s += " " + a.Extra.Wallet + ":"
@@ -184,7 +188,7 @@ func (a *Addr) Label() (s string) {
 	return
 }
 
-// Check if a pk_script send coins to this address
+// Owns - Check if a pk_script send coins to this address
 func (a *Addr) Owns(scr []byte) (yes bool) {
 	// The most common spend script
 	if len(scr) == 25 && scr[0] == 0x76 && scr[1] == 0xa9 && scr[2] == 0x14 && scr[23] == 0x88 && scr[24] == 0xac {
@@ -225,6 +229,7 @@ func (a *Addr) Owns(scr []byte) (yes bool) {
 	return
 }
 
+// OutScript -
 func (a *Addr) OutScript() (res []byte) {
 	if a.SegwitProg != nil {
 		if a.SegwitProg.Version != 0 || (len(a.SegwitProg.Program) != 20 && len(a.SegwitProg.Program) != 32) {
@@ -254,7 +259,7 @@ func (a *Addr) OutScript() (res []byte) {
 	return
 }
 
-var b58set []byte = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
+var b58set = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 
 func b58chr2int(chr byte) int {
 	for i := range b58set {
@@ -265,10 +270,11 @@ func b58chr2int(chr byte) int {
 	return -1
 }
 
-var bn0 *big.Int = big.NewInt(0)
-var bn58 *big.Int = big.NewInt(58)
+var bn0 = big.NewInt(0)
+var bn58 = big.NewInt(58)
 
-func Encodeb58(a []byte) (s string) {
+// EncodeBase58 -
+func EncodeBase58(a []byte) (s string) {
 	idx := len(a)*138/100 + 1
 	buf := make([]byte, idx)
 	bn := new(big.Int).SetBytes(a)
@@ -291,7 +297,8 @@ func Encodeb58(a []byte) (s string) {
 	return
 }
 
-func Decodeb58(s string) (res []byte) {
+// DecodeBase58 -
+func DecodeBase58(s string) (res []byte) {
 	bn := big.NewInt(0)
 	for i := range s {
 		v := b58chr2int(byte(s[i]))
@@ -319,10 +326,10 @@ func (sw *SegwitProg) String() (res string) {
 	return
 }
 
+// GetSegwitHRP -
 func GetSegwitHRP(testnet bool) string {
 	if testnet {
 		return "tb"
-	} else {
-		return "bc"
 	}
+	return "bc"
 }

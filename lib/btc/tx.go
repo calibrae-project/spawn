@@ -306,7 +306,7 @@ func (t *TxPrevOut) String() (s string) {
 }
 
 func (in *TxPrevOut) IsNull() bool {
-	return allzeros(in.Hash[:]) && in.Vout == 0xffffffff
+	return allZeros(in.Hash[:]) && in.Vout == 0xffffffff
 }
 
 func (tx *Tx) IsCoinBase() bool {
@@ -329,7 +329,7 @@ func (tx *Tx) CheckTransaction() error {
 	}
 
 	// Size limits
-	if tx.NoWitSize*4 > MAX_BLOCK_WEIGHT {
+	if tx.NoWitSize*4 > MaxBlockWeight {
 		return errors.New("CheckTransaction() : size limits failed - RPC_Result:bad-txns-oversize")
 	}
 
@@ -354,7 +354,7 @@ func (tx *Tx) IsFinal(blockheight, timestamp uint32) bool {
 		return true
 	}
 
-	if tx.Lock_time < LOCKTIME_THRESHOLD {
+	if tx.Lock_time < LockTimeThreshold {
 		if tx.Lock_time < blockheight {
 			return true
 		}

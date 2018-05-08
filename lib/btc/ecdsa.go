@@ -12,13 +12,16 @@ import (
 
 var (
 	ecdsaVerifyCnt uint64
-	ECVerify       func(k, s, h []byte) bool
+	// ECVerify -
+	ECVerify func(k, s, h []byte) bool
 )
 
+// EcdsaVerifyCnt -
 func EcdsaVerifyCnt() uint64 {
 	return atomic.LoadUint64(&ecdsaVerifyCnt)
 }
 
+// EcdsaVerify -
 func EcdsaVerify(kd []byte, sd []byte, hash []byte) bool {
 	atomic.AddUint64(&ecdsaVerifyCnt, 1)
 	if len(kd) == 0 || len(sd) == 0 {
@@ -30,6 +33,7 @@ func EcdsaVerify(kd []byte, sd []byte, hash []byte) bool {
 	return secp256k1.Verify(kd, sd, hash)
 }
 
+// EcdsaSign -
 func EcdsaSign(priv, hash []byte) (r, s *big.Int, err error) {
 	var sig secp256k1.Signature
 	var sec, msg, nonce secp256k1.Number

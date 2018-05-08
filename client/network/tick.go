@@ -353,7 +353,7 @@ func ConnectFriends() {
 				friendIDs[ad.UniqID()] = true
 				continue
 			}
-			pk := btc.Decodeb58(ls[0])
+			pk := btc.DecodeBase58(ls[0])
 			if len(pk) == 33 {
 				AuthPubkeys = append(AuthPubkeys, pk)
 				//println("Using pubkey:", hex.EncodeToString(pk))

@@ -1,14 +1,14 @@
 <script type="text/javascript" src="webui/jquery.min.js"></script>
 <script type="text/javascript" src="webui/jquery.flot.min.js"></script>
 <style>
-.stat0 {
+/* .stat0 {
 }
 .stat1 {
 }
 .time0 {
 }
 .time1 {
-}
+} */
 td.bordr {
 	border-right: 1px solid;
 }
@@ -204,7 +204,7 @@ function refreshblocks() {
 				td.innerText = tim2str(cs[i].Timestamp, true)
 
 				td = row.insertCell(-1)
-				td.className = 'mono block_hash nw'
+				td.className = 'mono blockHash nw'
 				td.innerText = cs[i].Hash
 				//var h = cs[i].Hash
 				if (cs[i].HaveFeeStats) {

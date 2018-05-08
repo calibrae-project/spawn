@@ -2,10 +2,10 @@ package btc
 
 import (
 	"bytes"
-	"testing"
-	"io/ioutil"
 	"encoding/hex"
 	"encoding/json"
+	"io/ioutil"
+	"testing"
 )
 
 func TestAddr(t *testing.T) {
@@ -74,9 +74,9 @@ func TestAddr(t *testing.T) {
 		"17Gt94xaBPy6KrNWnDRsbmtzdnBVnbtBzz",
 		"1FVwrwLeRgZx1XKJTisyT6EQsvUHDoyHt6",
 		"115tTroRo3B9ZDQ6ATJGDCHcNEVbjJoZnF",
-		}
+	}
 
-	for l := 0; l<10; l++ {
+	for l := 0; l < 10; l++ {
 		for i := range ta {
 			//println(ta[i], "...")
 			a, e := NewAddrFromString(ta[i])
@@ -86,7 +86,7 @@ func TestAddr(t *testing.T) {
 			}
 
 			a3 := NewAddrFromHash160(a.Hash160[:], a.Version)
-			if a3.String()!=ta[i] {
+			if a3.String() != ta[i] {
 				t.Error("NewAddrFromHash160 failed")
 				return
 			}
@@ -104,12 +104,12 @@ func TestBase58(t *testing.T) {
 	}
 	for i := range vecs {
 		bin, _ := hex.DecodeString(vecs[i][0])
-		str := Encodeb58(bin)
-		if str!=vecs[i][1] {
+		str := EncodeBase58(bin)
+		if str != vecs[i][1] {
 			t.Error("Encode mismatch at vector", i, vecs[i][0], vecs[i][1])
 		}
 
-		d = Decodeb58(vecs[i][1])
+		d = DecodeBase58(vecs[i][1])
 		if !bytes.Equal(bin, d) {
 			t.Error("Decode mismatch at vector", i, vecs[i][0], vecs[i][1])
 		}

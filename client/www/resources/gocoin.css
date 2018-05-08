@@ -1,6 +1,6 @@
 body {
 	font-family:Arial;
-	//font-size:10px;
+	/* //font-size:10px; */
 }
 a {
 	color:blue;
@@ -27,13 +27,13 @@ a.topmenu {
 }
 
 a.topmenu:hover {
-	//background-color:pink;
+	/* //background-color:pink; */
 	border-radius: 8px;
 	border: 1px solid blue;
 }
 
 a.menuat {
-	//text-decoration:underline;
+	/* //text-decoration:underline; */
 	border-radius: 8px;
 	border: 1px solid black;
 }
@@ -162,7 +162,7 @@ tr.hov:hover {
 	color:#442200;
 	background-color:#ddeeff;
 	padding:4px;
-	//font-weight:bold;
+	/* //font-weight:bold; */
 }
 
 input[type=button], input[type=submit] {
@@ -185,7 +185,7 @@ table.blocks {
 	width:100%;
 }
 
-td.block_hash {
+td.blockHash {
 	font-size:12px;
 }
 
@@ -234,8 +234,8 @@ td.blminspb {
 	text-align: right;
 }
 
-table.netcons {
-}
+/* table.netcons {
+} */
 
 div.footer {
 	margin-top:10px;

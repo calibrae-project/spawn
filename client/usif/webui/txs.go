@@ -107,7 +107,7 @@ func outputTxXML(w http.ResponseWriter, tx *btc.Tx) {
 			fmt.Fprint(w, "<block>", po.BlockHeight, "</block>")
 
 			if btc.IsP2SH(po.Pk_script) {
-				fmt.Fprint(w, "<input_sigops>", btc.WITNESS_SCALE_FACTOR*btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig), "</input_sigops>")
+				fmt.Fprint(w, "<input_sigops>", btc.WitnessScaleFactor*btc.GetP2SHSigOpCount(tx.TxIn[i].ScriptSig), "</input_sigops>")
 			}
 			fmt.Fprint(w, "<witness_sigops>", tx.CountWitnessSigOps(i, po.Pk_script), "</witness_sigops>")
 		} else {
