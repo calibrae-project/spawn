@@ -6,10 +6,12 @@ import (
 )
 
 var (
-	advapi32    = syscall.NewLazyDLL("secp256k1.dll")
+	advapi32 = syscall.NewLazyDLL("secp256k1.dll")
+	// DLLECVerify -
 	DLLECVerify = advapi32.NewProc("ECVerify")
 )
 
+// ECVerify -
 func ECVerify(pkey, sign, hash []byte) int32 {
 	r1, _, _ := syscall.Syscall6(DLLECVerify.Addr(), 6,
 		uintptr(unsafe.Pointer(&hash[0])), uintptr(32),

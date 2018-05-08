@@ -3,6 +3,7 @@ package Spawn
 // This file is only to make "go get" working
 
 import (
+	// comment
 	_ "github.com/dchest/siphash"
 	_ "github.com/golang/snappy"
 	_ "golang.org/x/crypto/ripemd160"
