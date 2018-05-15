@@ -6,3 +6,4 @@ client/sipadll.go
 client/sipasec.go
 client/openssl.go
 lib/others/cgo/sipasec/secp256k1
+scratch
