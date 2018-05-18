@@ -151,7 +151,7 @@ func main() {
 	for {
 		blockhash1 := sha256.Sum256(blockHeader)
 		blockhash2 := sha256.Sum256(blockhash1[:])
-		if bytesarezero(blockhash2[:28]) {
+		if bytesarezero(blockhash2[28:]) {
 			byteswap(blockhash2[:])
 			blockHash := hex.EncodeToString(blockhash2[:])
 			fmt.Println("\nBlock found!\n",
