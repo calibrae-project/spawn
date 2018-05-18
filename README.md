@@ -1,3 +1,11 @@
+# Calibrae Spawn Cryptocurrency Daemon and Wallet
+
+This is built on the Golang Bitcoin daemon Gocoin written by Piotr Narewski.
+
+- Block time of 60 seconds
+- Initial block reward of 10,000,000 reduced per each subsequent block with an annual supply growth of 3.125%, currency denomination stored in 42:214 bit fixed point values allow the block rewards to be precise to 63 decimal places and will not underflow for about 30 years. This is a big incentive to get early adoption as 96.875% of tokens ever to be minted will be produced in the first year. The supply rate is intended to intentionally be very stable against all other markets which have fluctuating annual supply growth rates, and thus will be both deflationary and hopefully become a benchmark against which other markets can be better quantified. The maximum supply approaches around 15,000,000,000,000 and thus does not need a cap as the exponential decay formula naturally has an upper limit that cannot be reached even if precision is endlessly increased.
+- Uses a CPU-targeted Proof of Work algorithm tentatively named Hummingbird, which is based on Cuckoo Cycle, searches the number field created by a hash chain based on an initial random nonce, looking for difficulty-controlled lengths of nodes that form an unbranched cycle. This algorithm requires at least 12Gb of main memory and leverages the large on-die caches of CPUs using a proprietary binary tree algorithm designed especially for this search. The PoW is designed so that no custom made processor can perform better than a current generation CPU.
+
 # About Gocoin
 
 **Gocoin** is a full **Bitcoin** solution written in Go language (golang).
