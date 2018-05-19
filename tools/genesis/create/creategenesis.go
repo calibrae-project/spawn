@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"crypto/sha256"
 	"time"
-	// "math/big"
+	"runtime"
 )
 
 type transaction struct {
@@ -162,9 +162,22 @@ func main() {
 		bytes = bytes - bits/8
 		bits = bits % 8
 	}
-
+	fmt.Println("Searching for nonce/unixtime combination that satisfies minimum target", nBits, "with", runtime.GOMAXPROCS(-1), "threads on", runtime.NumCPU(), "cores... Please wait")	
 	start := time.Now()
-	counter := uint64(0)
+	for i:=0; i<runtime.NumCPU(); i++ {
+		go findNonce(blockHeader, bytes, bits, start)
+		time.Sleep(time.Second)
+	}
+	time.Sleep(time.Hour)
+}
+
+func findNonce(b []byte, bytes, bits uint32, start time.Time) []byte {
+	blockHeader := append([]byte(nil), b...)
+	unixtime = uint32(time.Now().Unix())
+	blockHeader[68] = byte(unixtime)
+	blockHeader[69] = byte(unixtime>>8)
+	blockHeader[70] = byte(unixtime>>16)
+	blockHeader[71] = byte(unixtime>>24)
 	for {
 		blockhash1 := sha256.Sum256(blockHeader)
 		blockhash2 := sha256.Sum256(blockhash1[:])
@@ -177,11 +190,9 @@ func main() {
 				"\nUnix time:", unixtime)
 				fmt.Println("\nBlock header encoded in hex:\n", hex.EncodeToString(blockHeader))
 				fmt.Println("\nTime for nonce search:", time.Since(start))
-				fmt.Println("Number of nonces tried to find solution:", counter, "number of hashes:", counter/2)
 				os.Exit(0)
 		}
 		startNonce++
-		counter++
 		if startNonce < maxNonce {
 			blockHeader[76] = byte(startNonce)
 			blockHeader[77] = byte(startNonce>>8)
