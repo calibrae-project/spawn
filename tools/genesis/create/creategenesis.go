@@ -149,7 +149,7 @@ func main() {
 	blockHeader = append(blockHeader, uint32tobytes(uint32(unixtime))...) // byte 68 - 71
 	blockHeader = append(blockHeader, uint32tobytes(uint32(nBits))...)
 	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79 
-	bytes := nBits>>24
+	bytes := nBits>>24 - 3
 	// bytes := 31
 	body := nBits<<8>>8
 	var bits uint32
@@ -162,6 +162,17 @@ func main() {
 		bytes = bytes - bits/8
 		bits = bits % 8
 	}
+	fmt.Printf("bytes %d + bits %d at big end must be zero\nor zero bits required at big end of hash: %d\n", bytes, bits, 256 - bytes*8 + bits)
+
+	nBitsBytes := uint32tobytes(nBits)
+	nBitsByteShift := nBitsBytes[3]
+	nBitsRightBytes := make([]byte, nBitsByteShift-3)
+	targetBytes := append(nBitsBytes[:3], nBitsRightBytes...)
+	if len(targetBytes)<32 {
+		targetBytes = append(make([]byte, 32-len(targetBytes)), targetBytes...)
+	}
+	fmt.Println(hex.EncodeToString(targetBytes), len(targetBytes))
+
 	start := time.Now()
 	counter := uint64(0)
 	for {
