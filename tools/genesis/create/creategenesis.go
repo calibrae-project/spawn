@@ -85,7 +85,7 @@ func main() {
 		os.Exit(1)
 	}
 	tx := initTransaction()
-	nbits, err := strconv.ParseInt(args[3], 10, 64)
+	nbits, err := strconv.ParseInt(args[3], 10, 32)
 	if err != nil {
 		fmt.Println("nBits was not a decimal number or exceeded the precision of 32 bits")
 		os.Exit(0)
@@ -136,11 +136,11 @@ func main() {
 	txScriptSig := hex.EncodeToString(tx.scriptSig)
 	pubScriptSig := hex.EncodeToString(tx.pubkeyScript)
 	fmt.Println(
-		"\nCoinbase:    ", txScriptSig, 
-		"\nPubKeyScript:", pubScriptSig, 
-		"\nMerkle Hash: ", merkleHash, 
-		"\nByteswapped: ", merkleHashSwapped )
-	fmt.Println("Generating valid nonce based on block header hash, be patient...")
+		"\n\nCoinbase:    ", txScriptSig, 
+		"\n\nPubKeyScript:", pubScriptSig, 
+		"\n\nMerkle Hash: ", merkleHash, 
+		"\n\nByteswapped: ", merkleHashSwapped )
+	fmt.Println("\nGenerating valid nonce based on block header hash, be patient...")
 	unixtime := uint32(time.Now().Unix())
 	var blockversion uint32 = 1
 	blockHeader := uint32tobytes(blockversion)
@@ -162,16 +162,6 @@ func main() {
 		bytes = bytes - bits/8
 		bits = bits % 8
 	}
-	fmt.Printf("bytes %d + bits %d at big end must be zero\nor zero bits required at big end of hash: %d\n", bytes, bits, 256 - bytes*8 + bits)
-
-	nBitsBytes := uint32tobytes(nBits)
-	nBitsByteShift := nBitsBytes[3]
-	nBitsRightBytes := make([]byte, nBitsByteShift-3)
-	targetBytes := append(nBitsBytes[:3], nBitsRightBytes...)
-	if len(targetBytes)<32 {
-		targetBytes = append(make([]byte, 32-len(targetBytes)), targetBytes...)
-	}
-	fmt.Println(hex.EncodeToString(targetBytes), len(targetBytes))
 
 	start := time.Now()
 	counter := uint64(0)
