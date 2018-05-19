@@ -140,7 +140,6 @@ func main() {
 		"\n\nPubKeyScript:", pubScriptSig, 
 		"\n\nMerkle Hash: ", merkleHash, 
 		"\n\nByteswapped: ", merkleHashSwapped )
-	fmt.Println("\nGenerating valid nonce based on block header hash, be patient...")
 	unixtime := uint32(time.Now().Unix())
 	var blockversion uint32 = 1
 	blockHeader := uint32tobytes(blockversion)
@@ -190,7 +189,7 @@ func findNonce(b []byte, bytes, bits uint32, start time.Time) []byte {
 				"\nUnix time:", unixtime)
 				fmt.Println("\nBlock header encoded in hex:\n", hex.EncodeToString(blockHeader))
 				fmt.Println("\nTime for nonce search:", time.Since(start))
-				os.Exit(0)
+				os.Exit(1)
 		}
 		startNonce++
 		if startNonce < maxNonce {
