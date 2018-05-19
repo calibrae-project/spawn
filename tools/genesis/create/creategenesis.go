@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"crypto/sha256"
 	"time"
+	// "github.com/nsf/termbox-go"
 )
 
 type transaction struct {
@@ -148,10 +149,13 @@ func main() {
 	blockHeader = append(blockHeader, uint32tobytes(uint32(unixtime))...) // byte 68 - 71
 	blockHeader = append(blockHeader, uint32tobytes(uint32(nBits))...)
 	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79  
+	start, round := time.Now(), time.Now()
+	var counter uint64
 	for {
 		blockhash1 := sha256.Sum256(blockHeader)
 		blockhash2 := sha256.Sum256(blockhash1[:])
 		if bytesarezero(blockhash2[28:]) {
+			fmt.Println("\n native block hash:", hex.EncodeToString(blockhash2[:]))
 			byteswap(blockhash2[:])
 			blockHash := hex.EncodeToString(blockhash2[:])
 			fmt.Println("\nBlock found!\n",
@@ -159,6 +163,8 @@ func main() {
 				"\nNonce:    ", startNonce, 
 				"\nUnix time:", unixtime)
 				fmt.Println("\nBlock header encoded in hex:\n", hex.EncodeToString(blockHeader))
+				fmt.Println("\nTime for nonce search:", time.Since(start))
+				fmt.Println("\nHashrate average:", counter*uint64(maxNonce)*2/uint64(time.Since(start).Seconds())/500000/1000, "Mhash/s")
 				os.Exit(0)
 		}
 		startNonce++
@@ -174,6 +180,11 @@ func main() {
 			blockHeader[69] = byte(unixtime>>8)
 			blockHeader[70] = byte(unixtime>>16)
 			blockHeader[71] = byte(unixtime>>24)
+			roundtime := time.Since(round)
+			hashrate := uint32(roundtime.Seconds())/maxNonce*2/500000
+			fmt.Println("\n", counter, "Round took", roundtime.Seconds(),"seconds", hashrate, "Mhashe/s")
+			round = time.Now()
+			counter++
 		}
 	}
 }
