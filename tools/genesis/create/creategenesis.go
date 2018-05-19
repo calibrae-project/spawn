@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"crypto/sha256"
 	"time"
-	// "github.com/nsf/termbox-go"
+	// "math/big"
 )
 
 type transaction struct {
@@ -148,13 +148,26 @@ func main() {
 	blockHeader = append(blockHeader, tx.merkleHash...)
 	blockHeader = append(blockHeader, uint32tobytes(uint32(unixtime))...) // byte 68 - 71
 	blockHeader = append(blockHeader, uint32tobytes(uint32(nBits))...)
-	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79  
+	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79 
+	bytes := nBits>>24
+	// bytes := 31
+	body := nBits<<8>>8
+	var bits uint32
+	for bits<24 {
+		bits++
+		if body<<bits == 0 { break }
+	}
+	bits = 32 - bits
+	if bits < 31 { 
+		bytes = bytes - bits/8
+		bits = bits % 8
+	}
 	start := time.Now()
+	counter := uint64(0)
 	for {
 		blockhash1 := sha256.Sum256(blockHeader)
 		blockhash2 := sha256.Sum256(blockhash1[:])
-		if bytesarezero(blockhash2[nBits>>24:]) {
-			fmt.Println("\n native block hash:", hex.EncodeToString(blockhash2[:]))
+		if undertarget(blockhash2[bytes:], bits) {
 			byteswap(blockhash2[:])
 			blockHash := hex.EncodeToString(blockhash2[:])
 			fmt.Println("\nBlock found!\n",
@@ -163,9 +176,11 @@ func main() {
 				"\nUnix time:", unixtime)
 				fmt.Println("\nBlock header encoded in hex:\n", hex.EncodeToString(blockHeader))
 				fmt.Println("\nTime for nonce search:", time.Since(start))
+				fmt.Println("Number of nonces tried to find solution:", counter, "number of hashes:", counter/2)
 				os.Exit(0)
 		}
 		startNonce++
+		counter++
 		if startNonce < maxNonce {
 			blockHeader[76] = byte(startNonce)
 			blockHeader[77] = byte(startNonce>>8)
@@ -182,6 +197,22 @@ func main() {
 	}
 }
 
+func undertarget(hash []byte, bits uint32) bool {
+	// for i:=len(hash)-1; i>0; i-- { hash[i]=0 }
+	// fmt.Println(hash)
+	for i:=len(hash)-1; i>0; i-- {
+		// fmt.Println(hash[i])
+		if hash[i]!=0 { return false }
+	}
+	// hash[0] = 0
+	for i:=bits;i>0;i-- {
+		if hash[0]<<i != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func uint32tobytes(u uint32) []byte {
 	b := make([]byte, 4)
 	b[0] = byte(u)
@@ -189,11 +220,13 @@ func uint32tobytes(u uint32) []byte {
 	return b
 }
 
-func bytesarezero(b []byte) bool {
-	for i := range b {
-		if b[i] != 0 { return false }
+func bytestouint32(b []byte) uint32 {
+	if len(b)>4 { return 0 }
+	var u uint32
+	for i := uint32(3); i>0; i-- {
+		u += uint32(b[i])<<(i*8)
 	}
-	return true
+	return u
 }
 
 func uint64tobytes(u uint64) []byte {
