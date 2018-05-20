@@ -148,7 +148,7 @@ func main() {
 	blockHeader = append(blockHeader, uint32tobytes(uint32(unixtime))...) // byte 68 - 71
 	blockHeader = append(blockHeader, uint32tobytes(uint32(nBits))...)
 	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79 
-	bytes := nBits>>24 - 3
+	bytes := nBits>>24
 	// bytes := 31
 	body := nBits<<8>>8
 	var bits uint32
