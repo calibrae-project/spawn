@@ -63,11 +63,11 @@ func main() {
 		fmt.Println("    ", args[0], "<pubkey> <timestamp> <nBits>")
 		fmt.Println("Example:")
 		fmt.Println("    ", args[0], "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f \"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks\" 486604799")
-		fmt.Println("\nIf you execute this without parameters the above example will instead be processed")
+		fmt.Println("\nIf you execute this without parameters another one in the source code will be generated")
 		args = []string{
 			os.Args[0],
-			"04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f",
-			"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks",
+			"deadbeefcafe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f",
+			"“All rational action is in the first place individual action. Only the individual thinks. Only the individual reasons. Only the individual acts.” - Ludwig von Mises, Socialism: An Economic and Sociological Analysis",
 			"486604799",
 		}
 	}
