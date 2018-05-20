@@ -174,7 +174,7 @@ func main() {
 		bytes = bytes - bits/8
 		bits = bits % 8
 	}
-	fmt.Println("\nSearching for nonce/unixtime combination that satisfies minimum target", nBits, "with", runtime.GOMAXPROCS(-1), "threads on", runtime.NumCPU(), "cores... Please wait")	
+	fmt.Printf("\nSearching for nonce/unixtime combination that satisfies minimum target %d with %d threads on %d cores...\nPlease wait... ", nBits, runtime.GOMAXPROCS(-1), runtime.NumCPU())	
 	start := time.Now()
 	for i:=0; i<runtime.NumCPU(); i++ {
 		go findNonce(blockHeader, bytes, bits, start)
@@ -195,7 +195,7 @@ func findNonce(b []byte, bytes, bits uint32, start time.Time) []byte {
 		blockhash2 := sha256.Sum256(blockhash1[:])
 		if undertarget(blockhash2[bytes:], bits) {
 			byteswap(blockhash2[:])
-			fmt.Printf("\nBlock found!\n\nHash:\n0x%x\n\nNonce:\n%d\n\nUnix time:\n%d\n", blockhash2, startNonce, unixtime)
+			fmt.Printf("Block found!\n\nHash:\n0x%x\n\nNonce:\n%d\n\nUnix time:\n%d\n", blockhash2, startNonce, unixtime)
 				fmt.Printf("\nBlock header encoded in hex:\n0x%x\n", blockHeader)
 				fmt.Println("\nTime for nonce search:", time.Since(start))
 				os.Exit(1)
