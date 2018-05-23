@@ -16,12 +16,12 @@ type transaction struct {
 	merkleHash     []byte // 32 bytes long
 	serializedData []byte
 	version        uint32
-	numInputs      uint8
+	numInputs      byte
 	prevOutput     []byte // 32 bytes long
 	prevoutIndex   uint32
 	scriptSig      []byte
 	sequence       uint32
-	numOutputs     uint8
+	numOutputs     byte
 	outValue       uint64
 	pubkeyScript   []byte
 	locktime       uint32
@@ -30,7 +30,7 @@ type transaction struct {
 const coin uint64 = 10000000
 
 var (
-	op_checksig   uint8 = 172
+	op_checksig   byte = 172
 	startNonce    uint32
 	unixtime      uint32
 	maxNonce      = ^uint32(0)
@@ -108,14 +108,12 @@ func main() {
 		os.Exit(0)
 	}
 	nBits := uint32(nbits)
-	tx.pubkeyScript = append([]byte{0x41}, pubkey...)
-	tx.pubkeyScript = append(tx.pubkeyScript, op_checksig)
+	tx.pubkeyScript = joinBytes([]byte{0x41}, pubkey, []byte{op_checksig})
 	switch {
 	case nBits <= 255:
 		tx.scriptSig = append([]byte{1}, byte(nBits))
 	case nBits <= 65535:
-		tx.scriptSig = append([]byte{2}, byte(nBits))
-		tx.scriptSig = append(tx.scriptSig, byte(nBits>>8))
+		tx.scriptSig = joinBytes([]byte{2, byte(nBits)}, []byte{byte(nBits>>8)})
 	case nBits <= 16777215:
 		tx.scriptSig = append([]byte{3}, byte(nBits))
 		for i := uint(1); i < 3; i++ {
@@ -127,22 +125,20 @@ func main() {
 			tx.scriptSig = append(tx.scriptSig, byte(nBits>>(8*i)))
 		}
 	}
-	tx.scriptSig = append(tx.scriptSig, 0x01)
-	tx.scriptSig = append(tx.scriptSig, 0x04)
-	tx.scriptSig = append(tx.scriptSig, byte(len(timestamp)))
-	tx.scriptSig = append(tx.scriptSig, []byte(timestamp)...)
-	tx.serializedData = append(tx.serializedData, uint32tobytes(tx.version)...)
-	tx.serializedData = append(tx.serializedData, tx.numInputs)
-	tx.serializedData = append(tx.serializedData, tx.prevOutput...)
-	tx.serializedData = append(tx.serializedData, uint32tobytes(tx.prevoutIndex)...)
-	tx.serializedData = append(tx.serializedData, byte(len(tx.scriptSig)))
-	tx.serializedData = append(tx.serializedData, tx.scriptSig...)
-	tx.serializedData = append(tx.serializedData, uint32tobytes(tx.sequence)...)
-	tx.serializedData = append(tx.serializedData, tx.numOutputs)
-	tx.serializedData = append(tx.serializedData, uint64tobytes(tx.outValue)...)
-	tx.serializedData = append(tx.serializedData, byte(len(tx.pubkeyScript)))
-	tx.serializedData = append(tx.serializedData, tx.pubkeyScript...)
-	tx.serializedData = append(tx.serializedData, uint32tobytes(tx.locktime)...)
+	tx.scriptSig = joinBytes([]byte{0x01, 0x04, byte(len(timestamp))}, []byte(timestamp))
+	tx.serializedData = joinBytes(
+		uint32tobytes(tx.version),
+		[]byte{tx.numInputs},
+		tx.prevOutput,
+		uint32tobytes(tx.prevoutIndex),
+		[]byte{byte(len(tx.scriptSig))},
+		tx.scriptSig,
+		uint32tobytes(tx.sequence),
+		[]byte{tx.numOutputs},
+		uint64tobytes(tx.outValue),
+		[]byte{byte(len(tx.pubkeyScript))},
+		tx.pubkeyScript,
+		uint32tobytes(tx.locktime))
 	hash1 := sha256.Sum256(tx.serializedData)
 	hash2 := sha256.Sum256(hash1[:])
 	tx.merkleHash = hash2[:]
@@ -155,12 +151,10 @@ func main() {
 	fmt.Printf("\nCoinbase:\n0x%s\n\nPubKeyScript:\n0x%s\n\nMerkle Hash:\n0x%s\n\nByteswapped:\n0x%s\n", txScriptSig, pubScriptSig, merkleHash, merkleHashSwapped )
 	unixtime := uint32(time.Now().Unix())
 	var blockversion uint32 = 1
-	blockHeader := uint32tobytes(blockversion)
-	blockHeader = append(blockHeader, make([]byte, 32)...)
-	blockHeader = append(blockHeader, tx.merkleHash...)
-	blockHeader = append(blockHeader, uint32tobytes(uint32(unixtime))...) // byte 68 - 71
-	blockHeader = append(blockHeader, uint32tobytes(uint32(nBits))...)
-	blockHeader = append(blockHeader, uint32tobytes(startNonce)...)       // byte 76 - 79 
+	blockHeader := joinBytes(uint32tobytes(blockversion), make([]byte, 32), tx.merkleHash, 
+		uint32tobytes(uint32(unixtime)), // byte 68 - 71
+		uint32tobytes(uint32(nBits)),
+		uint32tobytes(startNonce))       // byte 76 - 79 
 	bytes := nBits>>24
 	// bytes := 31
 	body := nBits<<8>>8
@@ -215,6 +209,14 @@ func findNonce(b []byte, bytes, bits uint32, start time.Time) []byte {
 			blockHeader[71] = byte(unixtime>>24)
 		}
 	}
+}
+
+func joinBytes(segment ...[]byte) (joined []byte) {
+	joined = make([]byte, 0)
+	for i := range segment {
+		joined = append(joined, segment[i]...)
+	}
+	return
 }
 
 func undertarget(hash []byte, bits uint32) bool {
