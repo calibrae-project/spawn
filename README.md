@@ -1,10 +1,26 @@
-# Calibrae Spawn Cryptocurrency Daemon and Wallet
+# Parallelcoin Daemon and Wallet
 
 This is built on the Golang Bitcoin daemon Gocoin written by Piotr Narewski.
 
-- Block time of 60 seconds
-- Initial block reward of 10,000,000 reduced per each subsequent block with an annual supply growth of 3.125%, currency denomination stored in 42:214 bit fixed point values allow the block rewards to be precise to 63 decimal places and will not underflow for about 30 years. This is a big incentive to get early adoption as 96.875% of tokens ever to be minted will be produced in the first year. The supply rate is intended to intentionally be very stable against all other markets which have fluctuating annual supply growth rates, and thus will be both deflationary and hopefully become a benchmark against which other markets can be better quantified. The maximum supply approaches around 15,000,000,000,000 and thus does not need a cap as the exponential decay formula naturally has an upper limit that cannot be reached even if precision is endlessly increased.
-- Uses a CPU-targeted Proof of Work algorithm tentatively named Hummingbird, which is based on Cuckoo Cycle, searches the number field created by a hash chain based on an initial random nonce, looking for difficulty-controlled lengths of nodes that form an unbranched cycle. This algorithm requires at least 12Gb of main memory and leverages the large on-die caches of CPUs using a proprietary binary tree algorithm designed especially for this search. The PoW is designed so that no custom made processor can perform better than a current generation CPU.
+The first milestone set for this project is to implement a version that operates on the Parallelcoin network and implements its parameters as it operates at present, as well as adding Segwit addresses to be activated at a prescribed block height after release.
+
+This will include the addition of a jsonRPC and gRPC interface for transaction broadcast and database query, the extension of the inbuilt web interface to provide a GUI written in Angular 2+ with Service Workers as the primary wallet application in addition to the cold wallet program and the interactive CLI built inside the Gocoin codebase.
+
+The new Gocoin codebase introduces many useful features, the most notable being a faster database cache engine and compression of the blockchain to reduce storage requirements (Gocoin is perfectly capable of coping with Bitcoin so it will perform even better with the smaller DUO chain).
+
+### Then there will be significant changes made to improve the utility and performance of the token.
+
+- Block time of 60 seconds, expanded maximum block size to 8Mb
+
+- Expansion of token precision to 256 bits as 42:214 bit fixed point values, to facilitate better a changed reward schedule that will diminish the reward by a constant percentage (exponential decay or half-life) per time that targets the prescribed maximum supply but allows indefinite mining of the token so long as precision is expanded again later when necessary.
+
+- Stochastic moving average block-by-block difficulty adjustment - in order to prevent potential hashpower attacks, based on a deterministic selection of past blocks of a variable size derived from the head block hash (to prevent resonance springing up in response to a rapid jump or decline in network hash power on one of the PoW mining networks).
+
+- Addition of Ethash Proof of Work derived from the Geth codebase, to reduce the chance of either SHA256 or Scrypt hashpower attacks, once an Ethash block appears, at the right schedule, the difficulty adjustment will be forced on the other solution types via the new difficulty adjustment algorithm.
+
+- A Masternodes-like system with a reward share to fund full nodes for maintaining available replicas of the database and entry points to the peer to peer network, including a DHT (built from Bittorrent) based rapid sync system to synchronise both the blockchain as well as shared files, essentially a staking reward for this service to the network.
+
+- SporeDB based BFT distributed database system for building distributed application systems that use Parallelcoin as the bulk underlying clearance layer. At first a Reputation/Prediction Market Forum/Media monetisation system, then extending above this a distributed concurrent versioning system like Github, which will at first be primarily used to host the code of the system itself, and facilitate the incentivisation of developers to work on the code of the network, and of course, very importantly, a distributed exchange system, as each Spore BFT protocol application will issue tokens according to a timeline and consensus rate, in order to allow the market regulation of the activity and valuation of each application ecosystem.
 
 # About Gocoin
 
