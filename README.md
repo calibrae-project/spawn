@@ -18,7 +18,9 @@ The new Gocoin codebase introduces many useful features, the most notable being 
 
 - Addition of Ethash Proof of Work derived from the Geth codebase, to reduce the chance of either SHA256 or Scrypt hashpower attacks, once an Ethash block appears, at the right schedule, the difficulty adjustment will be forced on the other solution types via the new difficulty adjustment algorithm.
 
-- A Masternodes-like system with a reward share to fund full nodes for maintaining available replicas of the database and entry points to the peer to peer network, including a DHT (built from Bittorrent) based rapid sync system to synchronise both the blockchain as well as shared files, essentially a staking reward for this service to the network.
+#### And in future, and beyond the simple token itself:
+
+- A Masternodes-like system with a reward share to fund full nodes for maintaining available replicas of the database and entry points to the peer to peer network, including a DHT (built from Bittorrent) based rapid sync system to synchronise both the blockchain as well as shared files, essentially a staking reward for this service to the network, though with a fixed stake requirement, payments per block (with liveness requirement).
 
 - SporeDB based BFT distributed database system for building distributed application systems that use Parallelcoin as the bulk underlying clearance layer. At first a Reputation/Prediction Market Forum/Media monetisation system, then extending above this a distributed concurrent versioning system like Github, which will at first be primarily used to host the code of the system itself, and facilitate the incentivisation of developers to work on the code of the network, and of course, very importantly, a distributed exchange system, as each Spore BFT protocol application will issue tokens according to a timeline and consensus rate, in order to allow the market regulation of the activity and valuation of each application ecosystem.
 
