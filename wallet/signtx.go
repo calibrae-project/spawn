@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // prepare a signed transaction

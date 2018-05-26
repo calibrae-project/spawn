@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 type oneTestVector struct {

@@ -11,8 +11,8 @@ import (
 	"os/signal"
 	"sync"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
 	"github.com/golang/snappy"
 )
 

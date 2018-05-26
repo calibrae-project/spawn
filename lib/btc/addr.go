@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/calibrae-project/spawn/lib/others/bech32"
+	"github.com/ParallelCoinTeam/duod/lib/others/bech32"
 )
 
 // Addr -

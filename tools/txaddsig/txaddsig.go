@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 func rawTxFromFile(fn string) *btc.Tx {

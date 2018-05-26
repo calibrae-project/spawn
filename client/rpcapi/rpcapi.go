@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"os/exec"
 
-	"github.com/calibrae-project/spawn/client/common"
+	"github.com/ParallelCoinTeam/duod/client/common"
 )
 
 // RPCError -

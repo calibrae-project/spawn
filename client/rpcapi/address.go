@@ -3,8 +3,8 @@ package rpcapi
 import (
 	"encoding/hex"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	//"github.com/calibrae-project/spawn/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	//"github.com/ParallelCoinTeam/duod/client/common"
 )
 
 /*

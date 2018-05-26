@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/others/cgo/openssl"
+	"github.com/ParallelCoinTeam/duod/lib/others/cgo/openssl"
 )
 
 // CNT -

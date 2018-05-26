@@ -3,7 +3,7 @@ package chain
 import (
 	"errors"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 func nextBlock(ch *Chain, hash, header []byte, height, blen, txs uint32) {

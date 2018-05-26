@@ -13,11 +13,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/ltc"
-	"github.com/calibrae-project/spawn/lib/others/utils"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/ltc"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 // MaxUnspentAtOnce -

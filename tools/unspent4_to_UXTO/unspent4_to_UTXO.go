@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/qdb"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
 )
 
 var (

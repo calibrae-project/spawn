@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
+	"github.com/ParallelCoinTeam/duod/lib/others/cgo/sipasec"
 )
 
 // CNT -

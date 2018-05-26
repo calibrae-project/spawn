@@ -86,7 +86,7 @@ When building for Linux make sure to have `gcc` installed or delete file `lib/ut
 Use `go get` to fetch and install the source code files.
 Note that source files get installed within your GOPATH folder.
 
-	go get github.com/calibrae-project/spawn
+	go get github.com/ParallelCoinTeam/duod
 
 
 # Building

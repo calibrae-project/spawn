@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 func newBlock(par string) {

@@ -7,7 +7,7 @@ import (
 	//	"strings"
 	"net/http"
 
-	"github.com/calibrae-project/spawn/client/common"
+	"github.com/ParallelCoinTeam/duod/client/common"
 )
 
 type manyCounters []oneCounter

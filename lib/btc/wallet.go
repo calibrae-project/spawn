@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/calibrae-project/spawn/lib/secp256k1"
+	"github.com/ParallelCoinTeam/duod/lib/secp256k1"
 )
 
 // PublicFromPrivate - Get ECDSA public key in bitcoin protocol format, from the give private key

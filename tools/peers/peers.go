@@ -6,9 +6,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/others/qdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
 )
 
 type manyPeers []*utils.OnePeer

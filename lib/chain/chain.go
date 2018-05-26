@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 // AbortNow -

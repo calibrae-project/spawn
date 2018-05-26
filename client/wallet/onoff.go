@@ -5,8 +5,8 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 var (

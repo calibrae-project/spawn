@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
-	"github.com/calibrae-project/spawn/lib/others/blockdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/others/blockdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
 // Trust - Set this to false if you want to re-check all scripts
