@@ -116,12 +116,12 @@ func UpdateMapSizes() {
 
 	buf := new(bytes.Buffer)
 	gob.NewEncoder(buf).Encode(WalletAddrsCount)
-	ioutil.WriteFile(common.SpawnHomeDir+MapSizeFileName, buf.Bytes(), 0600)
+	ioutil.WriteFile(common.DuodHomeDir+MapSizeFileName, buf.Bytes(), 0600)
 }
 
 // LoadMapSizes -
 func LoadMapSizes() {
-	d, er := ioutil.ReadFile(common.SpawnHomeDir + MapSizeFileName)
+	d, er := ioutil.ReadFile(common.DuodHomeDir + MapSizeFileName)
 	if er != nil {
 		println("LoadMapSizes:", er.Error())
 		return

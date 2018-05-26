@@ -562,7 +562,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 	common.CountSafe("TxAccepted")
 
 	if frommem != nil && !common.GetBool(&common.CFG.TXRoute.MemInputs) {
-		// By default Spawn does not route txs that spend unconfirmed inputs
+		// By default Duod does not route txs that spend unconfirmed inputs
 		rec.Blocked = TxRejectedNotMined
 		common.CountSafe("TxRouteNotMined")
 	} else if !ntx.trusted && rec.isRoutable() {

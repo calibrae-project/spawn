@@ -55,11 +55,11 @@ func (t2s *OneTxToSend) WriteBytes(wr io.Writer) {
 // MempoolSave -
 func MempoolSave(force bool) {
 	if !force && !common.CFG.TXPool.SaveOnDisk {
-		os.Remove(common.SpawnHomeDir + MempoolFileName2)
+		os.Remove(common.DuodHomeDir + MempoolFileName2)
 		return
 	}
 
-	f, er := os.Create(common.SpawnHomeDir + MempoolFileName2)
+	f, er := os.Create(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
 		println(er.Error())
 		return
@@ -96,7 +96,7 @@ func MempoolLoad2() bool {
 	var i int
 	var cnt1, cnt2 uint
 
-	f, er := os.Open(common.SpawnHomeDir + MempoolFileName2)
+	f, er := os.Open(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
 		fmt.Println("MempoolLoad:", er.Error())
 		return false

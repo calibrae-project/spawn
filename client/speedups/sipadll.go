@@ -3,7 +3,7 @@ package main
 /*
   This is a ECVerify speedup that works only with Windows
 
-  Use secp256k1.dll from Spawn/tools/sipa_dll
+  Use secp256k1.dll from Duod/tools/sipa_dll
   or build one yourself.
 
 */

@@ -1,4 +1,4 @@
-// This tool can import blockchain database from satoshi client to Spawn
+// This tool can import blockchain database from satoshi client to Duod
 package main
 
 import (

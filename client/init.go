@@ -15,30 +15,30 @@ import (
 )
 
 func hostInit() {
-	common.SpawnHomeDir = common.CFG.Datadir + string(os.PathSeparator)
+	common.DuodHomeDir = common.CFG.Datadir + string(os.PathSeparator)
 
 	common.Testnet = common.CFG.Testnet // So chaging this value would will only affect the behaviour after restart
 	if common.CFG.Testnet {             // testnet3
 		common.GenesisBlock = btc.NewUint256FromString("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
 		common.Magic = [4]byte{0x0B, 0x11, 0x09, 0x07}
-		common.SpawnHomeDir += common.DataSubdir() + string(os.PathSeparator)
+		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 2000
 	} else {
 		common.GenesisBlock = btc.NewUint256FromString("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
 		common.Magic = [4]byte{0xF9, 0xBE, 0xB4, 0xD9}
-		common.SpawnHomeDir += common.DataSubdir() + string(os.PathSeparator)
+		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 5000
 	}
 
 	// Lock the folder
-	os.MkdirAll(common.SpawnHomeDir, 0770)
-	sys.LockDatabaseDir(common.SpawnHomeDir)
+	os.MkdirAll(common.DuodHomeDir, 0770)
+	sys.LockDatabaseDir(common.DuodHomeDir)
 
-	common.SecretKey, _ = ioutil.ReadFile(common.SpawnHomeDir + "authkey")
+	common.SecretKey, _ = ioutil.ReadFile(common.DuodHomeDir + "authkey")
 	if len(common.SecretKey) != 32 {
 		common.SecretKey = make([]byte, 32)
 		rand.Read(common.SecretKey)
-		ioutil.WriteFile(common.SpawnHomeDir+"authkey", common.SecretKey, 0600)
+		ioutil.WriteFile(common.DuodHomeDir+"authkey", common.SecretKey, 0600)
 	}
 	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
 	fmt.Println("Public auth key:", common.PublicKey)
@@ -82,7 +82,7 @@ func hostInit() {
 		BlockMinedCB:     blockMined}
 
 	sta := time.Now()
-	common.BlockChain = chain.NewChainExt(common.SpawnHomeDir, common.GenesisBlock, common.FLAG.Rescan, ext,
+	common.BlockChain = chain.NewChainExt(common.DuodHomeDir, common.GenesisBlock, common.FLAG.Rescan, ext,
 		&chain.BlockDBOpts{
 			MaxCachedBlocks: int(common.CFG.Memory.MaxCachedBlks),
 			MaxDataFileSize: uint64(common.CFG.Memory.MaxDataFileMB) << 20,

@@ -20,7 +20,7 @@ import (
 
 const (
 	// ConfigFile -
-	ConfigFile = "Spawn.conf"
+	ConfigFile = "Duod.conf"
 	// Version -
 	Version = uint32(70015)
 	// Services -
@@ -42,8 +42,8 @@ var (
 	Testnet bool
 	// Last -
 	Last TheLastBlock
-	// SpawnHomeDir -
-	SpawnHomeDir string
+	// DuodHomeDir -
+	DuodHomeDir string
 	// StartTime -
 	StartTime time.Time
 	// MaxPeersNeeded -

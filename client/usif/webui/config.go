@@ -42,7 +42,7 @@ func pCfg(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(r.Form["friends_file"]) > 0 {
-			ioutil.WriteFile(common.SpawnHomeDir+"friends.txt", []byte(r.Form["friends_file"][0]), 0600)
+			ioutil.WriteFile(common.DuodHomeDir+"friends.txt", []byte(r.Form["friends_file"][0]), 0600)
 			network.MutexNet.Lock()
 			network.NextConnectFriends = time.Now()
 			network.MutexNet.Unlock()

@@ -153,7 +153,7 @@ func loadWallet(fn string) (addrs []*btc.Addr) {
 }
 
 func main() {
-	fmt.Println("Spawn BalIO version", Spawn.Version)
+	fmt.Println("Duod BalIO version", Duod.Version)
 
 	if len(os.Args) < 2 {
 		printHelp()

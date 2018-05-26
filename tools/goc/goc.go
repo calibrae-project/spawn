@@ -157,7 +157,7 @@ func main() {
 		return
 	}
 
-	Host = os.Getenv("Spawn_WEBUI")
+	Host = os.Getenv("Duod_WEBUI")
 	if Host == "" {
 		Host = "http://127.0.0.1:8833/"
 	} else {
@@ -168,7 +168,7 @@ func main() {
 			Host = Host + "/"
 		}
 	}
-	fmt.Println("Spawn WebUI at", Host, "(you can overwrite it via env variable Spawn_WEBUI)")
+	fmt.Println("Duod WebUI at", Host, "(you can overwrite it via env variable Duod_WEBUI)")
 
 	switch os.Args[1] {
 	case "wal":

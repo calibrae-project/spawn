@@ -318,7 +318,7 @@ func tcpServer() {
 func ConnectFriends() {
 	common.CountSafe("ConnectFriends")
 
-	f, _ := os.Open(common.SpawnHomeDir + "friends.txt")
+	f, _ := os.Open(common.DuodHomeDir + "friends.txt")
 	if f == nil {
 		return
 	}
@@ -644,7 +644,7 @@ func (c *OneConnection) Run() {
 			}
 			c.X.LastMinFeePerKByte = common.MinFeePerKB()
 
-			if c.X.IsSpawn {
+			if c.X.IsDuod {
 				c.SendAuth()
 			}
 

@@ -205,7 +205,7 @@ func checkTxs(par string) {
 
 func loadMempool(par string) {
 	if par == "" {
-		par = common.SpawnHomeDir + "mempool.dmp"
+		par = common.DuodHomeDir + "mempool.dmp"
 	}
 	var abort bool
 	_Exit := make(chan bool)

@@ -1,4 +1,4 @@
-// This tool can import blockchain database from satoshi client to Spawn
+// This tool can import blockchain database from satoshi client to Duod
 package main
 
 import (
@@ -18,8 +18,8 @@ const Trust = true
 var (
 	// Magic -
 	Magic [4]byte
-	// SpawnHomeDir -
-	SpawnHomeDir string
+	// DuodHomeDir -
+	DuodHomeDir string
 	// BTCRootDir -
 	BTCRootDir string
 	// GenesisBlock -
@@ -42,7 +42,7 @@ func stat(totnsec, pernsec int64, totbytes, perbytes uint64, height uint32) {
 
 func importBlockchain(dir string) {
 	BlockDatabase := blockdb.NewBlockDB(dir, Magic)
-	chain := chain.NewChainExt(SpawnHomeDir, GenesisBlock, false, nil, nil)
+	chain := chain.NewChainExt(DuodHomeDir, GenesisBlock, false, nil, nil)
 
 	var bl *btc.Block
 	var er error
@@ -123,7 +123,7 @@ func main() {
 		fmt.Println("By default it should be:", sys.BitcoinHome()+"blocks")
 		fmt.Println()
 		fmt.Println("If you specify a second parameter, that's where output data will be stored.")
-		fmt.Println("Otherwise the output data will go to Spawn's default data folder.")
+		fmt.Println("Otherwise the output data will go to Duod's default data folder.")
 		return
 	}
 
@@ -143,36 +143,36 @@ func main() {
 	}
 
 	if len(os.Args) > 2 {
-		SpawnHomeDir = RemoveLastSlash(os.Args[2]) + string(os.PathSeparator)
+		DuodHomeDir = RemoveLastSlash(os.Args[2]) + string(os.PathSeparator)
 	} else {
-		SpawnHomeDir = sys.BitcoinHome() + "Spawn" + string(os.PathSeparator)
+		DuodHomeDir = sys.BitcoinHome() + "Duod" + string(os.PathSeparator)
 	}
 
 	if Magic == [4]byte{0x0B, 0x11, 0x09, 0x07} {
 		// testnet3
 		fmt.Println("There are Testnet3 blocks")
 		GenesisBlock = btc.NewUint256FromString("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
-		SpawnHomeDir += "tstnet" + string(os.PathSeparator)
+		DuodHomeDir += "tstnet" + string(os.PathSeparator)
 	} else if Magic == [4]byte{0xF9, 0xBE, 0xB4, 0xD9} {
 		fmt.Println("There are valid Bitcoin blocks")
 		GenesisBlock = btc.NewUint256FromString("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
-		SpawnHomeDir += "btcnet" + string(os.PathSeparator)
+		DuodHomeDir += "btcnet" + string(os.PathSeparator)
 	} else {
 		println("blk00000.dat has an unexpected magic")
 		os.Exit(1)
 	}
 
-	fmt.Println("Importing blockchain data into", SpawnHomeDir, "...")
+	fmt.Println("Importing blockchain data into", DuodHomeDir, "...")
 
-	if exists(SpawnHomeDir+"blockchain.dat") ||
-		exists(SpawnHomeDir+"blockchain.idx") ||
-		exists(SpawnHomeDir+"unspent") {
+	if exists(DuodHomeDir+"blockchain.dat") ||
+		exists(DuodHomeDir+"blockchain.idx") ||
+		exists(DuodHomeDir+"unspent") {
 		println("Destination folder contains some database files.")
 		println("Either move them somewhere else or delete manually.")
 		println("None of the following files/folders must exist before you proceed:")
-		println(" *", SpawnHomeDir+"blockchain.dat")
-		println(" *", SpawnHomeDir+"blockchain.idx")
-		println(" *", SpawnHomeDir+"unspent")
+		println(" *", DuodHomeDir+"blockchain.dat")
+		println(" *", DuodHomeDir+"blockchain.idx")
+		println(" *", DuodHomeDir+"unspent")
 		os.Exit(1)
 	}
 

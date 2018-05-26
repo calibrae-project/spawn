@@ -138,7 +138,7 @@ type ConnectionStatus struct {
 	TxsReceived int // During last hour
 
 	IsSpecial bool // Special connections get more debgs and are not being automatically dropped
-	IsSpawn   bool
+	IsDuod   bool
 
 	Authorized bool
 	AuthMsgGot uint

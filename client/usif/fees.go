@@ -84,7 +84,7 @@ func ExpireBlockFees() {
 
 // SaveBlockFees -
 func SaveBlockFees() {
-	f, er := os.Create(common.SpawnHomeDir + BlkFeesFileName)
+	f, er := os.Create(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
 		println("SaveBlockFees:", er.Error())
 		return
@@ -105,7 +105,7 @@ func SaveBlockFees() {
 
 // LoadBlockFees -
 func LoadBlockFees() {
-	f, er := os.Open(common.SpawnHomeDir + BlkFeesFileName)
+	f, er := os.Open(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
 		println("LoadBlockFees:", er.Error())
 		return

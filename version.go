@@ -1,4 +1,4 @@
-package Spawn
+package Duod
 
 // This file is only to make "go get" working
 

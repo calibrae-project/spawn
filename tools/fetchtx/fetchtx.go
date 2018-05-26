@@ -11,7 +11,7 @@ import (
 
 
 func main() {
-	fmt.Println("Spawn FetchTx version", Spawn.Version)
+	fmt.Println("Duod FetchTx version", Duod.Version)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Specify transaction id on the command line (MSB).")

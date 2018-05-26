@@ -38,7 +38,7 @@ type RPCCommand struct {
 func processRPC(b []byte) (out []byte) {
 	ioutil.WriteFile("rpc_cmd.json", b, 0777)
 	exCmd := exec.Command("C:\\Tools\\DEV\\Git\\mingw64\\bin\\curl.EXE",
-		"--user", "Spawnrpc:Spawnpwd", "--data-binary", "@rpc_cmd.json", "http://127.0.0.1:18332/")
+		"--user", "Duodrpc:Duodpwd", "--data-binary", "@rpc_cmd.json", "http://127.0.0.1:18332/")
 	out, _ = exCmd.Output()
 	return
 }
@@ -93,7 +93,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 
 			if respMy.Result.PreviousBlockHash != respOK.Result.PreviousBlockHash {
 				println("satoshi @", respOK.Result.PreviousBlockHash, respOK.Result.Height)
-				println("Spawn  @", respMy.Result.PreviousBlockHash, respMy.Result.Height)
+				println("Duod  @", respMy.Result.PreviousBlockHash, respMy.Result.Height)
 			} else {
 				println(".", len(respMy.Result.Transactions), respMy.Result.Coinbasevalue)
 				if respMy.Result.Mintime != respOK.Result.Mintime {

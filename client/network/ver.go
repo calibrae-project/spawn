@@ -48,9 +48,9 @@ func (c *OneConnection) SendVersion() {
 	c.SendRawMsg("version", b.Bytes())
 }
 
-// IsSpawn -
-func (c *OneConnection) IsSpawn() bool {
-	return strings.HasPrefix(c.Node.Agent, "/Spawn:")
+// IsDuod -
+func (c *OneConnection) IsDuod() bool {
+	return strings.HasPrefix(c.Node.Agent, "/Duod:")
 }
 
 // HandleVersion -
@@ -108,7 +108,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					c.Node.DoNotRelayTxs = true
 				}
 			}
-			c.X.IsSpawn = strings.HasPrefix(c.Node.Agent, "/Spawn:")
+			c.X.IsDuod = strings.HasPrefix(c.Node.Agent, "/Duod:")
 		}
 		c.X.VersionReceived = true
 		c.Mutex.Unlock()

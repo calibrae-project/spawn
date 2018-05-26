@@ -266,10 +266,10 @@ func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 func main() {
 	var ptr *byte
 	if unsafe.Sizeof(ptr) < 8 {
-		fmt.Println("WARNING: Spawn client shall be build for 64-bit arch. It will likely crash now.")
+		fmt.Println("WARNING: Duod client shall be build for 64-bit arch. It will likely crash now.")
 	}
 
-	fmt.Println("Spawn client version", Spawn.Version)
+	fmt.Println("Duod client version", Duod.Version)
 	runtime.GOMAXPROCS(runtime.NumCPU()) // It seems that Go does not do it by default
 
 	// Disable Ctrl+C
@@ -331,7 +331,7 @@ func main() {
 		peersdb.Testnet = common.Testnet
 		peersdb.ConnectOnly = common.CFG.ConnectOnly
 		peersdb.Services = common.Services
-		peersdb.InitPeers(common.SpawnHomeDir)
+		peersdb.InitPeers(common.DuodHomeDir)
 		if common.FLAG.UnbanAllPeers {
 			var keys []qdb.KeyType
 			var vals [][]byte

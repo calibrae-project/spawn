@@ -2,6 +2,6 @@
 balance/
 client
 gocoin*.conf
-Spawn*.conf
+Duod*.conf
 .stealth
 *.bat

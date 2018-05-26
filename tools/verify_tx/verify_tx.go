@@ -1,6 +1,6 @@
 // +build windows
 
-// On Windows OS copy this file to Spawn\client\usif\textui to enable consensus checking
+// On Windows OS copy this file to Duod\client\usif\textui to enable consensus checking
 // Make sure you have proper "libbitcoinconsensus-0.dll" in a folder where OS can find it.
 
 package main
@@ -68,7 +68,7 @@ func main() {
 	flags := uint32(script.StandardVerifyFlags)
 	println(flags)
 	res := script.VerifyTxScript(pkscript, value, i, tx, flags)
-	println("Spawn:", res)
+	println("Duod:", res)
 	if use_consensus_lib {
 		res = consensus_verify_script(pkscript, i, tx, flags)
 		println("Consen:", res)

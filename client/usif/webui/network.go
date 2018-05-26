@@ -28,7 +28,7 @@ func pNet(w http.ResponseWriter, r *http.Request) {
 
 	network.MutexNet.Unlock()
 
-	d, _ := ioutil.ReadFile(common.SpawnHomeDir + "friends.txt")
+	d, _ := ioutil.ReadFile(common.DuodHomeDir + "friends.txt")
 	netPage = strings.Replace(netPage, "{FRIENDS_TXT}", html.EscapeString(string(d)), 1)
 
 	writeHTMLHead(w, r)

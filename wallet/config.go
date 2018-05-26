@@ -24,10 +24,10 @@ var (
 )
 
 func parseConfig() {
-	cfgfn := os.Getenv("Spawn_WALLET_CONFIG")
+	cfgfn := os.Getenv("Duod_WALLET_CONFIG")
 	if cfgfn == "" {
 		cfgfn = "wallet.cfg"
-		fmt.Println("Spawn_WALLET_CONFIG not set")
+		fmt.Println("Duod_WALLET_CONFIG not set")
 	}
 	d, e := ioutil.ReadFile(cfgfn)
 	if e != nil {

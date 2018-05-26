@@ -1,7 +1,7 @@
 // Package blockdb -
 /*
 This package is suposed to help importin Satoshi's bitcoin
-client blockchain into Spawn's bitcoin client.
+client blockchain into Duod's bitcoin client.
 */
 package blockdb
 

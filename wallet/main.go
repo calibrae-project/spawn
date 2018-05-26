@@ -82,7 +82,7 @@ func cleanExit(code int) {
 
 func main() {
 	// Print the logo to stderr
-	println("Spawn Wallet version", Spawn.Version)
+	println("Duod Wallet version", Duod.Version)
 	println("This program comes with ABSOLUTELY NO WARRANTY")
 	println()
 

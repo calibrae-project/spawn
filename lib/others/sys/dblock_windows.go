@@ -9,10 +9,10 @@ var (
 	DbLockFileHndl *os.File
 )
 
-func LockDatabaseDir(SpawnHomeDir string) {
+func LockDatabaseDir(DuodHomeDir string) {
 	var e error
-	os.MkdirAll(SpawnHomeDir, 0770)
-	DbLockFileName = SpawnHomeDir+".lock"
+	os.MkdirAll(DuodHomeDir, 0770)
+	DbLockFileName = DuodHomeDir+".lock"
 	os.Remove(DbLockFileName)
 	DbLockFileHndl, e = os.OpenFile(DbLockFileName, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0660)
 	if e != nil {

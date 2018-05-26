@@ -135,11 +135,11 @@ func InitConfig() {
 	CFG.WebUI.AllowedIP = "127.0.0.1"
 	CFG.WebUI.ShowBlocks = 144
 	CFG.WebUI.AddrListLen = 15
-	CFG.WebUI.Title = "Spawn"
+	CFG.WebUI.Title = "Duod"
 	CFG.WebUI.PayCmdName = "payCmd.txt"
 
-	CFG.RPC.Username = "Spawnrpc"
-	CFG.RPC.Password = "Spawnpwd"
+	CFG.RPC.Username = "Duodrpc"
+	CFG.RPC.Password = "Duodpwd"
 
 	CFG.TXPool.Enabled = true
 	CFG.TXPool.AllowMemInputs = true
@@ -164,7 +164,7 @@ func InitConfig() {
 	CFG.Stat.FeesBlks = 4 * 6   /*last 4 hours*/
 	CFG.Stat.BSizeBlks = 12 * 6 /*half a day*/
 
-	CFG.AllBalances.MinValue = 1e12 // 0.001 SPAWN
+	CFG.AllBalances.MinValue = 1e12 // 0.001 DUO
 	CFG.AllBalances.UseMapCnt = 100
 	CFG.AllBalances.AutoLoad = true
 
@@ -192,7 +192,7 @@ func InitConfig() {
 	flag.BoolVar(&CFG.Testnet, "t", CFG.Testnet, "Use Testnet3")
 	flag.StringVar(&CFG.ConnectOnly, "c", CFG.ConnectOnly, "Connect only to this host and nowhere else")
 	flag.BoolVar(&CFG.Net.ListenTCP, "l", CFG.Net.ListenTCP, "Listen for incoming TCP connections (on default port)")
-	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Spawn's database root folder")
+	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Duod's database root folder")
 	flag.UintVar(&CFG.Net.MaxUpKBps, "ul", CFG.Net.MaxUpKBps, "Upload limit in KB/s (0 for no limit)")
 	flag.UintVar(&CFG.Net.MaxDownKBps, "dl", CFG.Net.MaxDownKBps, "Download limit in KB/s (0 for no limit)")
 	flag.StringVar(&CFG.WebUI.Interface, "webui", CFG.WebUI.Interface, "Serve WebUI from the given interface")
@@ -204,10 +204,10 @@ func InitConfig() {
 	flag.BoolVar(&FLAG.UnbanAllPeers, "unban", FLAG.UnbanAllPeers, "Un-ban all peers in databse, before starting")
 	flag.BoolVar(&FLAG.NoWallet, "nowallet", FLAG.NoWallet, "Do not automatically enable the wallet functionality (lower memory usage and faster block processing)")
 	flag.BoolVar(&FLAG.Log, "log", FLAG.Log, "Store some runtime information in the log files")
-	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save Spawn.conf file and exit (use to create default config file)")
+	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save Duod.conf file and exit (use to create default config file)")
 
 	if CFG.Datadir == "" {
-		CFG.Datadir = sys.BitcoinHome() + "Spawn"
+		CFG.Datadir = sys.BitcoinHome() + "Duod"
 	}
 
 	if flag.Lookup("h") != nil {
@@ -289,7 +289,7 @@ func Reset() {
 	if CFG.UserAgent != "" {
 		UserAgent = CFG.UserAgent
 	} else {
-		UserAgent = "/Spawn:" + Spawn.Version + "/"
+		UserAgent = "/Duod:" + Duod.Version + "/"
 	}
 
 	if CFG.Memory.MaxDataFileMB != 0 && CFG.Memory.MaxDataFileMB < 8 {
@@ -305,8 +305,8 @@ func Reset() {
 
 // MkTempBlocksDir -
 func MkTempBlocksDir() {
-	// no point doing it before SpawnHomeDir is set in hostInit()
-	if CFG.Memory.CacheOnDisk && SpawnHomeDir != "" {
+	// no point doing it before DuodHomeDir is set in hostInit()
+	if CFG.Memory.CacheOnDisk && DuodHomeDir != "" {
 		os.Mkdir(TempBlocksDir(), 0700)
 	}
 }
@@ -490,5 +490,5 @@ func RejectedTxsLimits() (size uint64, cnt int) {
 
 // TempBlocksDir -
 func TempBlocksDir() string {
-	return SpawnHomeDir + "tmpblk" + string(os.PathSeparator)
+	return DuodHomeDir + "tmpblk" + string(os.PathSeparator)
 }
