@@ -290,11 +290,11 @@ func InitPeers(dir string) {
 		go func() {
 			if !Testnet {
 				initSeeds([]string{
-					"seed1.parallelcoin.info",
+					// "seed1.parallelcoin.info",
 					"seed2.parallelcoin.info",
 					"seed3.parallelcoin.info",
 					"seed4.parallelcoin.info",
-					"seed5.parallelcoin.info",
+					// "seed5.parallelcoin.info",
 				}, 11047)
 			} else {
 				initSeeds([]string{
