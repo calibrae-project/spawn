@@ -20,11 +20,11 @@ import (
 
 const (
 	// ConfigFile -
-	ConfigFile = "Duod.conf"
+	ConfigFile = "duod.conf"
 	// Version -
-	Version = uint32(70015)
+	Version = uint32(2) // 70015)
 	// Services -
-	Services = uint64(0x00000009)
+	Services = uint64(1) // 0x00000009)
 )
 
 var (

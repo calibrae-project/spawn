@@ -19,13 +19,13 @@ func hostInit() {
 
 	common.Testnet = common.CFG.Testnet // So chaging this value would will only affect the behaviour after restart
 	if common.CFG.Testnet {             // testnet3
-		common.GenesisBlock = btc.NewUint256FromString("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
-		common.Magic = [4]byte{0x0B, 0x11, 0x09, 0x07}
+		common.GenesisBlock = btc.NewUint256FromString("00000e41ecbaa35ef91b0c2c22ed4d85fa12bbc87da2668fe17572695fb30cdf")
+		common.Magic = [4]byte{0x08, 0xb2, 0x99, 0x88}
 		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 2000
 	} else {
-		common.GenesisBlock = btc.NewUint256FromString("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
-		common.Magic = [4]byte{0xF9, 0xBE, 0xB4, 0xD9}
+		common.GenesisBlock = btc.NewUint256FromString("000009f0fcbad3aac904d3660cfdcf238bf298cfe73adf1d39d14fc5c740ccc7")
+		common.Magic = [4]byte{0xcd, 0x08, 0xac, 0xff}
 		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 5000
 	}

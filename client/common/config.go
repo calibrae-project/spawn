@@ -131,7 +131,7 @@ func InitConfig() {
 
 	CFG.TextUIEnabled = true
 
-	CFG.WebUI.Interface = "127.0.0.1:8833"
+	CFG.WebUI.Interface = "127.0.0.1:11111"
 	CFG.WebUI.AllowedIP = "127.0.0.1"
 	CFG.WebUI.ShowBlocks = 144
 	CFG.WebUI.AddrListLen = 15
@@ -172,7 +172,7 @@ func InitConfig() {
 	CFG.DropPeers.BlckExpireHours = 24 // hours
 	CFG.DropPeers.PingPeriodSec = 15   // seconds
 
-	CFG.LastTrustedBlock = "0000000000000000001f6897d85c5c580308ba393da6b184d8e7de36fcb58a6e" // block #517986
+	CFG.LastTrustedBlock = "000009f0fcbad3aac904d3660cfdcf238bf298cfe73adf1d39d14fc5c740ccc7" // block #0
 
 	cfgfilecontent, e := ioutil.ReadFile(ConfigFile)
 	if e == nil && len(cfgfilecontent) > 0 {
@@ -338,9 +338,9 @@ func DefaultTCPport() (res uint16) {
 		return
 	}
 	if CFG.Testnet {
-		res = 18333
+		res = 21047
 	} else {
-		res = 8333
+		res = 11047
 	}
 	return
 }

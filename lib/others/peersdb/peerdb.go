@@ -49,9 +49,9 @@ type PeerAddr struct {
 // DefaultTCPport -
 func DefaultTCPport() uint16 {
 	if Testnet {
-		return 18333
+		return 21047
 	}
-	return 8333
+	return 11047
 }
 
 // NewEmptyPeer -
@@ -290,17 +290,16 @@ func InitPeers(dir string) {
 		go func() {
 			if !Testnet {
 				initSeeds([]string{
-					"seed.bitcoin.sipa.be",
-					"dnsseed.bluematt.me",
-					"seed.bitcoinstats.com",
-					"seed.bitnodes.io",
-					"bitseed.xf2.org",
-				}, 8333)
+					"seed1.parallelcoin.info",
+					"seed2.parallelcoin.info",
+					"seed3.parallelcoin.info",
+					"seed4.parallelcoin.info",
+					"seed5.parallelcoin.info",
+				}, 11047)
 			} else {
 				initSeeds([]string{
-					//"testnet-seed.bitcoin.petertodd.org",
-					"testnet-seed.bluematt.me",
-				}, 18333)
+					"seed2.parallelcoin.info",
+				}, 21047)
 			}
 		}()
 	}
