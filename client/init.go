@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/rand"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
@@ -41,7 +41,7 @@ func hostInit() {
 		ioutil.WriteFile(common.DuodHomeDir+"authkey", common.SecretKey, 0600)
 	}
 	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
-	fmt.Println("Public auth key:", common.PublicKey)
+	logg.Debug.Println("Public auth key:", common.PublicKey)
 
 	_Exit := make(chan bool)
 	_Done := make(chan bool)
@@ -49,7 +49,7 @@ func hostInit() {
 		for {
 			select {
 			case s := <-common.KillChan:
-				fmt.Println(s)
+				logg.Debug.Println(s)
 				chain.AbortNow = true
 			case <-_Exit:
 				_Done <- true
@@ -64,16 +64,16 @@ func hostInit() {
 	}
 
 	if common.CFG.Memory.UseGoHeap {
-		fmt.Println("Using native Go heap with the garbage collector for UTXO records")
+		logg.Debug.Println("Using native Go heap with the garbage collector for UTXO records")
 	} else {
 		utxo.MembindInit()
 	}
 
-	fmt.Print(string(common.LogBuffer.Bytes()))
+	logg.Debug.Print(string(common.LogBuffer.Bytes()))
 	common.LogBuffer = nil
 
 	if btc.ECVerify == nil {
-		fmt.Println("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
+		logg.Debug.Println("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
 	}
 
 	ext := &chain.NewChanOpts{
@@ -88,7 +88,7 @@ func hostInit() {
 			MaxDataFileSize: uint64(common.CFG.Memory.MaxDataFileMB) << 20,
 			DataFilesKeep:   common.CFG.Memory.DataFilesKeep})
 	if chain.AbortNow {
-		fmt.Printf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
+		logg.Debug.Printf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
 		common.BlockChain.Close()
 		sys.UnlockDatabaseDir()
 		os.Exit(1)
@@ -105,14 +105,13 @@ func hostInit() {
 	common.UnlockCfg()
 
 	if common.CFG.Memory.FreeAtStart {
-		fmt.Print("Freeing memory... ")
+		logg.Debug.Print("Freeing memory... ")
 		sys.FreeMem()
-		fmt.Print("\r                  \r")
 	}
 	sto := time.Now()
 
 	al, sy := sys.MemUsed()
-	fmt.Printf("Blockchain open in %s.  %d + %d MB of RAM used (%d)\n",
+	logg.Debug.Printf("Blockchain open in %s.  %d + %d MB of RAM used (%d)\n",
 		sto.Sub(sta).String(), al>>20, utxo.ExtraMemoryConsumed()>>20, sy>>20)
 
 	common.StartTime = time.Now()

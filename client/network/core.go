@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
 )
 
@@ -138,7 +138,7 @@ type ConnectionStatus struct {
 	TxsReceived int // During last hour
 
 	IsSpecial bool // Special connections get more debgs and are not being automatically dropped
-	IsDuod   bool
+	IsDuod    bool
 
 	Authorized bool
 	AuthMsgGot uint
@@ -438,7 +438,7 @@ func (c *OneConnection) Misbehave(why string, howMuch int) (res bool) {
 // HandleError -
 func (c *OneConnection) HandleError(e error) error {
 	if nerr, ok := e.(net.Error); ok && nerr.Timeout() {
-		//fmt.Println("Just a timeout - ignore")
+		logg.Debug.Println("Just a timeout - ignore")
 		return nil
 	}
 	c.recv.hdrLen = 0
@@ -472,7 +472,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 		}
 		if c.recv.hdrLen >= 4 && !bytes.Equal(c.recv.hdr[:4], common.Magic[:]) {
 			if c.X.IsSpecial {
-				fmt.Printf("BadMagic from %s %s \n hdr:%s  n:%d\n R: %s %d / S: %s %d\n> ", c.PeerAddr.IP(), c.Node.Agent,
+				logg.Debug.Printf("BadMagic from %s %s \n hdr:%s  n:%d\n R: %s %d / S: %s %d\n> ", c.PeerAddr.IP(), c.Node.Agent,
 					hex.EncodeToString(c.recv.hdr[:c.recv.hdrLen]), n,
 					c.X.LastCmdRcvd, c.X.LastBtsRcvd, c.X.LastCmdSent, c.X.LastBtsSent)
 			}
@@ -523,7 +523,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 				c.recv.datlen += uint32(n)
 				c.Mutex.Unlock()
 				if c.recv.datlen > c.recv.plLen {
-					println(c.PeerAddr.IP(), "is sending more of", c.recv.cmd, "then it should have", c.recv.datlen, c.recv.plLen)
+					logg.Debug.Println(c.PeerAddr.IP(), "is sending more of", c.recv.cmd, "then it should have", c.recv.datlen, c.recv.plLen)
 					c.DoS("MsgSizeMismatch")
 					return
 				}
@@ -540,7 +540,7 @@ func (c *OneConnection) FetchMessage() (ret *BCmsg, timeoutOrData bool) {
 
 	sh := btc.Sha2Sum(c.recv.dat)
 	if !bytes.Equal(c.recv.hdr[20:24], sh[:4]) {
-		//println(c.PeerAddr.IP(), "Msg checksum error")
+		logg.Debug.Println(c.PeerAddr.IP(), "Msg checksum error")
 		c.DoS("MsgBadChksum")
 		return
 	}
@@ -566,7 +566,7 @@ func (c *OneConnection) GetMPNow() {
 		select {
 		case c.GetMP <- true:
 		default:
-			fmt.Println(c.ConnID, "GetMP channel full")
+			logg.Debug.Println(c.ConnID, "GetMP channel full")
 		}
 	}
 }
@@ -658,7 +658,7 @@ func maxMsgSize(cmd string) uint32 {
 // NetCloseAll -
 func NetCloseAll() {
 	sta := time.Now()
-	println("Closing network")
+	logg.Debug.Println("Closing network")
 	common.NetworkClosed.Set()
 	common.SetBool(&common.ListenTCP, false)
 	MutexNet.Lock()
@@ -679,7 +679,7 @@ func NetCloseAll() {
 		}
 		if time.Now().Sub(sta) > 2*time.Second {
 			MutexNet.Lock()
-			fmt.Println("Still have open connections:", InConsActive, OutConsActive, len(OpenCons), "- please report")
+			logg.Debug.Println("Still have open connections:", InConsActive, OutConsActive, len(OpenCons), "- please report")
 			MutexNet.Unlock()
 			break
 		}
@@ -697,11 +697,11 @@ func DropPeer(conid uint32) {
 	for _, v := range OpenCons {
 		if uint32(conid) == v.ConnID {
 			v.DoS("FromUI")
-			//fmt.Println("The connection with", v.PeerAddr.IP(), "is being dropped and the peer is banned")
+			logg.Debug.Println("The connection with", v.PeerAddr.IP(), "is being dropped and the peer is banned")
 			return
 		}
 	}
-	fmt.Println("DropPeer: There is no such an active connection", conid)
+	logg.Debug.Println("DropPeer: There is no such an active connection", conid)
 }
 
 // GetMP -
@@ -715,7 +715,7 @@ func GetMP(conid uint32) {
 		}
 	}
 	MutexNet.Unlock()
-	fmt.Println("GetMP: There is no such an active connection", conid)
+	logg.Debug.Println("GetMP: There is no such an active connection", conid)
 }
 
 // BlocksToGetCnt -

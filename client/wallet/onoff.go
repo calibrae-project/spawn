@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
@@ -28,9 +29,9 @@ func InitMaps(empty bool) {
 	LoadMapSizes()
 	szs, ok = WalletAddrsCount[common.AllBalMinVal()]
 	if ok {
-		//fmt.Println("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
+		logg.Info.Println("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
 	} else {
-		//fmt.Println("No map sizes for MinBal", common.AllBalMinVal())
+		logg.Info.Println("No map sizes for MinBal", common.AllBalMinVal())
 		szs = [4]int{10e6, 3e6, 10e3, 1e3} // defaults
 	}
 
@@ -44,7 +45,7 @@ init:
 // LoadBalance -
 func LoadBalance() {
 	if common.GetBool(&common.WalletON) {
-		//fmt.Println("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
+		logg.Info.Println("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 
@@ -89,7 +90,7 @@ func LoadBalance() {
 // Disable -
 func Disable() {
 	if !common.GetBool(&common.WalletON) {
-		//fmt.Println("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
+		logg.Info.Println("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 	UpdateMapSizes()
@@ -123,7 +124,7 @@ func UpdateMapSizes() {
 func LoadMapSizes() {
 	d, er := ioutil.ReadFile(common.DuodHomeDir + MapSizeFileName)
 	if er != nil {
-		println("LoadMapSizes:", er.Error())
+		logg.Error.Println("LoadMapSizes:", er.Error())
 		return
 	}
 
@@ -131,6 +132,6 @@ func LoadMapSizes() {
 
 	er = gob.NewDecoder(buf).Decode(&WalletAddrsCount)
 	if er != nil {
-		println("LoadMapSizes:", er.Error())
+		logg.Error.Println("LoadMapSizes:", er.Error())
 	}
 }

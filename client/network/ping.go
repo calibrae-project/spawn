@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 const (
@@ -233,6 +234,6 @@ func (c *OneConnection) TryPing() bool {
 	rand.Read(c.PingInProgress[:])
 	c.SendRawMsg("ping", c.PingInProgress)
 	c.LastPingSent = time.Now()
-	//println(c.PeerAddr.IP(), "ping...")
+	logg.Debug.Println(c.PeerAddr.IP(), "ping...")
 	return true
 }

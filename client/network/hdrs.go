@@ -4,12 +4,12 @@ package network
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"time"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 const (
@@ -43,7 +43,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if b2g, ok = BlocksToGet[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderFresh")
-		//fmt.Println(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
+		logg.Debug.Println(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
 		return PHstatusFresh, b2g
 	}
 
@@ -55,7 +55,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if _, dos, er := common.BlockChain.PreCheckBlock(bl); er != nil {
 		common.CountSafe("PreCheckBlockFail")
-		//println("PreCheckBlock err", dos, er.Error())
+		logg.Debug.Println("PreCheckBlock err", dos, er.Error())
 		if dos {
 			return PHstatusFatal, nil
 		}
@@ -88,7 +88,7 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 	b := bytes.NewReader(pl)
 	cnt, e := btc.ReadVLen(b)
 	if e != nil {
-		println("HandleHeaders:", e.Error(), c.PeerAddr.IP())
+		logg.Debug.Println("HandleHeaders:", e.Error(), c.PeerAddr.IP())
 		return
 	}
 
@@ -101,13 +101,13 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 
 			n, _ := b.Read(hdr[:])
 			if n != 81 {
-				println("HandleHeaders: pl too short", c.PeerAddr.IP())
+				logg.Debug.Println("HandleHeaders: pl too short", c.PeerAddr.IP())
 				c.DoS("HdrErr1")
 				return
 			}
 
 			if hdr[80] != 0 {
-				fmt.Println("Unexpected value of txn_count from", c.PeerAddr.IP())
+				logg.Debug.Println("Unexpected value of txn_count from", c.PeerAddr.IP())
 				c.DoS("HdrErr2")
 				return
 			}
@@ -115,11 +115,11 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 			sta, b2g := c.ProcessNewHeader(hdr[:])
 			if b2g == nil {
 				if sta == PHstatusFatal {
-					//println("c.DoS(BadHeader)")
+					logg.Debug.Println("c.DoS(BadHeader)")
 					c.DoS("BadHeader")
 					return
 				} else if sta == PHstatusError {
-					//println("c.Misbehave(BadHeader)")
+					logg.Debug.Println("c.Misbehave(BadHeader)")
 					c.Misbehave("BadHeader", 50) // do it 20 times and you are banned
 				}
 			} else {
@@ -169,7 +169,7 @@ func (c *OneConnection) ReceiveHeadersNow() {
 func (c *OneConnection) GetHeaders(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 	if e != nil || hashstop == nil {
-		println("GetHeaders: error parsing payload from", c.PeerAddr.IP())
+		logg.Debug.Println("GetHeaders: error parsing payload from", c.PeerAddr.IP())
 		c.DoS("BadGetHdrs")
 		return
 	}

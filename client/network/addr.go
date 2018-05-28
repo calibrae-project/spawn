@@ -10,6 +10,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
 	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
@@ -101,7 +102,7 @@ func (c *OneConnection) SendAddr() {
 		btc.WriteVlen(buf, uint64(len(pers)))
 		for i := range pers {
 			if pers[i].Time > maxtime {
-				println("addr", i, "time in future", pers[i].Time, maxtime, "should not happen")
+				logg.Debug.Println("addr", i, "time in future", pers[i].Time, maxtime, "should not happen")
 				pers[i].Time = maxtime - 7200
 			}
 			binary.Write(buf, binary.LittleEndian, pers[i].Time)

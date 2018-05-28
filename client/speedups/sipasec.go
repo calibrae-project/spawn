@@ -11,8 +11,8 @@ package main
 */
 
 import (
-	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/cgo/sipasec"
 )
 
@@ -22,6 +22,6 @@ func ECVerify(k, s, h []byte) bool {
 }
 
 func init() {
-	common.Log.Println("Using libsecp256k1.a by sipa for ECVerify")
+	logg.Debug.Println("Using libsecp256k1.a by sipa for ECVerify")
 	btc.ECVerify = ECVerify
 }

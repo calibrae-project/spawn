@@ -8,6 +8,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 const (
@@ -86,7 +87,7 @@ func ExpireBlockFees() {
 func SaveBlockFees() {
 	f, er := os.Create(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
-		println("SaveBlockFees:", er.Error())
+		logg.Error.Println("SaveBlockFees:", er.Error())
 		return
 	}
 
@@ -95,7 +96,7 @@ func SaveBlockFees() {
 	er = gob.NewEncoder(buf).Encode(BlockFees)
 
 	if er != nil {
-		println("SaveBlockFees:", er.Error())
+		logg.Error.Println("SaveBlockFees:", er.Error())
 	}
 
 	buf.Flush()

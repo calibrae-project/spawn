@@ -11,6 +11,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/script"
 )
 
@@ -194,7 +195,7 @@ func (c *OneConnection) TxInvNotify(hash []byte) {
 		b[0] = 1 // One inv
 		if (c.Node.Services & ServiceSegwit) != 0 {
 			binary.LittleEndian.PutUint32(b[1:5], MsgWitnessTx) // SegWit Tx
-			//println(c.ConnID, "getdata", btc.NewUint256(hash).String())
+			logg.Debug.Println(c.ConnID, "getdata", btc.NewUint256(hash).String())
 		} else {
 			b[1] = MsgTx // Tx
 		}
@@ -265,7 +266,7 @@ func (c *OneConnection) ParseTxNet(pl []byte) {
 			TransactionsPending[tx.Hash.BIdx()] = true
 		default:
 			common.CountSafe("TxRejectedFullQ")
-			//println("NetTxsFULL")
+			logg.Debug.Println("NetTxsFULL")
 		}
 	})
 }
@@ -434,7 +435,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 					RejectTx(ntx.Tx, TxRejectedCoinbaseImmature)
 					TxMutex.Unlock()
 					common.CountSafe("TxRejectedCBInmature")
-					fmt.Println(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
+					logg.Debug.Println(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
 					return
 				}
 			}
@@ -510,8 +511,8 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 				ntx.conn.DoS("TxScriptFail")
 			}
 			if len(rbfTxList) > 0 {
-				fmt.Println("RBF try", verErrCount, "script(s) failed!")
-				fmt.Print("> ")
+				logg.Error.Println("RBF try", verErrCount, "script(s) failed!")
+				logg.Error.Print("> ")
 			}
 			return
 		}
@@ -655,7 +656,7 @@ func txChecker(tx *btc.Tx) bool {
 	if ok {
 		ok = tx.WTxID().Equal(rec.WTxID())
 		if !ok {
-			println("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
+			logg.Debug.Println("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
 			common.CountSafe("TxScrSWErr")
 		}
 	}

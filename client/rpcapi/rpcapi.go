@@ -12,6 +12,7 @@ import (
 	"os/exec"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 // RPCError -
@@ -46,21 +47,21 @@ func processRPC(b []byte) (out []byte) {
 func myHandler(w http.ResponseWriter, r *http.Request) {
 	u, p, ok := r.BasicAuth()
 	if !ok {
-		println("No HTTP Authentication data")
+		logg.Error.Println("No HTTP Authentication data")
 		return
 	}
 	if u != common.CFG.RPC.Username {
-		println("HTTP Authentication: bad username")
+		logg.Error.Println("HTTP Authentication: bad username")
 		return
 	}
 	if p != common.CFG.RPC.Password {
-		println("HTTP Authentication: bad password")
+		logg.Error.Println("HTTP Authentication: bad password")
 		return
 	}
-	//fmt.Println("========================handler", r.Method, r.URL.String(), u, p, ok, "=================")
+	logg.Debug.Println("========================handler", r.Method, r.URL.String(), u, p, ok, "=================")
 	b, e := ioutil.ReadAll(r.Body)
 	if e != nil {
-		println(e.Error())
+		logg.Error.Println(e.Error())
 		return
 	}
 
@@ -69,7 +70,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 	jd.UseNumber()
 	e = jd.Decode(&RPCCmd)
 	if e != nil {
-		println(e.Error())
+		logg.Error.Println(e.Error())
 	}
 
 	var resp RPCResponse
@@ -92,18 +93,18 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 			e = jd.Decode(&respOK)
 
 			if respMy.Result.PreviousBlockHash != respOK.Result.PreviousBlockHash {
-				println("satoshi @", respOK.Result.PreviousBlockHash, respOK.Result.Height)
-				println("Duod  @", respMy.Result.PreviousBlockHash, respMy.Result.Height)
+				logg.Debug.Println("satoshi @", respOK.Result.PreviousBlockHash, respOK.Result.Height)
+				logg.Debug.Println("Duod  @", respMy.Result.PreviousBlockHash, respMy.Result.Height)
 			} else {
-				println(".", len(respMy.Result.Transactions), respMy.Result.Coinbasevalue)
+				logg.Debug.Println(".", len(respMy.Result.Transactions), respMy.Result.Coinbasevalue)
 				if respMy.Result.Mintime != respOK.Result.Mintime {
-					println("\007Mintime:", respMy.Result.Mintime, respOK.Result.Mintime)
+					logg.Debug.Println("\007Mintime:", respMy.Result.Mintime, respOK.Result.Mintime)
 				}
 				if respMy.Result.Bits != respOK.Result.Bits {
-					println("\007Bits:", respMy.Result.Bits, respOK.Result.Bits)
+					logg.Debug.Println("\007Bits:", respMy.Result.Bits, respOK.Result.Bits)
 				}
 				if respMy.Result.Target != respOK.Result.Target {
-					println("\007Target:", respMy.Result.Target, respOK.Result.Target)
+					logg.Debug.Println("\007Target:", respMy.Result.Target, respOK.Result.Target)
 				}
 			}
 		}
@@ -120,7 +121,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 				resp.Result = ValidateAddress(uu[0].(string))
 			}
 		default:
-			println("unexpected type", uu)
+			logg.Debug.Println("unexpected type", uu)
 		}
 
 	case "submitblock":
@@ -128,14 +129,14 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 		SubmitBlock(&RPCCmd, &resp, b)
 
 	default:
-		fmt.Println("Method:", RPCCmd.Method, len(b))
+		logg.Debug.Println("Method:", RPCCmd.Method, len(b))
 		//w.Write(BitcoindResult)
 		resp.Error = RPCError{Code: -32601, Message: "Method not found"}
 	}
 
 	b, e = json.Marshal(&resp)
 	if e != nil {
-		println("json.Marshal(&resp):", e.Error())
+		logg.Debug.Println("json.Marshal(&resp):", e.Error())
 	}
 
 	//ioutil.WriteFile(RPCCmd.Method+"_resp.json", b, 0777)
@@ -144,7 +145,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 
 // StartServer -
 func StartServer(port uint32) {
-	fmt.Println("Starting RPC server at port", port)
+	logg.Debug.Println("Starting RPC server at port", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", myHandler)
 	http.ListenAndServe(fmt.Sprint("127.0.0.1:", port), mux)

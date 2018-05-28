@@ -4,6 +4,7 @@ package network
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
@@ -71,8 +73,8 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				if yes {
 					MutexNet.Unlock()
 					v.Mutex.Lock()
-					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
-					"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)*/
+					logg.Debug.Println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
+						"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)
 					v.Mutex.Unlock()
 					common.CountSafe("VerNonceSame")
 					return errors.New("Peer already connected")
@@ -158,7 +160,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					}
 				}
 				if useThisIP && common.IsListenTCP() {
-					fmt.Printf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
+					logg.Debug.Printf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
 						pl[40], pl[41], pl[42], pl[43], c.ConnID)
 				}
 			}

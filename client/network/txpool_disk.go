@@ -13,6 +13,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 var (
@@ -61,11 +62,11 @@ func MempoolSave(force bool) {
 
 	f, er := os.Create(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
-		println(er.Error())
+		logg.Debug.Println(er.Error())
 		return
 	}
 
-	fmt.Println("Saving", MempoolFileName2)
+	logg.Debug.Println("Saving", MempoolFileName2)
 	wr := bufio.NewWriter(f)
 
 	wr.Write(common.Last.Block.BlockHash.Hash[:])
@@ -98,7 +99,7 @@ func MempoolLoad2() bool {
 
 	f, er := os.Open(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
-		fmt.Println("MempoolLoad:", er.Error())
+		logg.Debug.Println("MempoolLoad:", er.Error())
 		return false
 	}
 	defer f.Close()
@@ -235,19 +236,19 @@ func MempoolLoad2() bool {
 				}
 			}
 			if t2s.MemInputCnt == 0 {
-				println("ERROR: MemInputs not nil but nothing found")
+				logg.Debug.Println("ERROR: MemInputs not nil but nothing found")
 				t2s.MemInputs = nil
 			}
 		}
 	}
 
-	fmt.Println(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
-	fmt.Println(cnt1, "transactions use", cnt2, "memory inputs")
+	logg.Debug.Println(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
+	logg.Debug.Println(cnt1, "transactions use", cnt2, "memory inputs")
 
 	return true
 
 fatal_error:
-	fmt.Println("Error loading", MempoolFileName2, ":", er.Error())
+	logg.Error.Println("Error loading", MempoolFileName2, ":", er.Error())
 	TransactionsToSend = make(map[BIDX]*OneTxToSend)
 	TransactionsToSendSize = 0
 	TransactionsToSendWeight = 0
@@ -267,7 +268,7 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 
 	f, er := os.Open(fname)
 	if er != nil {
-		fmt.Println("MempoolLoad:", er.Error())
+		logg.Debug.Println("MempoolLoad:", er.Error())
 		return false
 	}
 	defer f.Close()
@@ -280,13 +281,13 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 	if totcnt, er = btc.ReadVLen(rd); er != nil {
 		goto fatal_error
 	}
-	fmt.Println("Loading", totcnt, "transactions from", fname)
+	logg.Debug.Println("Loading", totcnt, "transactions from", fname)
 
 	oneperc = totcnt / 100
 
 	for idx = 0; idx < totcnt; idx++ {
 		if cntdwn == 0 {
-			fmt.Print("\r", perc, "% complete...")
+			logg.Debug.Print("\r", perc, "% complete...")
 			perc++
 			cntdwn = oneperc
 		}
@@ -348,12 +349,12 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 		}
 	}
 
-	fmt.Print("\r                                    \r")
-	fmt.Println(cnt1, "out of", cnt2, "new transactions accepted into memory pool")
+	logg.Info.Print("\r                                    \r")
+	logg.Info.Println(cnt1, "out of", cnt2, "new transactions accepted into memory pool")
 
 	return true
 
 fatal_error:
-	fmt.Println("Error loading", fname, ":", er.Error())
+	logg.Error.Println("Error loading", fname, ":", er.Error())
 	return false
 }

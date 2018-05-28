@@ -14,6 +14,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
 )
 
@@ -226,7 +227,7 @@ func DoNetwork(ad *peersdb.PeerAddr) {
 func tcpServer() {
 	ad, e := net.ResolveTCPAddr("tcp4", fmt.Sprint("0.0.0.0:", common.DefaultTCPport()))
 	if e != nil {
-		println("ResolveTCPAddr", e.Error())
+		logg.Debug.Println("ResolveTCPAddr", e.Error())
 		return
 	}
 
@@ -237,7 +238,7 @@ func tcpServer() {
 	}
 	defer lis.Close()
 
-	//fmt.Println("TCP server started at", ad.String())
+	logg.Debug.Println("TCP server started at", ad.String())
 
 	for common.IsListenTCP() {
 		common.CountSafe("NetServerLoops")
@@ -272,7 +273,7 @@ func tcpServer() {
 						conn.Conn = tc
 						MutexNet.Lock()
 						if _, ok := OpenCons[ad.UniqID()]; ok {
-							//fmt.Println(ad.IP(), "already connected")
+							logg.Debug.Println(ad.IP(), "already connected")
 							common.CountSafe("SameIpReconnect")
 							MutexNet.Unlock()
 							terminate = true
@@ -311,7 +312,7 @@ func tcpServer() {
 	}
 	TCPServerStarted = false
 	MutexNet.Unlock()
-	//fmt.Println("TCP server stopped")
+	logg.Debug.Println("TCP server stopped")
 }
 
 // ConnectFriends -
@@ -410,8 +411,8 @@ func Ticking() {
 	if countHeadersInProgress == 0 {
 		if _v != nil {
 			common.CountSafe("GetHeadersPush")
-			/*println("No headers_in_progress, so take it from", _v.ConnID,
-			_v.X.TotalNewHeadersCount, _v.X.LastHeadersEmpty)*/
+			logg.Debug.Println("No headers_in_progress, so take it from", _v.ConnID,
+				_v.X.TotalNewHeadersCount, _v.X.LastHeadersEmpty)
 			_v.Mutex.Lock()
 			_v.X.AllHeadersReceived = false
 			_v.Mutex.Unlock()
@@ -514,7 +515,7 @@ func (c *OneConnection) SendAuth() {
 	copy(rnd, c.Node.Nonce[:])
 	r, s, er := btc.EcdsaSign(common.SecretKey, rnd)
 	if er != nil {
-		println(er.Error())
+		logg.Debug.Println(er.Error())
 		return
 	}
 	var sig btc.Signature
@@ -619,13 +620,13 @@ func (c *OneConnection) Run() {
 
 		if cmd.cmd == "version" {
 			if c.X.VersionReceived {
-				println("VersionAgain from", c.ConnID, c.PeerAddr.IP(), c.Node.Agent)
+				logg.Debug.Println("VersionAgain from", c.ConnID, c.PeerAddr.IP(), c.Node.Agent)
 				c.Misbehave("VersionAgain", 1000/10)
 				break
 			}
 			er := c.HandleVersion(cmd.pl)
 			if er != nil {
-				//println("version msg error:", er.Error())
+				logg.Debug.Println("version msg error:", er.Error())
 				c.Disconnect("Version:" + er.Error())
 				break
 			}
@@ -739,7 +740,7 @@ func (c *OneConnection) Run() {
 		case "feefilter":
 			if len(cmd.pl) >= 8 {
 				c.X.MinFeeSPKB = int64(binary.LittleEndian.Uint64(cmd.pl[:8]))
-				//println(c.PeerAddr.IP(), c.Node.Agent, "feefilter", c.X.MinFeeSPKB)
+				logg.Debug.Println(c.PeerAddr.IP(), c.Node.Agent, "feefilter", c.X.MinFeeSPKB)
 			}
 
 		case "sendcmpct":
@@ -747,7 +748,7 @@ func (c *OneConnection) Run() {
 				version := binary.LittleEndian.Uint64(cmd.pl[1:9])
 				c.Mutex.Lock()
 				if version > c.Node.SendCmpctVer {
-					//println(c.ConnID, "sendcmpct", cmd.pl[0])
+					logg.Debug.Println(c.ConnID, "sendcmpct", cmd.pl[0])
 					c.Node.SendCmpctVer = version
 					c.Node.HighBandwidth = cmd.pl[0] == 1
 				} else {
@@ -757,7 +758,7 @@ func (c *OneConnection) Run() {
 			} else {
 				common.CountSafe("SendCmpctErr")
 				if len(cmd.pl) != 5 {
-					println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "sendcmpct", hex.EncodeToString(cmd.pl))
+					logg.Debug.Println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "sendcmpct", hex.EncodeToString(cmd.pl))
 				}
 			}
 
@@ -766,11 +767,11 @@ func (c *OneConnection) Run() {
 
 		case "getblocktxn":
 			c.ProcessGetBlockTx(cmd.pl)
-			//println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "getblocktxn", hex.EncodeToString(cmd.pl))
+			logg.Debug.Println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "getblocktxn", hex.EncodeToString(cmd.pl))
 
 		case "blocktxn":
 			c.ProcessBlockTx(cmd.pl)
-			//println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn", hex.EncodeToString(cmd.pl))
+			logg.Debug.Println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn", hex.EncodeToString(cmd.pl))
 
 		case "getmp":
 			if c.X.Authorized {

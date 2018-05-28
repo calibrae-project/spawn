@@ -12,6 +12,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/client/network"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 	"github.com/ParallelCoinTeam/duod/lib/script"
 )
@@ -230,15 +231,15 @@ func GetNetworkHashRateNum() float64 {
 
 // ExecUIRequest -
 func ExecUIRequest(req *OneUIRequest) {
-	fmt.Println("main.go last seen in line", common.BusyIn())
+	logg.Info.Println("main.go last seen in line", common.BusyIn())
 	sta := time.Now().UnixNano()
 	req.Done.Add(1)
 	UIChannel <- req
 	go func() {
 		req.Done.Wait()
 		sto := time.Now().UnixNano()
-		fmt.Printf("Ready in %.3fs\n", float64(sto-sta)/1e9)
-		fmt.Print("> ")
+		logg.Info.Printf("Ready in %.3fs\n", float64(sto-sta)/1e9)
+		logg.Info.Print("> ")
 	}()
 }
 

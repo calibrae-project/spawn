@@ -10,6 +10,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 )
 
 const (
@@ -59,7 +60,7 @@ func (c *OneConnection) InvStore(typ uint32, hash []byte) {
 // ProcessInv -
 func (c *OneConnection) ProcessInv(pl []byte) {
 	if len(pl) < 37 {
-		//println(c.PeerAddr.IP(), "inv payload too short", len(pl))
+		logg.Debug.Println(c.PeerAddr.IP(), "inv payload too short", len(pl))
 		c.DoS("InvEmpty")
 		return
 	}
@@ -91,12 +92,12 @@ func (c *OneConnection) ProcessInv(pl []byte) {
 							c.Node.Height = b2g.Block.Height
 						}
 						common.CountSafe("InvBlockFresh")
-						//println(c.PeerAddr.IP(), c.Node.Version, "also knows the block", b2g.Block.Height, bhash.String())
+						logg.Debug.Println(c.PeerAddr.IP(), c.Node.Version, "also knows the block", b2g.Block.Height, bhash.String())
 						c.MutexSetBool(&c.X.GetBlocksDataNow, true)
 					} else {
 						common.CountSafe("InvBlockNew")
 						c.ReceiveHeadersNow()
-						//println(c.PeerAddr.IP(), c.Node.Version, "possibly new block", bhash.String())
+						logg.Debug.Println(c.PeerAddr.IP(), c.Node.Version, "possibly new block", bhash.String())
 					}
 					MutexRcv.Unlock()
 				} else {
@@ -124,7 +125,7 @@ func NetRouteInv(typ uint32, h *btc.Uint256, fromConn *OneConnection) uint32 {
 		if tx, ok := TransactionsToSend[h.BIdx()]; ok {
 			feeSpkb = (1000 * tx.Fee) / uint64(tx.VSize())
 		} else {
-			println("NetRouteInv: txid", h.String(), "not in mempool")
+			logg.Debug.Println("NetRouteInv: txid", h.String(), "not in mempool")
 		}
 		TxMutex.Unlock()
 	}
@@ -200,7 +201,7 @@ func (c *OneConnection) GetBlocks(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 
 	if e != nil || len(h2get) < 1 || hashstop == nil {
-		println("GetBlocks: error parsing payload from", c.PeerAddr.IP())
+		logg.Debug.Println("GetBlocks: error parsing payload from", c.PeerAddr.IP())
 		c.DoS("BadGetBlks")
 		return
 	}
@@ -287,7 +288,7 @@ func (c *OneConnection) SendInvs() (res bool) {
 		b := new(bytes.Buffer)
 		btc.WriteVlen(b, uint64(bBlk.Len()/81))
 		c.SendRawMsg("headers", append(b.Bytes(), bBlk.Bytes()...))
-		//println("sent block's header(s)", bBlk.Len(), uint64(bBlk.Len()/81))
+		logg.Debug.Println("sent block's header(s)", bBlk.Len(), uint64(bBlk.Len()/81))
 	}
 
 	if bTxs.Len() > 0 {

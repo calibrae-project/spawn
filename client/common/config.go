@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/lib/logg"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
@@ -178,13 +179,13 @@ func InitConfig() {
 	if e == nil && len(cfgfilecontent) > 0 {
 		e = json.Unmarshal(cfgfilecontent, &CFG)
 		if e != nil {
-			println("Error in", ConfigFile, e.Error())
+			logg.Error.Println("Error in", ConfigFile, e.Error())
 			os.Exit(1)
 		}
 	} else {
 		// Create default config file
 		SaveConfig()
-		println("Stored default configuration in", ConfigFile)
+		logg.Debug.Println("Stored default configuration in", ConfigFile)
 	}
 
 	flag.BoolVar(&FLAG.Rescan, "r", false, "Rebuild UTXO database (fixes 'Unknown input TxID' errors)")
@@ -255,7 +256,7 @@ func Reset() {
 	SetDownloadLimit(uint64(CFG.Net.MaxDownKBps) << 10)
 	debug.SetGCPercent(CFG.Memory.GCPercTrshold)
 	if AllBalMinVal() != CFG.AllBalances.MinValue {
-		fmt.Println("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
+		logg.Info.Println("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
 	}
 	DropSlowestEvery = time.Duration(CFG.DropPeers.DropEachMinutes) * time.Minute
 	BlockExpireEvery = time.Duration(CFG.DropPeers.BlckExpireHours) * time.Hour
@@ -274,11 +275,11 @@ func Reset() {
 		if oaa != nil {
 			WebUIAllowed = append(WebUIAllowed, *oaa)
 		} else {
-			println("ERROR: Incorrect AllowedIP:", ips[i])
+			logg.Error.Println("ERROR: Incorrect AllowedIP:", ips[i])
 		}
 	}
 	if len(WebUIAllowed) == 0 {
-		println("WARNING: No IP is currently allowed at WebUI")
+		logg.Warn.Println("No IP is currently allowed at WebUI")
 	}
 	ListenTCP = CFG.Net.ListenTCP
 
@@ -363,7 +364,7 @@ func str2oaa(ip string) (res *oneAllowedAddr) {
 		res.Mask = uint32((uint64(1)<<(32-x))-1) ^ 0xffffffff
 	}
 	res.Addr &= res.Mask
-	//fmt.Printf(" %s -> %08x / %08x\n", ip, res.Addr, res.Mask)
+	logg.Debug.Printf(" %s -> %08x / %08x\n", ip, res.Addr, res.Mask)
 	return
 }
 
@@ -380,7 +381,7 @@ func UnlockCfg() {
 // CloseBlockChain -
 func CloseBlockChain() {
 	if BlockChain != nil {
-		fmt.Println("Closing BlockChain")
+		logg.Debug.Println("Closing BlockChain")
 		BlockChain.Close()
 		BlockChain = nil
 	}
