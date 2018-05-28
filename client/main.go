@@ -88,7 +88,7 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 
 		resetSaveTimer()
 	} else {
-		logg.Debug.Println("Warning: AcceptBlock failed. If the block was valid, you may need to rebuild the unspent DB (-r)")
+		logg.Debug("Warning: AcceptBlock failed. If the block was valid, you may need to rebuild the unspent DB (-r)")
 		newEnd := common.BlockChain.LastBlock()
 		common.Last.Mutex.Lock()
 		common.Last.Block = newEnd
@@ -97,7 +97,7 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 		network.MutexRcv.Lock()
 		if network.LastCommitedHeader != newEnd {
 			network.LastCommitedHeader = newEnd
-			logg.Debug.Println("LastCommitedHeader moved to", network.LastCommitedHeader.Height)
+			logg.Debug("LastCommitedHeader moved to", network.LastCommitedHeader.Height)
 		}
 		network.DiscardedBlocks[newbl.Hash.BIdx()] = true
 		network.MutexRcv.Unlock()
@@ -141,7 +141,7 @@ func RetryCachedBlocks() bool {
 
 			e := LocalAcceptBlock(newbl)
 			if e != nil {
-				logg.Debug.Println("AcceptBlock2", newbl.BlockTreeNode.BlockHash.String(), "-", e.Error())
+				logg.Debug("AcceptBlock2", newbl.BlockTreeNode.BlockHash.String(), "-", e.Error())
 				newbl.Conn.Misbehave("LocalAcceptBl2", 250)
 			}
 			if usif.ExitNow.Get() {
@@ -216,7 +216,7 @@ func HandleNetBlock(newbl *network.BlockRcvd) {
 	common.Busy()
 	if e := LocalAcceptBlock(newbl); e != nil {
 		common.CountSafe("DiscardFreshBlockB")
-		logg.Debug.Println("AcceptBlock1", newbl.Block.Hash.String(), "-", e.Error())
+		logg.Debug("AcceptBlock1", newbl.Block.Hash.String(), "-", e.Error())
 		newbl.Conn.Misbehave("LocalAcceptBl1", 250)
 	} else {
 		//println("block", newbl.Block.Height, "accepted")
@@ -254,7 +254,7 @@ func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 	common.RecalcAverageBlockSize()
 
 	common.CountSafe("RPCBlockOK")
-	logg.Debug.Println("New mined block", msg.Block.Height, "accepted OK in", rb.TmAccepted.Sub(rb.TmQueue).String())
+	logg.Debug("New mined block", msg.Block.Height, "accepted OK in", rb.TmAccepted.Sub(rb.TmQueue).String())
 
 	common.Last.Mutex.Lock()
 	common.Last.Time = time.Now()
@@ -267,10 +267,10 @@ func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 func main() {
 	var ptr *byte
 	if unsafe.Sizeof(ptr) < 8 {
-		logg.Warn.Println("Duod client shall be build for 64-bit arch. It will likely crash now.")
+		logg.Warn("Duod client shall be build for 64-bit arch. It will likely crash now.")
 	}
 
-	logg.Info.Println("Duod client version", Duod.Version)
+	logg.Info("Duod client version", Duod.Version)
 	runtime.GOMAXPROCS(runtime.NumCPU()) // It seems that Go does not do it by default
 
 	// Disable Ctrl+C
@@ -281,8 +281,8 @@ func main() {
 			if !ok {
 				err = fmt.Errorf("pkg: %v", r)
 			}
-			logg.Debug.Println("main panic recovered:", err.Error())
-			logg.Debug.Println(string(debug.Stack()))
+			logg.Debug("main panic recovered:", err.Error())
+			logg.Debug(string(debug.Stack()))
 			network.NetCloseAll()
 			common.CloseBlockChain()
 			peersdb.ClosePeerDB()
@@ -295,16 +295,16 @@ func main() {
 
 	if common.FLAG.SaveConfig {
 		common.SaveConfig()
-		logg.Debug.Println("Configuration file saved")
+		logg.Debug("Configuration file saved")
 		os.Exit(0)
 	}
 
 	if common.FLAG.VolatileUTXO {
-		logg.Warn.Println("Using UTXO database in a volatile mode. Make sure to close the client properly (do not kill it!)")
+		logg.Warn("Using UTXO database in a volatile mode. Make sure to close the client properly (do not kill it!)")
 	}
 
 	if common.FLAG.TrustAll {
-		logg.Warn.Println("Assuming all scripts inside new blocks to PASS. Verify the last block's hash when finished.")
+		logg.Warn("Assuming all scripts inside new blocks to PASS. Verify the last block's hash when finished.")
 	}
 
 	hostInit() // This will create the DB lock file and keep it open
@@ -318,7 +318,7 @@ func main() {
 
 	if common.FLAG.Rescan && common.FLAG.VolatileUTXO {
 
-		logg.Debug.Println("UTXO database rebuilt complete in the volatile mode, so flush DB to disk and exit...")
+		logg.Debug("UTXO database rebuilt complete in the volatile mode, so flush DB to disk and exit...")
 
 	} else if !usif.ExitNow.Get() {
 
@@ -339,7 +339,7 @@ func main() {
 			peersdb.PeerDB.Browse(func(k qdb.KeyType, v []byte) uint32 {
 				peer := peersdb.NewPeer(v)
 				if peer.Banned != 0 {
-					logg.Debug.Println("Unban", peer.NetAddr.String())
+					logg.Debug("Unban", peer.NetAddr.String())
 					peer.Banned = 0
 					keys = append(keys, k)
 					vals = append(vals, peer.Bytes())
@@ -350,7 +350,7 @@ func main() {
 				peersdb.PeerDB.Put(keys[i], vals[i])
 			}
 
-			logg.Debug.Println(len(keys), "peers unbanned")
+			logg.Debug(len(keys), "peers unbanned")
 		}
 
 		for k, v := range common.BlockChain.BlockIndex {
@@ -367,7 +367,7 @@ func main() {
 		}
 
 		if common.CFG.WebUI.Interface != "" {
-			logg.Info.Printf("Starting WebUI at http://%s\n", common.CFG.WebUI.Interface)
+			logg.Infof("Starting WebUI at http://%s\n", common.CFG.WebUI.Interface)
 			go webui.ServerThread(common.CFG.WebUI.Interface)
 		}
 
@@ -521,9 +521,10 @@ func main() {
 	if common.FLAG.UndoBlocks == 0 {
 		network.MempoolSave(false)
 	}
-	logg.Debug.Println("Blockchain closed in", time.Now().Sub(sta).String())
+	logg.Debug("Blockchain closed in", time.Now().Sub(sta).String())
 	peersdb.ClosePeerDB()
 	usif.SaveBlockFees()
 	sys.UnlockDatabaseDir()
 	os.RemoveAll(common.TempBlocksDir())
+	logg.Debug("Completed shutdown")
 }

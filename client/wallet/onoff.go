@@ -29,9 +29,9 @@ func InitMaps(empty bool) {
 	LoadMapSizes()
 	szs, ok = WalletAddrsCount[common.AllBalMinVal()]
 	if ok {
-		logg.Info.Println("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
+		logg.Debug("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
 	} else {
-		logg.Info.Println("No map sizes for MinBal", common.AllBalMinVal())
+		logg.Debug("No map sizes for MinBal", common.AllBalMinVal())
 		szs = [4]int{10e6, 3e6, 10e3, 1e3} // defaults
 	}
 
@@ -45,7 +45,7 @@ init:
 // LoadBalance -
 func LoadBalance() {
 	if common.GetBool(&common.WalletON) {
-		logg.Info.Println("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
+		logg.Debug("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 
@@ -90,7 +90,7 @@ func LoadBalance() {
 // Disable -
 func Disable() {
 	if !common.GetBool(&common.WalletON) {
-		logg.Info.Println("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
+		logg.Info("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 	UpdateMapSizes()
@@ -124,7 +124,7 @@ func UpdateMapSizes() {
 func LoadMapSizes() {
 	d, er := ioutil.ReadFile(common.DuodHomeDir + MapSizeFileName)
 	if er != nil {
-		logg.Error.Println("LoadMapSizes:", er.Error())
+		logg.Error("LoadMapSizes:", er.Error())
 		return
 	}
 
@@ -132,6 +132,6 @@ func LoadMapSizes() {
 
 	er = gob.NewDecoder(buf).Decode(&WalletAddrsCount)
 	if er != nil {
-		logg.Error.Println("LoadMapSizes:", er.Error())
+		logg.Error("LoadMapSizes:", er.Error())
 	}
 }

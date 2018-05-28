@@ -42,10 +42,10 @@ func verify() bool {
 
 func init() {
 	if verify() {
-		logg.Debug.Println("Using secp256k1.dll by sipa for ECVerify")
+		logg.Debug("Using secp256k1.dll by sipa for ECVerify")
 		btc.ECVerify = ECVerify
 	} else {
-		logg.Debug.Println("ERROR: Could not initiate secp256k1.dll")
+		logg.Debug("ERROR: Could not initiate secp256k1.dll")
 		os.Exit(1)
 	}
 }

@@ -149,7 +149,7 @@ func jsonBlocks(w http.ResponseWriter, r *http.Request) {
 		w.Header()["Content-Type"] = []string{"application/json"}
 		w.Write(bx)
 	} else {
-		logg.Error.Println(er.Error())
+		logg.Error(er.Error())
 	}
 
 }
@@ -184,6 +184,6 @@ func jsonBlockFees(w http.ResponseWriter, r *http.Request) {
 		w.Header()["Content-Type"] = []string{"application/json"}
 		w.Write(bx)
 	} else {
-		logg.Error.Println(er.Error())
+		println(er.Error())
 	}
 }

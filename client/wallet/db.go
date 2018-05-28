@@ -157,7 +157,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 		}
 
 		if rec == nil {
-			logg.Error.Println("balance rec not found for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String(),
+			logg.Error("balance rec not found for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String(),
 				btc.NewUint256(tx.TxID[:]).String(), vout, btc.UintToBtc(out.Value))
 			continue
 		}
@@ -166,7 +166,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 
 		if rec.unspMap != nil {
 			if _, ok := rec.unspMap[nr]; !ok {
-				logg.Error.Println("unspent rec not in map for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
+				logg.Error("unspent rec not in map for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
 				continue
 			}
 			delete(rec.unspMap, nr)
@@ -193,7 +193,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 			}
 		}
 		if i == len(rec.unsp) {
-			logg.Error.Println("unspent rec not in list for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
+			logg.Error("unspent rec not in list for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
 			continue
 		}
 		if len(rec.unsp) == 1 {
@@ -366,17 +366,17 @@ func PrintStat() {
 		}
 	}
 
-	logg.Info.Println("AllBalMinVal:", btc.UintToBtc(common.AllBalMinVal()), "  UseMapCnt:", common.CFG.AllBalances.UseMapCnt)
+	logg.Info("AllBalMinVal:", btc.UintToBtc(common.AllBalMinVal()), "  UseMapCnt:", common.CFG.AllBalances.UseMapCnt)
 
-	logg.Info.Println("AllBalancesP2KH: ", len(AllBalancesP2KH), "records,",
+	logg.Info("AllBalancesP2KH: ", len(AllBalancesP2KH), "records,",
 		p2khOuts, "outputs,", btc.UintToBtc(p2khVals), "BTC,", p2khMaps, "maps")
 
-	logg.Info.Println("AllBalancesP2SH: ", len(AllBalancesP2SH), "records,",
+	logg.Info("AllBalancesP2SH: ", len(AllBalancesP2SH), "records,",
 		p2shOuts, "outputs,", btc.UintToBtc(p2shVals), "BTC,", p2shMaps, "maps")
 
-	logg.Info.Println("AllBalancesP2WKH: ", len(AllBalancesP2WKH), "records,",
+	logg.Info("AllBalancesP2WKH: ", len(AllBalancesP2WKH), "records,",
 		p2wkhOuts, "outputs,", btc.UintToBtc(p2wkhVals), "BTC,", p2wkhMaps, "maps")
 
-	logg.Info.Println("AllBalancesP2WSH: ", len(AllBalancesP2WSH), "records,",
+	logg.Info("AllBalancesP2WSH: ", len(AllBalancesP2WSH), "records,",
 		p2wshOuts, "outputs,", btc.UintToBtc(p2wshVals), "BTC,", p2wshMaps, "maps")
 }

@@ -107,8 +107,8 @@ func GetSortedMempool() (result []*OneTxToSend) {
 	}
 
 	if idx != len(result) || idx != len(alreadyIn) || len(parentOf) != 0 {
-		logg.Debug.Println("Get sorted mempool idx:", idx, " result:", len(result), " alreadyin:", len(alreadyIn), " parents:", len(parentOf))
-		logg.Debug.Println("DUPA!!!!!!!!!!")
+		logg.Debug("Get sorted mempool idx:", idx, " result:", len(result), " alreadyin:", len(alreadyIn), " parents:", len(parentOf))
+		logg.Debug("DUPA!!!!!!!!!!")
 		result = result[:idx]
 	}
 
@@ -133,11 +133,11 @@ func LimitPoolSize(maxlen uint64) {
 				common.Counter["TxPoolSizeLow"]++
 				common.Counter["TxRejectedFeeUndone"] += cnt
 				common.CounterMutex.Unlock()
-				logg.Debug.Println("Mempool size low:", TransactionsToSendSize, maxlen, maxlen-2*ticklen, "-", cnt, "rejected purged")
+				logg.Debug("Mempool size low:", TransactionsToSendSize, maxlen, maxlen-2*ticklen, "-", cnt, "rejected purged")
 			}
 		} else {
 			common.CountSafe("TxPoolSizeOK")
-			logg.Debug.Println("Mempool size OK:", TransactionsToSendSize, maxlen, maxlen-2*ticklen)
+			logg.Debug("Mempool size OK:", TransactionsToSendSize, maxlen, maxlen-2*ticklen)
 		}
 		return
 	}
@@ -230,7 +230,7 @@ func LimitRejectedSize() {
 		common.Counter["TxRejectedSizCnt"] += uint64(oldCount - len(TransactionsRejected))
 		common.Counter["TxRejectedSizBts"] += oldSize - TransactionsRejectedSize
 		if common.GetBool(&common.CFG.TXPool.Debug) {
-			logg.Debug.Println("Removed", uint64(oldCount-len(TransactionsRejected)), "txs and", oldSize-TransactionsRejectedSize,
+			logg.Debug("Removed", uint64(oldCount-len(TransactionsRejected)), "txs and", oldSize-TransactionsRejectedSize,
 				"bytes from the rejected poool")
 		}
 		common.CounterMutex.Unlock()
@@ -279,11 +279,11 @@ func MempoolCheck() (dupa bool) {
 			outk, ok := SpentOutputs[inp.Input.UIdx()]
 			if ok {
 				if outk != t2s.Hash.BIdx() {
-					logg.Debug.Println("Tx", t2s.Hash.String(), "input", i, "has a mismatch in SpentOutputs record", outk)
+					logg.Debug("Tx", t2s.Hash.String(), "input", i, "has a mismatch in SpentOutputs record", outk)
 					dupa = true
 				}
 			} else {
-				logg.Debug.Println("Tx", t2s.Hash.String(), "input", i, "is not in SpentOutputs")
+				logg.Debug("Tx", t2s.Hash.String(), "input", i, "is not in SpentOutputs")
 				dupa = true
 			}
 
@@ -291,19 +291,19 @@ func MempoolCheck() (dupa bool) {
 
 			if t2s.MemInputs == nil {
 				if ok {
-					logg.Debug.Println("Tx", t2s.Hash.String(), "MemInputs==nil but input", i, "is in mempool", inp.Input.String())
+					logg.Debug("Tx", t2s.Hash.String(), "MemInputs==nil but input", i, "is in mempool", inp.Input.String())
 					dupa = true
 				}
 			} else {
 				if t2s.MemInputs[i] {
 					micnt++
 					if !ok {
-						logg.Debug.Println("Tx", t2s.Hash.String(), "MemInput set but input", i, "NOT in mempool", inp.Input.String())
+						logg.Debug("Tx", t2s.Hash.String(), "MemInput set but input", i, "NOT in mempool", inp.Input.String())
 						dupa = true
 					}
 				} else {
 					if ok {
-						logg.Debug.Println("Tx", t2s.Hash.String(), "MemInput NOT set but input", i, "IS in mempool", inp.Input.String())
+						logg.Debug("Tx", t2s.Hash.String(), "MemInput NOT set but input", i, "IS in mempool", inp.Input.String())
 						dupa = true
 					}
 				}
@@ -311,28 +311,28 @@ func MempoolCheck() (dupa bool) {
 
 			if _, ok := TransactionsToSend[btc.BIdx(inp.Input.Hash[:])]; !ok {
 				if unsp := common.BlockChain.Unspent.UnspentGet(&inp.Input); unsp == nil {
-					logg.Debug.Println("Mempool tx", t2s.Hash.String(), "has no input", i)
+					logg.Debug("Mempool tx", t2s.Hash.String(), "has no input", i)
 					dupa = true
 				}
 			}
 		}
 		if t2s.MemInputs != nil && micnt == 0 {
-			logg.Debug.Println("Tx", t2s.Hash.String(), "has MemInputs array with all false values")
+			logg.Debug("Tx", t2s.Hash.String(), "has MemInputs array with all false values")
 			dupa = true
 		}
 		if t2s.MemInputCnt != micnt {
-			logg.Debug.Println("Tx", t2s.Hash.String(), "has incorrect MemInputCnt", t2s.MemInputCnt, micnt)
+			logg.Debug("Tx", t2s.Hash.String(), "has incorrect MemInputCnt", t2s.MemInputCnt, micnt)
 			dupa = true
 		}
 	}
 
 	if spentCount != len(SpentOutputs) {
-		logg.Debug.Println("SpentOutputs length mismatch", spentCount, len(SpentOutputs))
+		logg.Debug("SpentOutputs length mismatch", spentCount, len(SpentOutputs))
 		dupa = true
 	}
 
 	if totsize != TransactionsToSendSize {
-		logg.Debug.Println("TransactionsToSendSize mismatch", totsize, TransactionsToSendSize)
+		logg.Debug("TransactionsToSendSize mismatch", totsize, TransactionsToSendSize)
 		dupa = true
 	}
 
@@ -341,7 +341,7 @@ func MempoolCheck() (dupa bool) {
 		totsize += uint64(tr.Size)
 	}
 	if totsize != TransactionsRejectedSize {
-		logg.Debug.Println("TransactionsRejectedSize mismatch", totsize, TransactionsRejectedSize)
+		logg.Debug("TransactionsRejectedSize mismatch", totsize, TransactionsRejectedSize)
 		dupa = true
 	}
 
@@ -501,7 +501,7 @@ func GetSortedMempoolNew() (result []*OneTxToSend) {
 		alreadyIn[tx] = true
 		resIndex++
 	}
-	logg.Debug.Println("All sorted.  resIndex:", resIndex, "  txs:", len(txs))
+	logg.Debug("All sorted.  resIndex:", resIndex, "  txs:", len(txs))
 	return
 }
 

@@ -73,7 +73,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				if yes {
 					MutexNet.Unlock()
 					v.Mutex.Lock()
-					logg.Debug.Println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
+					logg.Debug("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
 						"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)
 					v.Mutex.Unlock()
 					common.CountSafe("VerNonceSame")
@@ -160,7 +160,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					}
 				}
 				if useThisIP && common.IsListenTCP() {
-					logg.Debug.Printf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
+					logg.Debugf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
 						pl[40], pl[41], pl[42], pl[43], c.ConnID)
 				}
 			}

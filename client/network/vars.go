@@ -100,7 +100,7 @@ func AddB2G(b2g *OneBlockToGet) {
 func DelB2G(idx BIDX) {
 	b2g := BlocksToGet[idx]
 	if b2g == nil {
-		logg.Debug.Println("DelB2G - not found")
+		logg.Debug("DelB2G - not found")
 		return
 	}
 
@@ -114,12 +114,12 @@ func DelB2G(idx BIDX) {
 			}
 		}
 		if len(n)+1 != len(iii) {
-			logg.Debug.Println("DelB2G - index not found")
+			logg.Debug("DelB2G - index not found")
 		}
 		IndexToBlocksToGet[bh] = n
 	} else {
 		if iii[0] != idx {
-			logg.Debug.Println("DelB2G - index not matching")
+			logg.Debug("DelB2G - index not matching")
 		}
 		delete(IndexToBlocksToGet, bh)
 		if bh == LowestIndexToBlocksToGet {

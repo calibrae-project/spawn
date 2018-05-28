@@ -62,11 +62,11 @@ func MempoolSave(force bool) {
 
 	f, er := os.Create(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
-		logg.Debug.Println(er.Error())
+		logg.Debug(er.Error())
 		return
 	}
 
-	logg.Debug.Println("Saving", MempoolFileName2)
+	logg.Debug("Saving", MempoolFileName2)
 	wr := bufio.NewWriter(f)
 
 	wr.Write(common.Last.Block.BlockHash.Hash[:])
@@ -99,7 +99,7 @@ func MempoolLoad2() bool {
 
 	f, er := os.Open(common.DuodHomeDir + MempoolFileName2)
 	if er != nil {
-		logg.Debug.Println("MempoolLoad:", er.Error())
+		logg.Debug("MempoolLoad:", er.Error())
 		return false
 	}
 	defer f.Close()
@@ -236,19 +236,19 @@ func MempoolLoad2() bool {
 				}
 			}
 			if t2s.MemInputCnt == 0 {
-				logg.Debug.Println("ERROR: MemInputs not nil but nothing found")
+				logg.Debug("ERROR: MemInputs not nil but nothing found")
 				t2s.MemInputs = nil
 			}
 		}
 	}
 
-	logg.Debug.Println(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
-	logg.Debug.Println(cnt1, "transactions use", cnt2, "memory inputs")
+	logg.Debug(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
+	logg.Debug(cnt1, "transactions use", cnt2, "memory inputs")
 
 	return true
 
 fatal_error:
-	logg.Error.Println("Error loading", MempoolFileName2, ":", er.Error())
+	logg.Error("Error loading", MempoolFileName2, ":", er.Error())
 	TransactionsToSend = make(map[BIDX]*OneTxToSend)
 	TransactionsToSendSize = 0
 	TransactionsToSendWeight = 0
@@ -268,7 +268,7 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 
 	f, er := os.Open(fname)
 	if er != nil {
-		logg.Debug.Println("MempoolLoad:", er.Error())
+		logg.Debug("MempoolLoad:", er.Error())
 		return false
 	}
 	defer f.Close()
@@ -281,13 +281,13 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 	if totcnt, er = btc.ReadVLen(rd); er != nil {
 		goto fatal_error
 	}
-	logg.Debug.Println("Loading", totcnt, "transactions from", fname)
+	logg.Debug("Loading", totcnt, "transactions from", fname)
 
 	oneperc = totcnt / 100
 
 	for idx = 0; idx < totcnt; idx++ {
 		if cntdwn == 0 {
-			logg.Debug.Print("\r", perc, "% complete...")
+			logg.Debug("\r", perc, "% complete...")
 			perc++
 			cntdwn = oneperc
 		}
@@ -349,12 +349,11 @@ func MempoolLoadNew(fname string, abort *bool) bool {
 		}
 	}
 
-	logg.Info.Print("\r                                    \r")
-	logg.Info.Println(cnt1, "out of", cnt2, "new transactions accepted into memory pool")
+	logg.Info(cnt1, "out of", cnt2, "new transactions accepted into memory pool")
 
 	return true
 
 fatal_error:
-	logg.Error.Println("Error loading", fname, ":", er.Error())
+	logg.Error("Error loading", fname, ":", er.Error())
 	return false
 }

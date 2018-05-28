@@ -22,6 +22,6 @@ func ECVerify(k, s, h []byte) bool {
 }
 
 func init() {
-	logg.Debug.Println("Using libsecp256k1.a by sipa for ECVerify")
+	logg.Debug("Using libsecp256k1.a by sipa for ECVerify")
 	btc.ECVerify = ECVerify
 }

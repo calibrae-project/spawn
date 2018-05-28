@@ -43,7 +43,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if b2g, ok = BlocksToGet[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderFresh")
-		logg.Debug.Println(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
+		logg.Debug(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
 		return PHstatusFresh, b2g
 	}
 
@@ -55,7 +55,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if _, dos, er := common.BlockChain.PreCheckBlock(bl); er != nil {
 		common.CountSafe("PreCheckBlockFail")
-		logg.Debug.Println("PreCheckBlock err", dos, er.Error())
+		logg.Debug("PreCheckBlock err", dos, er.Error())
 		if dos {
 			return PHstatusFatal, nil
 		}
@@ -88,7 +88,7 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 	b := bytes.NewReader(pl)
 	cnt, e := btc.ReadVLen(b)
 	if e != nil {
-		logg.Debug.Println("HandleHeaders:", e.Error(), c.PeerAddr.IP())
+		logg.Debug("HandleHeaders:", e.Error(), c.PeerAddr.IP())
 		return
 	}
 
@@ -101,13 +101,13 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 
 			n, _ := b.Read(hdr[:])
 			if n != 81 {
-				logg.Debug.Println("HandleHeaders: pl too short", c.PeerAddr.IP())
+				logg.Debug("HandleHeaders: pl too short", c.PeerAddr.IP())
 				c.DoS("HdrErr1")
 				return
 			}
 
 			if hdr[80] != 0 {
-				logg.Debug.Println("Unexpected value of txn_count from", c.PeerAddr.IP())
+				logg.Debug("Unexpected value of txn_count from", c.PeerAddr.IP())
 				c.DoS("HdrErr2")
 				return
 			}
@@ -115,11 +115,11 @@ func (c *OneConnection) HandleHeaders(pl []byte) (newHeadersGot int) {
 			sta, b2g := c.ProcessNewHeader(hdr[:])
 			if b2g == nil {
 				if sta == PHstatusFatal {
-					logg.Debug.Println("c.DoS(BadHeader)")
+					logg.Debug("c.DoS(BadHeader)")
 					c.DoS("BadHeader")
 					return
 				} else if sta == PHstatusError {
-					logg.Debug.Println("c.Misbehave(BadHeader)")
+					logg.Debug("c.Misbehave(BadHeader)")
 					c.Misbehave("BadHeader", 50) // do it 20 times and you are banned
 				}
 			} else {
@@ -169,7 +169,7 @@ func (c *OneConnection) ReceiveHeadersNow() {
 func (c *OneConnection) GetHeaders(pl []byte) {
 	h2get, hashstop, e := parseLocatorsPayload(pl)
 	if e != nil || hashstop == nil {
-		logg.Debug.Println("GetHeaders: error parsing payload from", c.PeerAddr.IP())
+		logg.Debug("GetHeaders: error parsing payload from", c.PeerAddr.IP())
 		c.DoS("BadGetHdrs")
 		return
 	}

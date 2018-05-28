@@ -179,13 +179,13 @@ func InitConfig() {
 	if e == nil && len(cfgfilecontent) > 0 {
 		e = json.Unmarshal(cfgfilecontent, &CFG)
 		if e != nil {
-			logg.Error.Println("Error in", ConfigFile, e.Error())
+			logg.Error("Error in", ConfigFile, e.Error())
 			os.Exit(1)
 		}
 	} else {
 		// Create default config file
 		SaveConfig()
-		logg.Debug.Println("Stored default configuration in", ConfigFile)
+		logg.Debug("Stored default configuration in", ConfigFile)
 	}
 
 	flag.BoolVar(&FLAG.Rescan, "r", false, "Rebuild UTXO database (fixes 'Unknown input TxID' errors)")
@@ -256,7 +256,7 @@ func Reset() {
 	SetDownloadLimit(uint64(CFG.Net.MaxDownKBps) << 10)
 	debug.SetGCPercent(CFG.Memory.GCPercTrshold)
 	if AllBalMinVal() != CFG.AllBalances.MinValue {
-		logg.Info.Println("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
+		logg.Info("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
 	}
 	DropSlowestEvery = time.Duration(CFG.DropPeers.DropEachMinutes) * time.Minute
 	BlockExpireEvery = time.Duration(CFG.DropPeers.BlckExpireHours) * time.Hour
@@ -275,11 +275,11 @@ func Reset() {
 		if oaa != nil {
 			WebUIAllowed = append(WebUIAllowed, *oaa)
 		} else {
-			logg.Error.Println("ERROR: Incorrect AllowedIP:", ips[i])
+			logg.Error("ERROR: Incorrect AllowedIP:", ips[i])
 		}
 	}
 	if len(WebUIAllowed) == 0 {
-		logg.Warn.Println("No IP is currently allowed at WebUI")
+		logg.Warn("No IP is currently allowed at WebUI")
 	}
 	ListenTCP = CFG.Net.ListenTCP
 
@@ -364,7 +364,7 @@ func str2oaa(ip string) (res *oneAllowedAddr) {
 		res.Mask = uint32((uint64(1)<<(32-x))-1) ^ 0xffffffff
 	}
 	res.Addr &= res.Mask
-	logg.Debug.Printf(" %s -> %08x / %08x\n", ip, res.Addr, res.Mask)
+	logg.Debugf(" %s -> %08x / %08x\n", ip, res.Addr, res.Mask)
 	return
 }
 
@@ -381,7 +381,7 @@ func UnlockCfg() {
 // CloseBlockChain -
 func CloseBlockChain() {
 	if BlockChain != nil {
-		logg.Debug.Println("Closing BlockChain")
+		logg.Debug("Closing BlockChain")
 		BlockChain.Close()
 		BlockChain = nil
 	}

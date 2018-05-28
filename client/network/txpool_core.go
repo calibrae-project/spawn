@@ -195,7 +195,7 @@ func (c *OneConnection) TxInvNotify(hash []byte) {
 		b[0] = 1 // One inv
 		if (c.Node.Services & ServiceSegwit) != 0 {
 			binary.LittleEndian.PutUint32(b[1:5], MsgWitnessTx) // SegWit Tx
-			logg.Debug.Println(c.ConnID, "getdata", btc.NewUint256(hash).String())
+			logg.Debug(c.ConnID, "getdata", btc.NewUint256(hash).String())
 		} else {
 			b[1] = MsgTx // Tx
 		}
@@ -266,7 +266,7 @@ func (c *OneConnection) ParseTxNet(pl []byte) {
 			TransactionsPending[tx.Hash.BIdx()] = true
 		default:
 			common.CountSafe("TxRejectedFullQ")
-			logg.Debug.Println("NetTxsFULL")
+			logg.Debug("NetTxsFULL")
 		}
 	})
 }
@@ -435,7 +435,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 					RejectTx(ntx.Tx, TxRejectedCoinbaseImmature)
 					TxMutex.Unlock()
 					common.CountSafe("TxRejectedCBInmature")
-					logg.Debug.Println(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
+					logg.Debug(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
 					return
 				}
 			}
@@ -511,8 +511,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 				ntx.conn.DoS("TxScriptFail")
 			}
 			if len(rbfTxList) > 0 {
-				logg.Error.Println("RBF try", verErrCount, "script(s) failed!")
-				logg.Error.Print("> ")
+				logg.Error("RBF try", verErrCount, "script(s) failed!")
 			}
 			return
 		}
@@ -656,7 +655,7 @@ func txChecker(tx *btc.Tx) bool {
 	if ok {
 		ok = tx.WTxID().Equal(rec.WTxID())
 		if !ok {
-			logg.Debug.Println("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
+			logg.Debug("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
 			common.CountSafe("TxScrSWErr")
 		}
 	}

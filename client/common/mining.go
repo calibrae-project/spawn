@@ -51,7 +51,7 @@ func ReloadMiners() {
 		var MinerIDfile [][3]string
 		e := json.Unmarshal(d, &MinerIDfile)
 		if e != nil {
-			logg.Error.Println("miners.json", e.Error())
+			logg.Error("miners.json", e.Error())
 			return
 		}
 		MinerIDs = nil
@@ -64,7 +64,7 @@ func ReloadMiners() {
 				if a, _ := btc.NewAddrFromString(r[2]); a != nil {
 					rec.Tag = a.OutScript()
 				} else {
-					logg.Error.Println("Error in miners.json for", r[0])
+					logg.Error("Error in miners.json for", r[0])
 					continue
 				}
 			}

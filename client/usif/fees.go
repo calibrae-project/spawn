@@ -87,7 +87,7 @@ func ExpireBlockFees() {
 func SaveBlockFees() {
 	f, er := os.Create(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
-		logg.Error.Println("SaveBlockFees:", er.Error())
+		logg.Error("SaveBlockFees:", er.Error())
 		return
 	}
 
@@ -96,7 +96,7 @@ func SaveBlockFees() {
 	er = gob.NewEncoder(buf).Encode(BlockFees)
 
 	if er != nil {
-		logg.Error.Println("SaveBlockFees:", er.Error())
+		logg.Error("SaveBlockFees:", er.Error())
 	}
 
 	buf.Flush()

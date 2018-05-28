@@ -45,7 +45,7 @@ func SubmitBlock(cmd *RPCCommand, resp *RPCResponse, b []byte) {
 							["@450529_000000000000000000cf208f521de0424677f7a87f2f278a1042f38d159565f5.bin"] }' \
 						-H 'content-type: text/plain;' http://127.0.0.1:8332/
 			*/
-			logg.Debug.Println("jade z koksem", str[1:])
+			logg.Debug("jade z koksem", str[1:])
 			bd, er = ioutil.ReadFile(str[1:])
 		} else {
 			bd, er = hex.DecodeString(str)
@@ -72,7 +72,7 @@ func SubmitBlock(cmd *RPCCommand, resp *RPCResponse, b []byte) {
 	network.ReceivedBlocks[bs.Block.Hash.BIdx()] = &network.OneReceivedBlock{TmStart: time.Now()}
 	network.MutexRcv.Unlock()
 
-	logg.Debug.Println("new block", bs.Block.Hash.String(), "len", len(bd), "- submitting...")
+	logg.Debug("new block", bs.Block.Hash.String(), "len", len(bd), "- submitting...")
 	bs.Done.Add(1)
 	RPCBlocks <- bs
 	bs.Done.Wait()
@@ -84,15 +84,15 @@ func SubmitBlock(cmd *RPCCommand, resp *RPCResponse, b []byte) {
 		} else {
 			resp.Result = bs.Error[idx+13:]
 		}
-		logg.Debug.Println("submiting block error:", bs.Error)
-		logg.Debug.Println("submiting block result:", resp.Result.(string))
+		logg.Debug("submiting block error:", bs.Error)
+		logg.Debug("submiting block result:", resp.Result.(string))
 
-		logg.Debug.Print("time_now:", time.Now().Unix())
-		logg.Debug.Print("  cur_block_ts:", bs.Block.BlockTime())
-		logg.Debug.Print("  last_given_now:", lastGivenTime)
-		logg.Debug.Print("  last_given_min:", lastGivenMinTime)
+		logg.Debug("time_now:", time.Now().Unix())
+		logg.Debug("  cur_block_ts:", bs.Block.BlockTime())
+		logg.Debug("  last_given_now:", lastGivenTime)
+		logg.Debug("  last_given_min:", lastGivenMinTime)
 		common.Last.Mutex.Lock()
-		logg.Debug.Print("  prev_block_ts:", common.Last.Block.Timestamp())
+		logg.Debug("  prev_block_ts:", common.Last.Block.Timestamp())
 		common.Last.Mutex.Unlock()
 
 		return
@@ -104,10 +104,10 @@ func SubmitBlock(cmd *RPCCommand, resp *RPCResponse, b []byte) {
 		json.Unmarshal(BitcoindResult, &resp)
 		switch cmd.Params.(type) {
 		case string:
-			logg.Debug.Println("\007Block rejected by bitcoind:", resp.Result.(string))
+			logg.Debug("\007Block rejected by bitcoind:", resp.Result.(string))
 			ioutil.WriteFile(fmt.Sprint(bs.Block.Height, "-", bs.Block.Hash.String()), bd, 0777)
 		default:
-			logg.Debug.Println("submiting block verified OK", bs.Error)
+			logg.Debug("submiting block verified OK", bs.Error)
 		}
 	}
 }

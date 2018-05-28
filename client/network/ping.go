@@ -234,6 +234,6 @@ func (c *OneConnection) TryPing() bool {
 	rand.Read(c.PingInProgress[:])
 	c.SendRawMsg("ping", c.PingInProgress)
 	c.LastPingSent = time.Now()
-	logg.Debug.Println(c.PeerAddr.IP(), "ping...")
+	logg.Debug(c.PeerAddr.IP(), "ping...")
 	return true
 }

@@ -231,15 +231,15 @@ func GetNetworkHashRateNum() float64 {
 
 // ExecUIRequest -
 func ExecUIRequest(req *OneUIRequest) {
-	logg.Info.Println("main.go last seen in line", common.BusyIn())
+	logg.Info("main.go last seen in line", common.BusyIn())
 	sta := time.Now().UnixNano()
 	req.Done.Add(1)
 	UIChannel <- req
 	go func() {
 		req.Done.Wait()
 		sto := time.Now().UnixNano()
-		logg.Info.Printf("Ready in %.3fs\n", float64(sto-sta)/1e9)
-		logg.Info.Print("> ")
+		logg.Infof("Ready in %.3fs\n", float64(sto-sta)/1e9)
+		logg.Info("> ")
 	}()
 }
 

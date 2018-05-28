@@ -183,9 +183,9 @@ func PrintBWStats() {
 	bwMutex.Lock()
 	TickRecv()
 	TickSent()
-	logg.Info.Printf("Downloading at %d/%d KB/s, %s total",
+	logg.Infof("Downloading at %d/%d KB/s, %s total",
 		GetAvgBW(DlBytesPrevSec[:], DlBytesPrevSecIdx, 5)>>10, DownloadLimit()>>10, BytesToString(DlBytesTotal))
-	logg.Info.Printf("  |  Uploading at %d/%d KB/s, %s total\n",
+	logg.Infof("  |  Uploading at %d/%d KB/s, %s total\n",
 		GetAvgBW(UlBytesPrevSec[:], UlBytesPrevSecIdx, 5)>>10, UploadLimit()>>10, BytesToString(UlBytesTotal))
 	bwMutex.Unlock()
 	return

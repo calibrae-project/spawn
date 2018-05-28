@@ -122,13 +122,13 @@ func getNextTrancheOfTxs(height, timestamp uint32) (res sortedTxList) {
 		}
 
 		if totlen+len(v.Raw) > 1e6 {
-			logg.Debug.Println("Too many txs - limit to 999000 bytes")
+			logg.Debug("Too many txs - limit to 999000 bytes")
 			return
 		}
 		totlen += len(v.Raw)
 
 		if sigops+v.SigopsCost > btc.MaxBlockSigOpsCost {
-			logg.Debug.Println("Too many sigops - limit to 999000 bytes")
+			logg.Debug("Too many sigops - limit to 999000 bytes")
 			return
 		}
 		sigops += v.SigopsCost
@@ -168,13 +168,13 @@ func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees ui
 	txsSoFar = make(map[[32]byte]uint)
 	totlen = 0
 	sigops = 0
-	logg.Debug.Println("\ngetting txs from the pool of", len(network.TransactionsToSend), "...")
+	logg.Debug("\ngetting txs from the pool of", len(network.TransactionsToSend), "...")
 	for {
 		newPiece := getNextTrancheOfTxs(height, timestamp)
 		if newPiece.Len() == 0 {
 			break
 		}
-		logg.Debug.Println("adding another", len(newPiece))
+		logg.Debug("adding another", len(newPiece))
 		sort.Sort(newPiece)
 
 		for i := 0; i < len(newPiece); i++ {
@@ -197,9 +197,9 @@ func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees ui
 		res[cnt].Sigops = v.SigopsCost
 		res[cnt].Depends = v.depends
 		totfees += v.Fee
-		// logg.Debug.Println("", cnt+1, v.Tx.Hash.String(), "  turn:", v.startat, "  spb:", int(v.Fee)/len(v.Data), "  depend:", fmt.Sprint(v.depends))
+		// logg.Debug("", cnt+1, v.Tx.Hash.String(), "  turn:", v.startat, "  spb:", int(v.Fee)/len(v.Data), "  depend:", fmt.Sprint(v.depends))
 	}
 
-	logg.Debug.Println("returning transacitons:", totlen, len(res))
+	logg.Debug("returning transacitons:", totlen, len(res))
 	return
 }
