@@ -364,7 +364,6 @@ func str2oaa(ip string) (res *oneAllowedAddr) {
 		res.Mask = uint32((uint64(1)<<(32-x))-1) ^ 0xffffffff
 	}
 	res.Addr &= res.Mask
-	L.Debugf(" %s -> %08x / %08x", ip, res.Addr, res.Mask)
 	return
 }
 

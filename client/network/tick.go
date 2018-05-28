@@ -238,7 +238,7 @@ func tcpServer() {
 	}
 	defer lis.Close()
 
-	L.Debug("TCP server started at", ad.String())
+	L.Debug("TCP server started at ", ad.String())
 
 	for common.IsListenTCP() {
 		common.CountSafe("NetServerLoops")

@@ -7,6 +7,9 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"github.com/fatih/color"
+	"io"
+	"time"
 )
 
 const (
@@ -14,12 +17,15 @@ const (
 )
 
 var (
-	Info, Warn, Error, Debug func(...interface{})
+	Info, Warn, Error, Debug, DebugNoInfo func(...interface{})
 	Infof, Debugf            func(string, ...interface{})
+	bold = color.New(color.Bold).FprintfFunc()
+	blue = color.New(color.FgBlue).FprintfFunc()
+	red = color.New(color.FgRed).FprintfFunc()
 )
-
 func init() {
 	logfile, err := os.OpenFile(logpath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,29 +36,42 @@ func init() {
 		fmt.Printf(format, i...)
 	}
 	Error = func(i ...interface{}) {
-		fmt.Println(whereAmI(), "Error", i)
+		red(os.Stderr, "Error ")
+		fmt.Fprint(os.Stderr, i...)
+		source(os.Stderr)
+		function(os.Stderr)
 	}
 	Warn = func(i ...interface{}) {
-		fmt.Println(whereAmI(), "Warning", i)
+		red(os.Stderr, "Warning ")
+		fmt.Print(i...)
+		source(os.Stderr)
+		fmt.Fprint(os.Stderr, " ")
+		function(os.Stderr)
+		fmt.Fprint(os.Stderr, "\n")
+
 	}
 	Debug = func(i ...interface{}) {
-		fmt.Fprintln(logfile, i, "\n     " + whereAmI() + "()")
+		fmt.Fprint(logfile, time.Now().Format(time.StampMilli))
+		fmt.Fprint(logfile, " ")
+		bold(logfile, fmt.Sprint(i...))
+		fmt.Fprint(logfile, " ")
+		source(logfile)
+		fmt.Fprint(logfile, " ")
+		function(logfile)
+		fmt.Fprint(logfile, "\n")
 	}
-	Debugf = func(format string, i ...interface{}) {
-		fmt.Fprintf(logfile, "[" + format + "]\n     " + whereAmI()+ "()" + "\n", i...)
+	DebugNoInfo = func(i ...interface{}) {
+		fmt.Fprintf(logfile, "%s\n", fmt.Sprint(i...))
 	}
-	Debug("Started logger")
 }
 
-func whereAmI(depthList ...int) string {
-	var depth int
-	if depthList == nil {
-		depth = 2
-	} else {
-		depth = depthList[0]
-	}
-	function, file, line, _ := runtime.Caller(depth)
-	return fmt.Sprintf("%s:%d %s", file, line, chop(runtime.FuncForPC(function).Name(), "."))
+func source(out io.Writer) {
+	_, file, line, _ := runtime.Caller(2)
+	blue(out, fmt.Sprintf("%s:%d", file, line))
+}
+func function(out io.Writer) {
+	function, _, _, _ := runtime.Caller(2)
+	fmt.Fprint(out, chop(runtime.FuncForPC(function).Name(), ".")+"()")
 }
 
 func chop(original, separator string) string {

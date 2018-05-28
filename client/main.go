@@ -521,11 +521,11 @@ func main() {
 	if common.FLAG.UndoBlocks == 0 {
 		network.MempoolSave(false)
 	}
-	L.Debug("Blockchain closed in", time.Now().Sub(sta).String())
+	L.Debug("Blockchain closed in ", time.Now().Sub(sta).String())
 	peersdb.ClosePeerDB()
 	usif.SaveBlockFees()
 	sys.UnlockDatabaseDir()
 	os.RemoveAll(common.TempBlocksDir())
 	L.Debug("Completed shutdown")
-	fmt.Printf("\n")
+	L.DebugNoInfo("\n\n")
 }

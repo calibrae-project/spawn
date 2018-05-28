@@ -41,7 +41,7 @@ func hostInit() {
 		ioutil.WriteFile(common.DuodHomeDir+"authkey", common.SecretKey, 0600)
 	}
 	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
-	L.Debug("Public auth key:", common.PublicKey)
+	L.Debug("Public auth key: ", common.PublicKey)
 
 	_Exit := make(chan bool)
 	_Done := make(chan bool)
@@ -111,8 +111,7 @@ func hostInit() {
 	sto := time.Now()
 
 	al, sy := sys.MemUsed()
-	L.Debugf("Blockchain open in %s.  %d + %d MB of RAM used (%d)",
-		sto.Sub(sta).String(), al>>20, utxo.ExtraMemoryConsumed()>>20, sy>>20)
+   L.Debug("Blockchain open in ", sto.Sub(sta).String(), ". ", al>>20, " + ", utxo.ExtraMemoryConsumed()>>20, "MB of RAM used (", sy>>20,")")
 
 	common.StartTime = time.Now()
 	_Exit <- true

@@ -66,7 +66,7 @@ func MempoolSave(force bool) {
 		return
 	}
 
-	L.Debug("Saving", MempoolFileName2)
+	L.Debug("Saving ", MempoolFileName2)
 	wr := bufio.NewWriter(f)
 
 	wr.Write(common.Last.Block.BlockHash.Hash[:])
@@ -242,8 +242,8 @@ func MempoolLoad2() bool {
 		}
 	}
 
-	L.Debug(len(TransactionsToSend), "transactions taking", TransactionsToSendSize, "Bytes loaded from", MempoolFileName2)
-	L.Debug(cnt1, "transactions use", cnt2, "memory inputs")
+	L.Debug(len(TransactionsToSend), " transactions taking ", TransactionsToSendSize, " Bytes loaded from ", MempoolFileName2)
+	L.Debug(cnt1, " transactions use ", cnt2, " memory inputs")
 
 	return true
 

@@ -29,7 +29,7 @@ func InitMaps(empty bool) {
 	LoadMapSizes()
 	szs, ok = WalletAddrsCount[common.AllBalMinVal()]
 	if ok {
-		L.Debug("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
+		L.Debug("Have map sizes for MinBal ", common.AllBalMinVal(), " : ", szs[0], " ", szs[1], " ", szs[2], " ", szs[3])
 	} else {
 		L.Debug("No map sizes for MinBal", common.AllBalMinVal())
 		szs = [4]int{10e6, 3e6, 10e3, 1e3} // defaults
