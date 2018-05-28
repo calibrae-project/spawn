@@ -1,5 +1,5 @@
-// Package logg - multi-level logging
-package logg
+// Package L - multi-level logging
+package L
 
 import (
 	"fmt"
@@ -36,10 +36,10 @@ func init() {
 		fmt.Println(whereAmI(), "Warning", i)
 	}
 	Debug = func(i ...interface{}) {
-		fmt.Fprintln(logfile, whereAmI(), "", i)
+		fmt.Fprintln(logfile, i, "\n     " + whereAmI() + "()")
 	}
 	Debugf = func(format string, i ...interface{}) {
-		fmt.Fprintf(logfile, format, i...)
+		fmt.Fprintf(logfile, "[" + format + "]\n     " + whereAmI()+ "()" + "\n", i...)
 	}
 	Debug("Started logger")
 }

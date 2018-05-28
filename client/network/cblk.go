@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
@@ -40,6 +40,7 @@ func ShortIDToU64(d []byte) uint64 {
 
 // Assemble -
 func (col *CompactBlockCollector) Assemble() []byte {
+	L.Debug("Assembling compact block")
 	bdat := new(bytes.Buffer)
 	bdat.Write(col.Header)
 	btc.WriteVlen(bdat, uint64(len(col.Txs)))
@@ -51,26 +52,27 @@ func (col *CompactBlockCollector) Assemble() []byte {
 
 // GetchBlockForBIP152 -
 func GetchBlockForBIP152(hash *btc.Uint256) (crec *chain.BlckCachRec) {
+	L.Debug("Get Block for BIP152")
 	CompactBlocksMutex.Lock()
 	defer CompactBlocksMutex.Unlock()
 
 	crec, _, er := common.BlockChain.Blocks.BlockGetExt(hash)
 	if crec == nil {
-		logg.Error("BlockGetExt failed for", hash.String(), er.Error())
+		L.Error("BlockGetExt failed for", hash.String(), er.Error())
 		return
 	}
 
 	if crec.Block == nil {
 		crec.Block, _ = btc.NewBlock(crec.Data)
 		if crec.Block == nil {
-			logg.Debug("GetchBlockForBIP152: btc.NewBlock() failed for", hash.String())
+			L.Debug("GetchBlockForBIP152: btc.NewBlock() failed for", hash.String())
 			return
 		}
 	}
 
 	if len(crec.Block.Txs) == 0 {
 		if crec.Block.BuildTxList() != nil {
-			logg.Debug("GetchBlockForBIP152: bl.BuildTxList() failed for", hash.String())
+			L.Debug("GetchBlockForBIP152: bl.BuildTxList() failed for", hash.String())
 			return
 		}
 	}
@@ -89,9 +91,10 @@ func GetchBlockForBIP152(hash *btc.Uint256) (crec *chain.BlckCachRec) {
 
 // SendCompactBlock -
 func (c *OneConnection) SendCompactBlock(hash *btc.Uint256) bool {
+	L.Debug("Sending compact block")
 	crec := GetchBlockForBIP152(hash)
 	if crec == nil {
-		logg.Debug(c.ConnID, "cmpctblock not sent:", c.Node.Agent, hash.String())
+		L.Debug(c.ConnID, "cmpctblock not sent:", c.Node.Agent, hash.String())
 		return false
 	}
 
@@ -126,6 +129,7 @@ func (c *OneConnection) SendCompactBlock(hash *btc.Uint256) bool {
 
 // ProcessGetBlockTx -
 func (c *OneConnection) ProcessGetBlockTx(pl []byte) {
+	L.Debug("Processing Get Block Transaction")
 	if len(pl) < 34 {
 		println(c.ConnID, "GetBlockTxnShort")
 		c.DoS("GetBlockTxnShort")
@@ -134,14 +138,14 @@ func (c *OneConnection) ProcessGetBlockTx(pl []byte) {
 	hash := btc.NewUint256(pl[:32])
 	crec := GetchBlockForBIP152(hash)
 	if crec == nil {
-		logg.Debug(c.ConnID, "GetBlockTxn aborting for", hash.String())
+		L.Debug(c.ConnID, "GetBlockTxn aborting for", hash.String())
 		return
 	}
 
 	req := bytes.NewReader(pl[32:])
 	indexesLength, _ := btc.ReadVLen(req)
 	if indexesLength == 0 {
-		logg.Debug(c.ConnID, "GetBlockTxnEmpty")
+		L.Debug(c.ConnID, "GetBlockTxnEmpty")
 		c.DoS("GetBlockTxnEmpty")
 		return
 	}
@@ -186,8 +190,9 @@ func delB2Gcallback(hash *btc.Uint256) {
 
 // ProcessCompactBlock -
 func (c *OneConnection) ProcessCompactBlock(pl []byte) {
+	L.Debug("Processing compact block")
 	if len(pl) < 90 {
-		logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error A", hex.EncodeToString(pl))
+		L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error A", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrA")
 		return
 	}
@@ -217,7 +222,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	if common.BlockChain.Consensus.EnforceSegwit != 0 && c.Node.SendCmpctVer < 2 {
 		if b2g.Block.Height >= common.BlockChain.Consensus.EnforceSegwit {
 			common.CountSafe("CmpctBlockIgnore")
-			logg.Debug("Ignore compact block", b2g.Block.Height, "from non-segwit node", c.ConnID)
+			L.Debug("Ignore compact block", b2g.Block.Height, "from non-segwit node", c.ConnID)
 			if (c.Node.Services & ServiceSegwit) != 0 {
 				// it only makes sense to ask this node for block's data, if it supports segwit
 				c.MutexSetBool(&c.X.GetBlocksDataNow, true)
@@ -228,6 +233,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 
 	// if we got here, we shall download this block
 	if c.Node.Height < b2g.Block.Height {
+		L.Debug("Downloading block")
 		c.Mutex.Lock()
 		c.Node.Height = b2g.Block.Height
 		c.Mutex.Unlock()
@@ -235,7 +241,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 
 	if b2g.InProgress >= uint(common.CFG.Net.MaxBlockAtOnce) {
 		common.CountSafe("CmpctBlockMaxInProg")
-		logg.Debug(c.ConnID, " - too many in progress")
+		L.Debug(c.ConnID, " - too many in progress")
 		return
 	}
 
@@ -247,7 +253,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	offs := 88
 	shortidscnt, n = btc.VLen(pl[offs:])
 	if shortidscnt < 0 || n > 3 {
-		logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B", hex.EncodeToString(pl))
+		L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrB")
 		return
 	}
@@ -256,7 +262,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	shortids := make(map[uint64][]byte, shortidscnt)
 	for i := 0; i < int(shortidscnt); i++ {
 		if len(pl[offs:offs+6]) < 6 {
-			logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B2", hex.EncodeToString(pl))
+			L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error B2", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrB2")
 			return
 		}
@@ -266,7 +272,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 
 	prefilledcnt, n = btc.VLen(pl[offs:])
 	if prefilledcnt < 0 || n > 3 {
-		logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error C", hex.EncodeToString(pl))
+		L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error C", hex.EncodeToString(pl))
 		c.DoS("CmpctBlkErrC")
 		return
 	}
@@ -278,7 +284,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	for i := 0; i < int(prefilledcnt); i++ {
 		idx, n = btc.VLen(pl[offs:])
 		if idx < 0 || n > 3 {
-			logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error D", hex.EncodeToString(pl))
+			L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error D", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrD")
 			return
 		}
@@ -286,7 +292,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		offs += n
 		n = btc.TxSize(pl[offs:])
 		if n == 0 {
-			logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error E", hex.EncodeToString(pl))
+			L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "cmpctblock error E", hex.EncodeToString(pl))
 			c.DoS("CmpctBlkErrE")
 			return
 		}
@@ -317,7 +323,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		if ptr, ok := shortids[sid]; ok {
 			if ptr != nil {
 				common.CountSafe("ShortIDSame")
-				logg.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "Same short ID - abort")
+				L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "Same short ID - abort")
 				return
 			}
 			shortids[sid] = v.Raw
@@ -351,7 +357,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 	var msg *bytes.Buffer
 
 	missing := len(shortids) - cntFound
-	logg.Debug(c.ConnID, c.Node.SendCmpctVer, "ShortIDs", cntFound, "/", shortidscnt, "  Prefilled", prefilledcnt, "  Missing", missing, "  MemPool:", len(TransactionsToSend))
+	L.Debug(c.ConnID, c.Node.SendCmpctVer, "ShortIDs", cntFound, "/", shortidscnt, "  Prefilled", prefilledcnt, "  Missing", missing, "  MemPool:", len(TransactionsToSend))
 	col.Missing = missing
 	if missing > 0 {
 		msg = new(bytes.Buffer)
@@ -407,7 +413,7 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 			//c.DoS("BadCmpctBlockA")
 			return
 		}
-		// logg.Debug(c.ConnID, "Instatnt PostCheckBlock OK #", b2g.Block.Height, sto.Sub(sta), time.Now().Sub(sta))
+		// L.Debug(c.ConnID, "Instatnt PostCheckBlock OK #", b2g.Block.Height, sto.Sub(sta), time.Now().Sub(sta))
 		c.Mutex.Lock()
 		c.counters["NewCBlock"]++
 		c.blocksreceived = append(c.blocksreceived, time.Now())
@@ -428,12 +434,13 @@ func (c *OneConnection) ProcessCompactBlock(pl []byte) {
 		c.GetBlockInProgress[b2g.Block.Hash.BIdx()] = &oneBlockDl{hash: b2g.Block.Hash, start: time.Now(), col: col, SentAtPingCnt: c.X.PingSentCnt}
 		c.Mutex.Unlock()
 		c.SendRawMsg("getblocktxn", msg.Bytes())
-		logg.Debug(c.ConnID, "Send getblocktxn for", col.Missing, "/", shortidscnt, "missing txs.  ", msg.Len(), "bytes")
+		L.Debug(c.ConnID, "Send getblocktxn for", col.Missing, "/", shortidscnt, "missing txs.  ", msg.Len(), "bytes")
 	}
 }
 
 // ProcessBlockTx -
 func (c *OneConnection) ProcessBlockTx(pl []byte) {
+	L.Debug("Processing block transaction")
 	if len(pl) < 33 {
 		println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn error A", hex.EncodeToString(pl))
 		c.DoS("BlkTxnErrLen")
@@ -454,7 +461,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	c.Mutex.Lock()
 	bip := c.GetBlockInProgress[idx]
 	if bip == nil {
-		logg.Debug(time.Now().Format("2006-01-02 15:04:05"), c.ConnID, "BlkTxnNoBIP:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
+		L.Debug(time.Now().Format("2006-01-02 15:04:05"), c.ConnID, "BlkTxnNoBIP:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
 		c.Mutex.Unlock()
 		c.counters["BlkTxnNoBIP"]++
 		c.Misbehave("BlkTxnErrBip", 100)
@@ -463,7 +470,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	col := bip.col
 	if col == nil {
 		c.Mutex.Unlock()
-		logg.Debug("BlkTxnNoCOL:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
+		L.Debug("BlkTxnNoCOL:", c.PeerAddr.IP(), c.Node.Agent, hash.String())
 		common.CountSafe("UnxpectedBlockTxn")
 		c.counters["BlkTxnNoCOL"]++
 		c.Misbehave("BlkTxnNoCOL", 100)
@@ -476,7 +483,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 	if rb, got := ReceivedBlocks[idx]; got {
 		rb.Cnt++
 		common.CountSafe("BlkTxnSameRcvd")
-		logg.Debug(c.ConnID, "BlkTxn size", len(pl), "for", hash.String()[48:], "- already have")
+		L.Debug(c.ConnID, "BlkTxn size", len(pl), "for", hash.String()[48:], "- already have")
 		return
 	}
 
@@ -515,12 +522,12 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 			col.Txs[idx] = rawTx
 		} else {
 			common.CountSafe("ShortIDUnknown")
-			println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn TX (short) ID unknown")
+			L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "blocktxn TX (short) ID unknown")
 			return
 		}
 	}
 
-	logg.Debug(c.ConnID, "Received the rest of compact block version", c.Node.SendCmpctVer)
+	L.Debug(c.ConnID, "Received the rest of compact block version", c.Node.SendCmpctVer)
 
 	//sta := time.Now()
 	b2g.Block.UpdateContent(col.Assemble())
@@ -532,7 +539,7 @@ func (c *OneConnection) ProcessBlockTx(pl []byte) {
 		ioutil.WriteFile(b2g.Hash.String()+".bin", b2g.Block.Raw, 0700)
 
 		if b2g.Block.MerkleRootMatch() {
-			logg.Debug("It was a wrongly mined one - clean it up")
+			L.Debug("It was a wrongly mined one - clean it up")
 			DelB2G(idx) //remove it from BlocksToGet
 			if b2g.BlockTreeNode == LastCommitedHeader {
 				LastCommitedHeader = LastCommitedHeader.Parent

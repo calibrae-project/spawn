@@ -8,7 +8,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 // IIdx -
@@ -32,13 +32,13 @@ func (tx *OneTxToSend) UnMarkChildrenForMem() {
 			if rec, _ := TransactionsToSend[val]; rec != nil {
 				if rec.MemInputs == nil {
 					common.CountSafe("TxMinedMeminER1")
-					logg.Debug("WTF?", po.String(), "just mined in", rec.Hash.String(), "- not marked as mem")
+					L.Debug("WTF?", po.String(), "just mined in", rec.Hash.String(), "- not marked as mem")
 					continue
 				}
 				idx := rec.IIdx(uidx)
 				if idx < 0 {
 					common.CountSafe("TxMinedMeminER2")
-					logg.Debug("WTF?", po.String(), " just mined. Was in SpentOutputs & mempool, but DUPA")
+					L.Debug("WTF?", po.String(), " just mined. Was in SpentOutputs & mempool, but DUPA")
 					continue
 				}
 				rec.MemInputs[idx] = false
@@ -50,7 +50,7 @@ func (tx *OneTxToSend) UnMarkChildrenForMem() {
 				}
 			} else {
 				common.CountSafe("TxMinedMeminERR")
-				logg.Debug("WTF?", po.String(), " in SpentOutputs, but not in mempool")
+				L.Debug("WTF?", po.String(), " in SpentOutputs, but not in mempool")
 			}
 		}
 	}
@@ -85,14 +85,14 @@ func txMined(tx *btc.Tx) (wtg *OneWaitingList) {
 				// if we got here, the txs has been Malleabled
 				if rec.Local {
 					common.CountSafe("TxMinedMalleabled")
-					logg.Debug("Input from own ", rec.Tx.Hash.String(), " mined in ", tx.Hash.String())
+					L.Debug("Input from own ", rec.Tx.Hash.String(), " mined in ", tx.Hash.String())
 				} else {
 					common.CountSafe("TxMinedOtherSpend")
 				}
 				rec.Delete(true, 0)
 			} else {
 				common.CountSafe("TxMinedSpentERROR")
-				logg.Debug("WTF? Input from ", rec.Tx.Hash.String(), " in mem-spent, but tx not in the mem-pool")
+				L.Debug("WTF? Input from ", rec.Tx.Hash.String(), " in mem-spent, but tx not in the mem-pool")
 			}
 			delete(SpentOutputs, idx)
 		}
@@ -132,7 +132,7 @@ func (c *OneConnection) SendGetMP() error {
 	TxMutex.Lock()
 	tcnt := len(TransactionsToSend) + len(TransactionsRejected)
 	if tcnt > MaxGetmpTxs {
-		logg.Debug("Too many transactions in the current pool")
+		L.Debug("Too many transactions in the current pool")
 		TxMutex.Unlock()
 		return errors.New("Too many transactions in the current pool")
 	}
@@ -154,7 +154,7 @@ func (c *OneConnection) ProcessGetMP(pl []byte) {
 
 	cnt, er := btc.ReadVLen(br)
 	if er != nil {
-		logg.Debug("getmp message does not have the length field")
+		L.Debug("getmp message does not have the length field")
 		c.DoS("GetMPError1")
 		return
 	}
@@ -163,7 +163,7 @@ func (c *OneConnection) ProcessGetMP(pl []byte) {
 	for i := 0; i < int(cnt); i++ {
 		var idx BIDX
 		if n, _ := br.Read(idx[:]); n != len(idx) {
-			logg.Debug("getmp message too short")
+			L.Debug("getmp message too short")
 			c.DoS("GetMPError2")
 			return
 		}

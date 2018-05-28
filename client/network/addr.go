@@ -10,7 +10,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
 	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
@@ -42,7 +42,7 @@ type ExternalIPrec struct {
 
 // GetExternalIPs - Returns the list sorted by "freshness"
 func GetExternalIPs() (arr []ExternalIPrec) {
-	logg.Debug("Getting external IPs")
+	L.Debug("Getting external IPs")
 	ExternalIPmutex.Lock()
 	defer ExternalIPmutex.Unlock()
 	if len(ExternalIP4) > 0 {
@@ -66,12 +66,12 @@ func GetExternalIPs() (arr []ExternalIPrec) {
 
 // BestExternalAddr -
 func BestExternalAddr() []byte {
-	logg.Debug("Getting best external address")
+	L.Debug("Getting best external address")
 	arr := GetExternalIPs()
 
 	// Expire any extra IP if it has been stale for more than an hour
 	if len(arr) > 1 {
-		logg.Debug("Expiring stale IPs")
+		L.Debug("Expiring stale IPs")
 		worst := &arr[len(arr)-1]
 
 		if uint(time.Now().Unix())-worst.Tim > 3600 {
@@ -97,7 +97,7 @@ func BestExternalAddr() []byte {
 
 // SendAddr -
 func (c *OneConnection) SendAddr() {
-	logg.Debug("Send addresses")
+	L.Debug("Send addresses")
 	pers := peersdb.GetBestPeers(MaxAddrsPerMessage, nil)
 	maxtime := uint32(time.Now().Unix() + 3600)
 	if len(pers) > 0 {
@@ -105,7 +105,7 @@ func (c *OneConnection) SendAddr() {
 		btc.WriteVlen(buf, uint64(len(pers)))
 		for i := range pers {
 			if pers[i].Time > maxtime {
-				logg.Debug("addr", i, "time in future", pers[i].Time, maxtime, "should not happen")
+				L.Debug("addr", i, "time in future", pers[i].Time, maxtime, "should not happen")
 				pers[i].Time = maxtime - 7200
 			}
 			binary.Write(buf, binary.LittleEndian, pers[i].Time)
@@ -117,7 +117,7 @@ func (c *OneConnection) SendAddr() {
 
 // SendOwnAddr -
 func (c *OneConnection) SendOwnAddr() {
-	logg.Debug("Sending own address")
+	L.Debug("Sending own address")
 	if ExternalAddrLen() > 0 {
 		buf := new(bytes.Buffer)
 		btc.WriteVlen(buf, uint64(1))
@@ -129,7 +129,7 @@ func (c *OneConnection) SendOwnAddr() {
 
 // ParseAddr - Parse network's "addr" message
 func (c *OneConnection) ParseAddr(pl []byte) {
-	logg.Debug("Parsing address")
+	L.Debug("Parsing address")
 	b := bytes.NewBuffer(pl)
 	cnt, _ := btc.ReadVLen(b)
 	for i := 0; i < int(cnt); i++ {
@@ -138,12 +138,12 @@ func (c *OneConnection) ParseAddr(pl []byte) {
 		if n != len(buf) || e != nil {
 			common.CountSafe("AddrError")
 			c.DoS("AddrError")
-			logg.Debug("ParseAddr:", n, e)
+			L.Debug("ParseAddr:", n, e)
 			break
 		}
 		a := peersdb.NewPeer(buf[:])
 		if !sys.ValidIPv4(a.IPv4[:]) {
-			logg.Debug("Address Invalid")
+			L.Debug("Address Invalid")
 			common.CountSafe("AddrInvalid")
 			/*if c.Misbehave("AddrLocal", 1) {
 				break

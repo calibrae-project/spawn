@@ -8,7 +8,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/network"
 	"github.com/ParallelCoinTeam/duod/client/usif"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	//	"regexp"
 	"strconv"
 	"time"
@@ -149,7 +149,7 @@ func jsonBlocks(w http.ResponseWriter, r *http.Request) {
 		w.Header()["Content-Type"] = []string{"application/json"}
 		w.Write(bx)
 	} else {
-		logg.Error(er.Error())
+		L.Error(er.Error())
 	}
 
 }

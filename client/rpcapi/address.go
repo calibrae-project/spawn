@@ -5,7 +5,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	//"github.com/ParallelCoinTeam/duod/client/common"
-	// "github.com/ParallelCoinTeam/duod/lib/logg"
+	// "github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 /*

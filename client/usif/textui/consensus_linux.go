@@ -57,10 +57,12 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
+	"strconv"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/script"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 var (
@@ -135,10 +137,10 @@ func consensus_stats(s string) {
 
 func init() {
 	if C.init_bitcoinconsensus_so() == 0 {
-		common.Log.Println("Not using libbitcoinconsensus.so to cross-check consensus rules")
+		L.Debug("Not using libbitcoinconsensus.so to cross-check consensus rules")
 		return
 	}
-	common.Log.Println("Using libbitcoinconsensus.so version", C.bitcoinconsensus_version(), "to cross-check consensus")
+	L.Debug("Using libbitcoinconsensus.so version" + strconv.Itoa(int(C.bitcoinconsensus_version())) + "to cross-check consensus")
 	script.VerifyConsensus = check_consensus
 	newUI("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
 }

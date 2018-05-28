@@ -9,7 +9,7 @@ import (
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
@@ -41,7 +41,7 @@ func hostInit() {
 		ioutil.WriteFile(common.DuodHomeDir+"authkey", common.SecretKey, 0600)
 	}
 	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
-	logg.Debug("Public auth key:", common.PublicKey)
+	L.Debug("Public auth key:", common.PublicKey)
 
 	_Exit := make(chan bool)
 	_Done := make(chan bool)
@@ -49,7 +49,7 @@ func hostInit() {
 		for {
 			select {
 			case s := <-common.KillChan:
-				logg.Debug(s)
+				L.Debug(s)
 				chain.AbortNow = true
 			case <-_Exit:
 				_Done <- true
@@ -64,16 +64,16 @@ func hostInit() {
 	}
 
 	if common.CFG.Memory.UseGoHeap {
-		logg.Debug("Using native Go heap with the garbage collector for UTXO records")
+		L.Debug("Using native Go heap with the garbage collector for UTXO records")
 	} else {
 		utxo.MembindInit()
 	}
 
-	logg.Debug(string(common.LogBuffer.Bytes()))
+	// L.Debugf("%s", string(common.LogBuffer.Bytes()))
 	common.LogBuffer = nil
 
 	if btc.ECVerify == nil {
-		logg.Debug("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
+		L.Debug("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
 	}
 
 	ext := &chain.NewChanOpts{
@@ -88,7 +88,7 @@ func hostInit() {
 			MaxDataFileSize: uint64(common.CFG.Memory.MaxDataFileMB) << 20,
 			DataFilesKeep:   common.CFG.Memory.DataFilesKeep})
 	if chain.AbortNow {
-		logg.Debugf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
+		L.Debugf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
 		common.BlockChain.Close()
 		sys.UnlockDatabaseDir()
 		os.Exit(1)
@@ -105,13 +105,13 @@ func hostInit() {
 	common.UnlockCfg()
 
 	if common.CFG.Memory.FreeAtStart {
-		logg.Debug("Freeing memory... ")
+		L.Debug("Freeing memory... ")
 		sys.FreeMem()
 	}
 	sto := time.Now()
 
 	al, sy := sys.MemUsed()
-	logg.Debugf("Blockchain open in %s.  %d + %d MB of RAM used (%d)\n",
+	L.Debugf("Blockchain open in %s.  %d + %d MB of RAM used (%d)",
 		sto.Sub(sta).String(), al>>20, utxo.ExtraMemoryConsumed()>>20, sy>>20)
 
 	common.StartTime = time.Now()

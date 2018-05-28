@@ -15,7 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/ParallelCoinTeam/duod/lib/btc"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 var (
@@ -42,10 +42,10 @@ func verify() bool {
 
 func init() {
 	if verify() {
-		logg.Debug("Using secp256k1.dll by sipa for ECVerify")
+		L.Debug("Using secp256k1.dll by sipa for ECVerify")
 		btc.ECVerify = ECVerify
 	} else {
-		logg.Debug("ERROR: Could not initiate secp256k1.dll")
+		L.Debug("ERROR: Could not initiate secp256k1.dll")
 		os.Exit(1)
 	}
 }

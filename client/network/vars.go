@@ -7,7 +7,7 @@ import (
 
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/chain"
-	"github.com/ParallelCoinTeam/duod/lib/logg"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
@@ -100,7 +100,7 @@ func AddB2G(b2g *OneBlockToGet) {
 func DelB2G(idx BIDX) {
 	b2g := BlocksToGet[idx]
 	if b2g == nil {
-		logg.Debug("DelB2G - not found")
+		L.Debug("DelB2G - not found")
 		return
 	}
 
@@ -114,12 +114,12 @@ func DelB2G(idx BIDX) {
 			}
 		}
 		if len(n)+1 != len(iii) {
-			logg.Debug("DelB2G - index not found")
+			L.Debug("DelB2G - index not found")
 		}
 		IndexToBlocksToGet[bh] = n
 	} else {
 		if iii[0] != idx {
-			logg.Debug("DelB2G - index not matching")
+			L.Debug("DelB2G - index not matching")
 		}
 		delete(IndexToBlocksToGet, bh)
 		if bh == LowestIndexToBlocksToGet {
