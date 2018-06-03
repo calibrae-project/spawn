@@ -15,7 +15,7 @@ import (
 // PreCheckBlock -
 // Make sure to call this function with ch.BlockIndexAccess locked
 func (ch *Chain) PreCheckBlock(bl *btc.Block) (dos bool, maybelater bool, err error) {
-	L.Debug("Precheck block ", bl.Height)
+	L.Debug("Precheck block \n", hex.EncodeToString(bl.Raw), "\n")
 	L.Debug("Raw length ", len(bl.Raw))
 	// Size limits
 	if len(bl.Raw) < 81 {
