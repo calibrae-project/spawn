@@ -22,7 +22,7 @@ const (
 	// ConfigFile -
 	ConfigFile = "duod.conf"
 	// Version -
-	Version = uint32(2) // 70015)
+	Version = uint32(80000) // 70015)
 	// Services -
 	Services = uint64(1) // 0x00000009)
 )

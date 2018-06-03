@@ -2,11 +2,5 @@ debug
 *.exe
 *.bin
 *.dat
-*.a
-client/sipadll.go
-client/sipasec.go
-client/openssl.go
-lib/others/cgo/sipasec/secp256k1
-scratch
-tools/genesis/create/debug
-tools/genesis/create/debug
+debug
+parallelcoind/work

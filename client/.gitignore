@@ -1,7 +1,0 @@
-*.txt
-balance/
-client
-gocoin*.conf
-duod*.conf
-.stealth
-*.bat
