@@ -4,3 +4,5 @@ debug
 *.dat
 debug
 parallelcoind/work
+seeder/seeder
+client/client
