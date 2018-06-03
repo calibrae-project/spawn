@@ -33,8 +33,22 @@ alias     .stop="sudo docker stop $NAME"
            \
  ### stop the container, start it again with '.start'  
 
-# alias .replay="sudo docker stop $NAME;sudo docker run -v $DATADIR/work:/work -d=true $NAME sh -c 'steemd --replay 1>>/work/steemd.log 2>>/work/steemd.log'"  
-#### replay blockchain (for after upgrade, after unclean shutdown or starting from recent block_log)  
+alias .reindex="sudo docker stop $NAME;\
+          sudo docker run --privileged -p 11047:11047\
+          -p 11048:11048 -v $DATADIR/work:/work\
+          -d=true --name $NAME $NAME \
+          'parallelcoin -reindex'"  
+           \
+ ### reindex blockchain
+
+alias .restart=".stop;\
+          .rm;\
+          .build;\
+          .run;\
+          .start"  
+           \
+ ### restart client
+
 # alias  .steem="sudo docker exec -it $NAME steemd"  
 #### start up steemd inside the container attached to current terminal  
 alias    .cmd="sudo docker exec -it $NAME /usr/bin/parallelcoind"
@@ -65,8 +79,11 @@ alias  .editdkr="nano $DATADIR/Dockerfile"
 alias   .editsh="nano $DATADIR/init.sh;source $DATADIR/init.sh"
            \
  ### edit init.sh with nano then reload  
-# alias  .editcfg="nano $DATADIR/config"  
-#### edit environment variables  
+
+alias  .editcfg="nano $DATADIR/config"  
+           \
+ ### edit environment variables  
+
 # alias   .editwit="nano $DATADIR/config.py"  
 #### edit witness failover configuration  
 # alias   .monitor="screen -d -S monitor -m $DATADIR/monitor.sh"   
@@ -78,4 +95,3 @@ alias   .editsh="nano $DATADIR/init.sh;source $DATADIR/init.sh"
 # alias   .dirty="$DATADIR/dirtycache.sh"  
 #### set kernel disk cache parameters to decrease disk I/O  
 alias     halp="sed 's/\$NAME/$NAME/g' $DATADIR/init.sh|sed 's#\$DATADIR#$DATADIR#g'|grep -v NOPRINT|grep -v ^#|sed 's/alias //g'|sed 's/=\"/  /g'|sed 's/\"//g'|sed 's/ ### /\            /g'|sed 's/\ #\-//g'"  #NOPRINT
- #-
