@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 	"encoding/hex"
-
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/script"
 )
@@ -15,20 +15,22 @@ import (
 // PreCheckBlock -
 // Make sure to call this function with ch.BlockIndexAccess locked
 func (ch *Chain) PreCheckBlock(bl *btc.Block) (dos bool, maybelater bool, err error) {
+	L.Debug("Precheck block ", bl.Height)
+	L.Debug("Raw length ", len(bl.Raw))
 	// Size limits
 	if len(bl.Raw) < 81 {
 		err = errors.New("CheckBlock() : size limits failed - RPC_Result:bad-blk-length")
 		dos = true
 		return
 	}
-
 	ver := bl.Version()
+	L.Debug("Version ", ver)
 	if ver == 0 {
 		err = errors.New("CheckBlock() : Block version 0 not allowed - RPC_Result:bad-version")
 		dos = true
 		return
 	}
-
+	L.Debug("Bits ", fmt.Sprintf("%08x", bl.Bits()), " Hash ", bl.Hash.String())
 	// Check proof-of-work
 	if !btc.CheckProofOfWork(bl.Hash, bl.Bits()) {
 		err = errors.New("CheckBlock() : proof of work failed - RPC_Result:high-hash")
