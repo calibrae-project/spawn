@@ -36,4 +36,5 @@ WORKDIR work
 
 EXPOSE 11047 11048
 
-CMD tail -f /dev/null
+CMD su parallelcoin -c "cd /work; /usr/bin/parallelcoind"
+# CMD tail -f /dev/null

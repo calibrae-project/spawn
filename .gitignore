@@ -3,7 +3,10 @@ debug
 *.bin
 *.dat
 debug
-parallelcoind/work
+work/.parallelcoin
 seeder/seeder
 client/client
 work/.bash_history
+duod.conf
+.bash_history
+!parallelcoin.conf

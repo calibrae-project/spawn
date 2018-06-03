@@ -21,7 +21,7 @@ alias       .cd="cd $DATADIR"
            \
  ### change working directory to instance folder  
 
-alias      .run="sudo docker run --privileged -v $DATADIR/work:/work -d=true --name $NAME $NAME"
+alias      .run="sudo docker run --privileged -p 11047:11047 -p 11048:11048 -v $DATADIR/work:/work -d=true --name $NAME $NAME"
            \
  ### start up the container (after building, to restart. for a'.stop'ed container, use '.start')  
 
@@ -37,7 +37,8 @@ alias     .stop="sudo docker stop $NAME"
 #### replay blockchain (for after upgrade, after unclean shutdown or starting from recent block_log)  
 # alias  .steem="sudo docker exec -it $NAME steemd"  
 #### start up steemd inside the container attached to current terminal  
-alias   .status="ps avx|grep parallelcoind|grep -v grep|grep -v bash|grep -v docker"
+alias    .cmd="sudo docker exec -it $NAME /usr/bin/parallelcoind"
+#"ps avx|grep parallelcoind|grep -v grep|grep -v bash|grep -v docker"
            \
  ### display process information about all steemd's running on this server  
 
@@ -45,7 +46,7 @@ alias    .enter="sudo docker exec -it $NAME bash"
            \
  ### open a shell inside the container  
 
-alias      .log="sudo tail -f $DATADIR/data/steemd.log"
+alias      .log="sudo tail -f $DATADIR/work/.parallelcoin/debug.log"
            \
  ### show the current output from the primary process in the container  
 
