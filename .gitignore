@@ -6,3 +6,4 @@ debug
 parallelcoind/work
 seeder/seeder
 client/client
+work/.bash_history
