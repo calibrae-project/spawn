@@ -94,4 +94,4 @@ alias  .editcfg="nano $DATADIR/config"
 #### view feeder or monitor, name in the parameter. Ctrl-A then D to exit, Ctrl-C to kill process  
 # alias   .dirty="$DATADIR/dirtycache.sh"  
 #### set kernel disk cache parameters to decrease disk I/O  
-alias     halp="sed 's/\$NAME/$NAME/g' $DATADIR/init.sh|sed 's#\$DATADIR#$DATADIR#g'|grep -v NOPRINT|grep -v ^#|sed 's/alias //g'|sed 's/=\"/  /g'|sed 's/\"//g'|sed 's/ ### /\            /g'|sed 's/\ #\-//g'"  #NOPRINT
+alias     halp="sed 's/\$NAME/$NAME/g' $DATADIR/init.sh|sed 's#\$DATADIR#$DATADIR#g'|grep -v NOPRINT|grep -v ^#|sed 's/alias //g'|sed 's/=\"/  /g'|sed 's/\"//g'|sed 's/ ### /\            /g'|sed 's/\ #\-//g'|sed 's/\\$//g'"  #NOPRINT

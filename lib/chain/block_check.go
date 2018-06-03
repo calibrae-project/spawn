@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"encoding/hex"
 
 	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"github.com/ParallelCoinTeam/duod/lib/script"
@@ -73,7 +74,9 @@ func (ch *Chain) PreCheckBlock(bl *btc.Block) (dos bool, maybelater bool, err er
 	// Check proof of work
 	gnwr := ch.GetNextWorkRequired(prevblk, bl.BlockTime())
 	if bl.Bits() != gnwr {
-		err = errors.New("CheckBlock: incorrect proof of work - RPC_Result:bad-diffbits")
+		bits := make([]byte, 4)
+	    binary.LittleEndian.PutUint32(bits, bl.Bits())
+		err = errors.New("CheckBlock: incorrect proof of work - RPC_Result:bad-diffbits " + hex.EncodeToString(bits))
 		dos = true
 		return
 	}
