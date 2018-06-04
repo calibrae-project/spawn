@@ -9,4 +9,7 @@ client/client
 work/.bash_history
 duod.conf
 .bash_history
+parallelcoind/work/blocks/index/*
+parallelcoind/work/chainstate/*
+parallelcoind/work/*
 !parallelcoin.conf
