@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"time"
-	"fmt"
 
 	"github.com/ParallelCoinTeam/duod/client/common"
 	"github.com/ParallelCoinTeam/duod/lib/btc"
@@ -44,7 +43,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if b2g, ok = BlocksToGet[bl.Hash.BIdx()]; ok {
 		common.CountSafe("HeaderFresh")
-		L.Debug(c.PeerAddr.IP(), " block ", bl.Hash.String(), " not new but get it")
+		L.Debug(c.PeerAddr.IP(), "block", bl.Hash.String(), " not new but get it")
 		return PHstatusFresh, b2g
 	}
 
@@ -56,7 +55,7 @@ func (c *OneConnection) ProcessNewHeader(hdr []byte) (int, *OneBlockToGet) {
 
 	if _, dos, er := common.BlockChain.PreCheckBlock(bl); er != nil {
 		common.CountSafe("PreCheckBlockFail")
-		L.Debug("Bits ", fmt.Sprintf("%08x", bl.Bits()), " Hash ", bl.Hash.String(), "PreCheckBlock err=", dos, " ", er.Error())
+		L.Debug("PreCheckBlock err", dos, er.Error())
 		if dos {
 			return PHstatusFatal, nil
 		}
