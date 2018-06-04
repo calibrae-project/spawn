@@ -1,5 +1,13 @@
 # Parallelcoin Daemon and Wallet
 
+## Contents of this repository
+
+- Dockerfile to run the original most recent, can send queries through commands
+ 
+- Genesis block generator that allows creating a new network
+
+- Gocoin fork designed to allow the addition of eventually many more PoW algorithms to update the core vision of any miner being able to mine it, with a PWA web app served by it that enables full wallet function, offline signing and rpc based controls, one interface for every platform, and a strong difficulty adjustment algorithm to thwart timing and flooding attacks.
+
 This is built on the Golang Bitcoin daemon Gocoin written by Piotr Narewski.
 
 The first milestone set for this project is to implement a version that operates on the Parallelcoin network and implements its parameters as it operates at present, as well as adding Segwit addresses to be activated at a prescribed block height after release.

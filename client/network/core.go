@@ -438,7 +438,6 @@ func (c *OneConnection) Misbehave(why string, howMuch int) (res bool) {
 // HandleError -
 func (c *OneConnection) HandleError(e error) error {
 	if nerr, ok := e.(net.Error); ok && nerr.Timeout() {
-		L.Debug("Just a timeout - ignore")
 		return nil
 	}
 	c.recv.hdrLen = 0

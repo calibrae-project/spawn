@@ -10,6 +10,12 @@
 			"bookmarks": [
 				65
 			]
+		},
+		{
+			"fsPath": "$ROOTPATH$/client/init.go",
+			"bookmarks": [
+				26
+			]
 		}
 	]
 }

@@ -145,7 +145,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 
 // StartServer -
 func StartServer(port uint32) {
-	L.Debug("Starting RPC server at port", port)
+	L.Debug("Starting RPC server at port ", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", myHandler)
 	http.ListenAndServe(fmt.Sprint("127.0.0.1:", port), mux)
