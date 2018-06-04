@@ -7,6 +7,7 @@ import (
 	_ "github.com/dchest/siphash"
 	_ "github.com/golang/snappy"
 	_ "golang.org/x/crypto/ripemd160"
+	_ "github.com/fatih/color"
 )
 
 // Version -
