@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"hash/crc64"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // OnePeer -

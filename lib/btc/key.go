@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/calibrae-project/spawn/lib/secp256k1"
+	"github.com/ParallelCoinTeam/duod/lib/secp256k1"
 )
 
 // PublicKey -

@@ -9,11 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/script"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/script"
 )
 
 // OneUIRequest -
@@ -230,15 +231,15 @@ func GetNetworkHashRateNum() float64 {
 
 // ExecUIRequest -
 func ExecUIRequest(req *OneUIRequest) {
-	fmt.Println("main.go last seen in line", common.BusyIn())
+	L.Info("main.go last seen in line", common.BusyIn())
 	sta := time.Now().UnixNano()
 	req.Done.Add(1)
 	UIChannel <- req
 	go func() {
 		req.Done.Wait()
 		sto := time.Now().UnixNano()
-		fmt.Printf("Ready in %.3fs\n", float64(sto-sta)/1e9)
-		fmt.Print("> ")
+		L.Infof("Ready in %.3fs\n", float64(sto-sta)/1e9)
+		L.Info("> ")
 	}()
 }
 

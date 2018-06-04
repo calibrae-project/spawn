@@ -13,12 +13,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/client/wallet"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/client/usif"
+	"github.com/ParallelCoinTeam/duod/client/wallet"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 func pWal(w http.ResponseWriter, r *http.Request) {

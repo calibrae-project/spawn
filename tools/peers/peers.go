@@ -6,9 +6,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/others/qdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
 )
 
 type manyPeers []*utils.OnePeer
@@ -31,7 +31,7 @@ func main() {
 	if len(os.Args) > 1 {
 		dir = os.Args[1]
 	} else {
-		dir = sys.BitcoinHome() + "Spawn" + string(os.PathSeparator) + "btcnet" + string(os.PathSeparator) + "peers3"
+		dir = sys.BitcoinHome() + "Duod" + string(os.PathSeparator) + "btcnet" + string(os.PathSeparator) + "peers3"
 	}
 
 	db, er := qdb.NewDB(dir, true)

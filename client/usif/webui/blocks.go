@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/client/usif"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 	//	"regexp"
 	"strconv"
 	"time"
@@ -148,7 +149,7 @@ func jsonBlocks(w http.ResponseWriter, r *http.Request) {
 		w.Header()["Content-Type"] = []string{"application/json"}
 		w.Write(bx)
 	} else {
-		println(er.Error())
+		L.Error(er.Error())
 	}
 
 }

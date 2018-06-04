@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // hex dump with max 32 bytes per line

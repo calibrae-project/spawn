@@ -8,10 +8,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
-	"github.com/calibrae-project/spawn/lib/script"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/script"
 )
 
 const (
@@ -194,7 +195,7 @@ func (c *OneConnection) TxInvNotify(hash []byte) {
 		b[0] = 1 // One inv
 		if (c.Node.Services & ServiceSegwit) != 0 {
 			binary.LittleEndian.PutUint32(b[1:5], MsgWitnessTx) // SegWit Tx
-			//println(c.ConnID, "getdata", btc.NewUint256(hash).String())
+			L.Debug(c.ConnID, "getdata", btc.NewUint256(hash).String())
 		} else {
 			b[1] = MsgTx // Tx
 		}
@@ -265,7 +266,7 @@ func (c *OneConnection) ParseTxNet(pl []byte) {
 			TransactionsPending[tx.Hash.BIdx()] = true
 		default:
 			common.CountSafe("TxRejectedFullQ")
-			//println("NetTxsFULL")
+			L.Debug("NetTxsFULL")
 		}
 	})
 }
@@ -434,7 +435,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 					RejectTx(ntx.Tx, TxRejectedCoinbaseImmature)
 					TxMutex.Unlock()
 					common.CountSafe("TxRejectedCBInmature")
-					fmt.Println(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
+					L.Debug(tx.Hash.String(), "trying to spend inmature coinbase block", pos[i].BlockHeight, "at", common.Last.BlockHeight())
 					return
 				}
 			}
@@ -510,8 +511,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 				ntx.conn.DoS("TxScriptFail")
 			}
 			if len(rbfTxList) > 0 {
-				fmt.Println("RBF try", verErrCount, "script(s) failed!")
-				fmt.Print("> ")
+				L.Error("RBF try", verErrCount, "script(s) failed!")
 			}
 			return
 		}
@@ -562,7 +562,7 @@ func HandleNetTx(ntx *TxRcvd, retry bool) (accepted bool) {
 	common.CountSafe("TxAccepted")
 
 	if frommem != nil && !common.GetBool(&common.CFG.TXRoute.MemInputs) {
-		// By default Spawn does not route txs that spend unconfirmed inputs
+		// By default Duod does not route txs that spend unconfirmed inputs
 		rec.Blocked = TxRejectedNotMined
 		common.CountSafe("TxRouteNotMined")
 	} else if !ntx.trusted && rec.isRoutable() {
@@ -655,7 +655,7 @@ func txChecker(tx *btc.Tx) bool {
 	if ok {
 		ok = tx.WTxID().Equal(rec.WTxID())
 		if !ok {
-			println("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
+			L.Debug("wTXID mismatch at", tx.Hash.String(), tx.WTxID().String(), rec.WTxID().String())
 			common.CountSafe("TxScrSWErr")
 		}
 	}

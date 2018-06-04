@@ -6,9 +6,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 // MaxTxsLength - 999KB, with 1KB margin to not exceed 1MB with conibase
@@ -121,13 +122,13 @@ func getNextTrancheOfTxs(height, timestamp uint32) (res sortedTxList) {
 		}
 
 		if totlen+len(v.Raw) > 1e6 {
-			//println("Too many txs - limit to 999000 bytes")
+			L.Debug("Too many txs - limit to 999000 bytes")
 			return
 		}
 		totlen += len(v.Raw)
 
 		if sigops+v.SigopsCost > btc.MaxBlockSigOpsCost {
-			//println("Too many sigops - limit to 999000 bytes")
+			L.Debug("Too many sigops - limit to 999000 bytes")
 			return
 		}
 		sigops += v.SigopsCost
@@ -167,13 +168,13 @@ func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees ui
 	txsSoFar = make(map[[32]byte]uint)
 	totlen = 0
 	sigops = 0
-	//println("\ngetting txs from the pool of", len(network.TransactionsToSend), "...")
+	L.Debug("\ngetting txs from the pool of", len(network.TransactionsToSend), "...")
 	for {
 		newPiece := getNextTrancheOfTxs(height, timestamp)
 		if newPiece.Len() == 0 {
 			break
 		}
-		//println("adding another", len(newPiece))
+		L.Debug("adding another", len(newPiece))
 		sort.Sort(newPiece)
 
 		for i := 0; i < len(newPiece); i++ {
@@ -196,9 +197,9 @@ func GetTransactions(height, timestamp uint32) (res []OneTransaction, totfees ui
 		res[cnt].Sigops = v.SigopsCost
 		res[cnt].Depends = v.depends
 		totfees += v.Fee
-		//println("", cnt+1, v.Tx.Hash.String(), "  turn:", v.startat, "  spb:", int(v.Fee)/len(v.Data), "  depend:", fmt.Sprint(v.depends))
+		// L.Debug("", cnt+1, v.Tx.Hash.String(), "  turn:", v.startat, "  spb:", int(v.Fee)/len(v.Data), "  depend:", fmt.Sprint(v.depends))
 	}
 
-	//println("returning transacitons:", totlen, len(res))
+	L.Debug("returning transacitons:", totlen, len(res))
 	return
 }

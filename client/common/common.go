@@ -12,19 +12,19 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
 )
 
 const (
 	// ConfigFile -
-	ConfigFile = "Spawn.conf"
+	ConfigFile = "duod.conf"
 	// Version -
-	Version = uint32(70015)
+	Version = uint32(80000) // 70015)
 	// Services -
-	Services = uint64(0x00000009)
+	Services = uint64(1) // 0x00000009)
 )
 
 var (
@@ -42,8 +42,8 @@ var (
 	Testnet bool
 	// Last -
 	Last TheLastBlock
-	// SpawnHomeDir -
-	SpawnHomeDir string
+	// DuodHomeDir -
+	DuodHomeDir string
 	// StartTime -
 	StartTime time.Time
 	// MaxPeersNeeded -

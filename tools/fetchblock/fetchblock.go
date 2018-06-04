@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"io/ioutil"
-	"github.com/calibrae-project/spawn/lib/others/utils"
-	"github.com/calibrae-project/spawn"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod"
 	"os"
 )
 
 
 func main() {
-	fmt.Println("Spawn FetchBlock version", Spawn.Version)
+	fmt.Println("Duod FetchBlock version", Duod.Version)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Specify block hash on the command line (MSB).")

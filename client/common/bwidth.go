@@ -2,11 +2,12 @@
 package common
 
 import (
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 var (
@@ -182,9 +183,9 @@ func PrintBWStats() {
 	bwMutex.Lock()
 	TickRecv()
 	TickSent()
-	fmt.Printf("Downloading at %d/%d KB/s, %s total",
+	L.Infof("Downloading at %d/%d KB/s, %s total",
 		GetAvgBW(DlBytesPrevSec[:], DlBytesPrevSecIdx, 5)>>10, DownloadLimit()>>10, BytesToString(DlBytesTotal))
-	fmt.Printf("  |  Uploading at %d/%d KB/s, %s total\n",
+	L.Infof("  |  Uploading at %d/%d KB/s, %s total\n",
 		GetAvgBW(UlBytesPrevSec[:], UlBytesPrevSecIdx, 5)>>10, UploadLimit()>>10, BytesToString(UlBytesTotal))
 	bwMutex.Unlock()
 	return

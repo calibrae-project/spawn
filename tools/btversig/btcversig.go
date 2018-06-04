@@ -7,8 +7,8 @@ import (
 	"flag"
 	"bytes"
 	"io/ioutil"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/ltc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/ltc"
 )
 
 

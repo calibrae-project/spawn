@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // UnspRec -

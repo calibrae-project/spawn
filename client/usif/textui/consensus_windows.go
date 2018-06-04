@@ -1,6 +1,6 @@
 // +build windows
 
-// On Windows OS copy this file to Spawn\client\usif\textui to enable consensus checking
+// On Windows OS copy this file to Duod\client\usif\textui to enable consensus checking
 // Make sure you have proper "libbitcoinconsensus-0.dll" in a folder where OS can find it.
 
 package textui
@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/script"
 )
 
 const (
@@ -77,7 +77,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags ui
 			common.CountSafe("TxConsensusERR")
 			mut.Lock()
 			println("Compare to consensus failed!")
-			println("Spawn:", result, "   ConsLIB:", res)
+			println("Duod:", result, "   ConsLIB:", res)
 			println("pkScr", hex.EncodeToString(pkScr))
 			println("txTo", hex.EncodeToString(txTo))
 			println("amount:", amount, "  input_idx:", i, "  verFlags:", verFlags)

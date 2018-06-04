@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"golang.org/x/crypto/ripemd160"
 )
 

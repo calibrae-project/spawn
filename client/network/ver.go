@@ -4,15 +4,17 @@ package network
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
 // IgnoreExternalIPFrom -
@@ -48,9 +50,9 @@ func (c *OneConnection) SendVersion() {
 	c.SendRawMsg("version", b.Bytes())
 }
 
-// IsSpawn -
-func (c *OneConnection) IsSpawn() bool {
-	return strings.HasPrefix(c.Node.Agent, "/Spawn:")
+// IsDuod -
+func (c *OneConnection) IsDuod() bool {
+	return strings.HasPrefix(c.Node.Agent, "/Duod:")
 }
 
 // HandleVersion -
@@ -71,8 +73,8 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 				if yes {
 					MutexNet.Unlock()
 					v.Mutex.Lock()
-					/*println("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
-					"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)*/
+					L.Debug("Peer with nonce", hex.EncodeToString(pl[72:80]), "from", c.PeerAddr.IP(),
+						"already connected as ", v.ConnID, "from ", v.PeerAddr.IP(), v.Node.Agent)
 					v.Mutex.Unlock()
 					common.CountSafe("VerNonceSame")
 					return errors.New("Peer already connected")
@@ -108,7 +110,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					c.Node.DoNotRelayTxs = true
 				}
 			}
-			c.X.IsSpawn = strings.HasPrefix(c.Node.Agent, "/Spawn:")
+			c.X.IsDuod = strings.HasPrefix(c.Node.Agent, "/Duod:")
 		}
 		c.X.VersionReceived = true
 		c.Mutex.Unlock()
@@ -158,7 +160,7 @@ func (c *OneConnection) HandleVersion(pl []byte) error {
 					}
 				}
 				if useThisIP && common.IsListenTCP() {
-					fmt.Printf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
+					L.Debugf("New external IP %d.%d.%d.%d from ConnID=%d\n> ",
 						pl[40], pl[41], pl[42], pl[43], c.ConnID)
 				}
 			}

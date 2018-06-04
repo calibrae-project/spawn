@@ -2,46 +2,46 @@ package main
 
 import (
 	"crypto/rand"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 func hostInit() {
-	common.SpawnHomeDir = common.CFG.Datadir + string(os.PathSeparator)
+	common.DuodHomeDir = common.CFG.Datadir + string(os.PathSeparator)
 
 	common.Testnet = common.CFG.Testnet // So chaging this value would will only affect the behaviour after restart
 	if common.CFG.Testnet {             // testnet3
-		common.GenesisBlock = btc.NewUint256FromString("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
-		common.Magic = [4]byte{0x0B, 0x11, 0x09, 0x07}
-		common.SpawnHomeDir += common.DataSubdir() + string(os.PathSeparator)
+		common.GenesisBlock = btc.NewUint256FromString("00000e41ecbaa35ef91b0c2c22ed4d85fa12bbc87da2668fe17572695fb30cdf")
+		common.Magic = [4]byte{0x08, 0xb2, 0x99, 0x88}
+		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 2000
 	} else {
-		common.GenesisBlock = btc.NewUint256FromString("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
-		common.Magic = [4]byte{0xF9, 0xBE, 0xB4, 0xD9}
-		common.SpawnHomeDir += common.DataSubdir() + string(os.PathSeparator)
+		common.GenesisBlock = btc.NewUint256FromString("000009f0fcbad3aac904d3660cfdcf238bf298cfe73adf1d39d14fc5c740ccc7")
+		common.Magic = [4]byte{0xcd, 0x08, 0xac, 0xff}
+		common.DuodHomeDir += common.DataSubdir() + string(os.PathSeparator)
 		common.MaxPeersNeeded = 5000
 	}
 
 	// Lock the folder
-	os.MkdirAll(common.SpawnHomeDir, 0770)
-	sys.LockDatabaseDir(common.SpawnHomeDir)
+	os.MkdirAll(common.DuodHomeDir, 0770)
+	sys.LockDatabaseDir(common.DuodHomeDir)
 
-	common.SecretKey, _ = ioutil.ReadFile(common.SpawnHomeDir + "authkey")
+	common.SecretKey, _ = ioutil.ReadFile(common.DuodHomeDir + "authkey")
 	if len(common.SecretKey) != 32 {
 		common.SecretKey = make([]byte, 32)
 		rand.Read(common.SecretKey)
-		ioutil.WriteFile(common.SpawnHomeDir+"authkey", common.SecretKey, 0600)
+		ioutil.WriteFile(common.DuodHomeDir+"authkey", common.SecretKey, 0600)
 	}
 	common.PublicKey = btc.EncodeBase58(btc.PublicFromPrivate(common.SecretKey, true))
-	fmt.Println("Public auth key:", common.PublicKey)
+	L.Debug("Public auth key: ", common.PublicKey)
 
 	_Exit := make(chan bool)
 	_Done := make(chan bool)
@@ -49,7 +49,7 @@ func hostInit() {
 		for {
 			select {
 			case s := <-common.KillChan:
-				fmt.Println(s)
+				L.Debug(s)
 				chain.AbortNow = true
 			case <-_Exit:
 				_Done <- true
@@ -64,16 +64,16 @@ func hostInit() {
 	}
 
 	if common.CFG.Memory.UseGoHeap {
-		fmt.Println("Using native Go heap with the garbage collector for UTXO records")
+		L.Debug("Using native Go heap with the garbage collector for UTXO records")
 	} else {
 		utxo.MembindInit()
 	}
 
-	fmt.Print(string(common.LogBuffer.Bytes()))
+	// L.Debugf("%s", string(common.LogBuffer.Bytes()))
 	common.LogBuffer = nil
 
 	if btc.ECVerify == nil {
-		fmt.Println("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
+		L.Debug("Using native secp256k1 lib for ECVerify (consider installing a speedup)")
 	}
 
 	ext := &chain.NewChanOpts{
@@ -82,13 +82,13 @@ func hostInit() {
 		BlockMinedCB:     blockMined}
 
 	sta := time.Now()
-	common.BlockChain = chain.NewChainExt(common.SpawnHomeDir, common.GenesisBlock, common.FLAG.Rescan, ext,
+	common.BlockChain = chain.NewChainExt(common.DuodHomeDir, common.GenesisBlock, common.FLAG.Rescan, ext,
 		&chain.BlockDBOpts{
 			MaxCachedBlocks: int(common.CFG.Memory.MaxCachedBlks),
 			MaxDataFileSize: uint64(common.CFG.Memory.MaxDataFileMB) << 20,
 			DataFilesKeep:   common.CFG.Memory.DataFilesKeep})
 	if chain.AbortNow {
-		fmt.Printf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
+		L.Debugf("Blockchain opening aborted after %s seconds\n", time.Now().Sub(sta).String())
 		common.BlockChain.Close()
 		sys.UnlockDatabaseDir()
 		os.Exit(1)
@@ -105,15 +105,13 @@ func hostInit() {
 	common.UnlockCfg()
 
 	if common.CFG.Memory.FreeAtStart {
-		fmt.Print("Freeing memory... ")
+		L.Debug("Freeing memory... ")
 		sys.FreeMem()
-		fmt.Print("\r                  \r")
 	}
 	sto := time.Now()
 
 	al, sy := sys.MemUsed()
-	fmt.Printf("Blockchain open in %s.  %d + %d MB of RAM used (%d)\n",
-		sto.Sub(sta).String(), al>>20, utxo.ExtraMemoryConsumed()>>20, sy>>20)
+   L.Debug("Blockchain open in ", sto.Sub(sta).String(), ". ", al>>20, " + ", utxo.ExtraMemoryConsumed()>>20, "MB of RAM used (", sy>>20,")")
 
 	common.StartTime = time.Now()
 	_Exit <- true

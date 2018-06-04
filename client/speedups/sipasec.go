@@ -11,9 +11,9 @@ package main
 */
 
 import (
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/cgo/sipasec"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/cgo/sipasec"
 )
 
 // ECVerify -
@@ -22,6 +22,6 @@ func ECVerify(k, s, h []byte) bool {
 }
 
 func init() {
-	common.Log.Println("Using libsecp256k1.a by sipa for ECVerify")
+	L.Debug("Using libsecp256k1.a by sipa for ECVerify")
 	btc.ECVerify = ECVerify
 }

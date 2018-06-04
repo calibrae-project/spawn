@@ -6,9 +6,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/script"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 // TrustedTxChecker is meant to speed up verifying transactions that had

@@ -57,10 +57,12 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
+	"strconv"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/script"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 var (
@@ -99,7 +101,7 @@ func check_consensus(pkScr []byte, amount uint64, i int, tx *btc.Tx, verFlags ui
 			common.CountSafe("TxConsensusERR")
 			mut.Lock()
 			println("Compare to consensus failed!")
-			println("Spawn:", result, "   ConsLIB:", res)
+			println("Duod:", result, "   ConsLIB:", res)
 			println("pkScr", hex.EncodeToString(pkScr))
 			println("txTo", hex.EncodeToString(txTo))
 			println("amount:", amount, "  input_idx:", i, "  verFlags:", verFlags)
@@ -135,10 +137,10 @@ func consensus_stats(s string) {
 
 func init() {
 	if C.init_bitcoinconsensus_so() == 0 {
-		common.Log.Println("Not using libbitcoinconsensus.so to cross-check consensus rules")
+		L.Debug("Not using libbitcoinconsensus.so to cross-check consensus rules")
 		return
 	}
-	common.Log.Println("Using libbitcoinconsensus.so version", C.bitcoinconsensus_version(), "to cross-check consensus")
+	L.Debug("Using libbitcoinconsensus.so version" + strconv.Itoa(int(C.bitcoinconsensus_version())) + "to cross-check consensus")
 	script.VerifyConsensus = check_consensus
 	newUI("cons", false, consensus_stats, "See statistics of the consensus cross-checks")
 }

@@ -13,9 +13,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 var (
@@ -131,15 +132,15 @@ func InitConfig() {
 
 	CFG.TextUIEnabled = true
 
-	CFG.WebUI.Interface = "127.0.0.1:8833"
+	CFG.WebUI.Interface = "127.0.0.1:11111"
 	CFG.WebUI.AllowedIP = "127.0.0.1"
 	CFG.WebUI.ShowBlocks = 144
 	CFG.WebUI.AddrListLen = 15
-	CFG.WebUI.Title = "Spawn"
+	CFG.WebUI.Title = "Duod"
 	CFG.WebUI.PayCmdName = "payCmd.txt"
 
-	CFG.RPC.Username = "Spawnrpc"
-	CFG.RPC.Password = "Spawnpwd"
+	CFG.RPC.Username = "Duodrpc"
+	CFG.RPC.Password = "Duodpwd"
 
 	CFG.TXPool.Enabled = true
 	CFG.TXPool.AllowMemInputs = true
@@ -164,7 +165,7 @@ func InitConfig() {
 	CFG.Stat.FeesBlks = 4 * 6   /*last 4 hours*/
 	CFG.Stat.BSizeBlks = 12 * 6 /*half a day*/
 
-	CFG.AllBalances.MinValue = 1e12 // 0.001 SPAWN
+	CFG.AllBalances.MinValue = 1e12 // 0.001 DUO
 	CFG.AllBalances.UseMapCnt = 100
 	CFG.AllBalances.AutoLoad = true
 
@@ -172,19 +173,19 @@ func InitConfig() {
 	CFG.DropPeers.BlckExpireHours = 24 // hours
 	CFG.DropPeers.PingPeriodSec = 15   // seconds
 
-	CFG.LastTrustedBlock = "0000000000000000001f6897d85c5c580308ba393da6b184d8e7de36fcb58a6e" // block #517986
+	CFG.LastTrustedBlock = "000009f0fcbad3aac904d3660cfdcf238bf298cfe73adf1d39d14fc5c740ccc7" // block #0
 
 	cfgfilecontent, e := ioutil.ReadFile(ConfigFile)
 	if e == nil && len(cfgfilecontent) > 0 {
 		e = json.Unmarshal(cfgfilecontent, &CFG)
 		if e != nil {
-			println("Error in", ConfigFile, e.Error())
+			L.Error("Error in", ConfigFile, e.Error())
 			os.Exit(1)
 		}
 	} else {
 		// Create default config file
 		SaveConfig()
-		println("Stored default configuration in", ConfigFile)
+		L.Debug("Stored default configuration in", ConfigFile)
 	}
 
 	flag.BoolVar(&FLAG.Rescan, "r", false, "Rebuild UTXO database (fixes 'Unknown input TxID' errors)")
@@ -192,7 +193,7 @@ func InitConfig() {
 	flag.BoolVar(&CFG.Testnet, "t", CFG.Testnet, "Use Testnet3")
 	flag.StringVar(&CFG.ConnectOnly, "c", CFG.ConnectOnly, "Connect only to this host and nowhere else")
 	flag.BoolVar(&CFG.Net.ListenTCP, "l", CFG.Net.ListenTCP, "Listen for incoming TCP connections (on default port)")
-	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Spawn's database root folder")
+	flag.StringVar(&CFG.Datadir, "d", CFG.Datadir, "Specify Duod's database root folder")
 	flag.UintVar(&CFG.Net.MaxUpKBps, "ul", CFG.Net.MaxUpKBps, "Upload limit in KB/s (0 for no limit)")
 	flag.UintVar(&CFG.Net.MaxDownKBps, "dl", CFG.Net.MaxDownKBps, "Download limit in KB/s (0 for no limit)")
 	flag.StringVar(&CFG.WebUI.Interface, "webui", CFG.WebUI.Interface, "Serve WebUI from the given interface")
@@ -204,10 +205,10 @@ func InitConfig() {
 	flag.BoolVar(&FLAG.UnbanAllPeers, "unban", FLAG.UnbanAllPeers, "Un-ban all peers in databse, before starting")
 	flag.BoolVar(&FLAG.NoWallet, "nowallet", FLAG.NoWallet, "Do not automatically enable the wallet functionality (lower memory usage and faster block processing)")
 	flag.BoolVar(&FLAG.Log, "log", FLAG.Log, "Store some runtime information in the log files")
-	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save Spawn.conf file and exit (use to create default config file)")
+	flag.BoolVar(&FLAG.SaveConfig, "sc", FLAG.SaveConfig, "Save Duod.conf file and exit (use to create default config file)")
 
 	if CFG.Datadir == "" {
-		CFG.Datadir = sys.BitcoinHome() + "Spawn"
+		CFG.Datadir = sys.BitcoinHome() + "Duod"
 	}
 
 	if flag.Lookup("h") != nil {
@@ -255,7 +256,7 @@ func Reset() {
 	SetDownloadLimit(uint64(CFG.Net.MaxDownKBps) << 10)
 	debug.SetGCPercent(CFG.Memory.GCPercTrshold)
 	if AllBalMinVal() != CFG.AllBalances.MinValue {
-		fmt.Println("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
+		L.Info("In order to apply the new value of AllBalMinVal, restart the node or do 'wallet off' and 'wallet on'")
 	}
 	DropSlowestEvery = time.Duration(CFG.DropPeers.DropEachMinutes) * time.Minute
 	BlockExpireEvery = time.Duration(CFG.DropPeers.BlckExpireHours) * time.Hour
@@ -274,11 +275,11 @@ func Reset() {
 		if oaa != nil {
 			WebUIAllowed = append(WebUIAllowed, *oaa)
 		} else {
-			println("ERROR: Incorrect AllowedIP:", ips[i])
+			L.Error("ERROR: Incorrect AllowedIP:", ips[i])
 		}
 	}
 	if len(WebUIAllowed) == 0 {
-		println("WARNING: No IP is currently allowed at WebUI")
+		L.Warn("No IP is currently allowed at WebUI")
 	}
 	ListenTCP = CFG.Net.ListenTCP
 
@@ -289,7 +290,7 @@ func Reset() {
 	if CFG.UserAgent != "" {
 		UserAgent = CFG.UserAgent
 	} else {
-		UserAgent = "/Spawn:" + Spawn.Version + "/"
+		UserAgent = "/Duod:" + Duod.Version + "/"
 	}
 
 	if CFG.Memory.MaxDataFileMB != 0 && CFG.Memory.MaxDataFileMB < 8 {
@@ -305,8 +306,8 @@ func Reset() {
 
 // MkTempBlocksDir -
 func MkTempBlocksDir() {
-	// no point doing it before SpawnHomeDir is set in hostInit()
-	if CFG.Memory.CacheOnDisk && SpawnHomeDir != "" {
+	// no point doing it before DuodHomeDir is set in hostInit()
+	if CFG.Memory.CacheOnDisk && DuodHomeDir != "" {
 		os.Mkdir(TempBlocksDir(), 0700)
 	}
 }
@@ -338,9 +339,9 @@ func DefaultTCPport() (res uint16) {
 		return
 	}
 	if CFG.Testnet {
-		res = 18333
+		res = 21047
 	} else {
-		res = 8333
+		res = 11047
 	}
 	return
 }
@@ -363,7 +364,6 @@ func str2oaa(ip string) (res *oneAllowedAddr) {
 		res.Mask = uint32((uint64(1)<<(32-x))-1) ^ 0xffffffff
 	}
 	res.Addr &= res.Mask
-	//fmt.Printf(" %s -> %08x / %08x\n", ip, res.Addr, res.Mask)
 	return
 }
 
@@ -380,7 +380,7 @@ func UnlockCfg() {
 // CloseBlockChain -
 func CloseBlockChain() {
 	if BlockChain != nil {
-		fmt.Println("Closing BlockChain")
+		L.Debug("Closing BlockChain")
 		BlockChain.Close()
 		BlockChain = nil
 	}
@@ -490,5 +490,5 @@ func RejectedTxsLimits() (size uint64, cnt int) {
 
 // TempBlocksDir -
 func TempBlocksDir() string {
-	return SpawnHomeDir + "tmpblk" + string(os.PathSeparator)
+	return DuodHomeDir + "tmpblk" + string(os.PathSeparator)
 }

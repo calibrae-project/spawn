@@ -6,8 +6,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 const (
@@ -84,9 +85,9 @@ func ExpireBlockFees() {
 
 // SaveBlockFees -
 func SaveBlockFees() {
-	f, er := os.Create(common.SpawnHomeDir + BlkFeesFileName)
+	f, er := os.Create(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
-		println("SaveBlockFees:", er.Error())
+		L.Error("SaveBlockFees:", er.Error())
 		return
 	}
 
@@ -95,7 +96,7 @@ func SaveBlockFees() {
 	er = gob.NewEncoder(buf).Encode(BlockFees)
 
 	if er != nil {
-		println("SaveBlockFees:", er.Error())
+		L.Error("SaveBlockFees:", er.Error())
 	}
 
 	buf.Flush()
@@ -105,7 +106,7 @@ func SaveBlockFees() {
 
 // LoadBlockFees -
 func LoadBlockFees() {
-	f, er := os.Open(common.SpawnHomeDir + BlkFeesFileName)
+	f, er := os.Open(common.DuodHomeDir + BlkFeesFileName)
 	if er != nil {
 		println("LoadBlockFees:", er.Error())
 		return

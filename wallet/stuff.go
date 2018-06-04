@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/ltc"
-	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/ltc"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
 // Cache for txs from already loaded from balance/ folder

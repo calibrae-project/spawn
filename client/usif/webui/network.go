@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 func pNet(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +28,7 @@ func pNet(w http.ResponseWriter, r *http.Request) {
 
 	network.MutexNet.Unlock()
 
-	d, _ := ioutil.ReadFile(common.SpawnHomeDir + "friends.txt")
+	d, _ := ioutil.ReadFile(common.DuodHomeDir + "friends.txt")
 	netPage = strings.Replace(netPage, "{FRIENDS_TXT}", html.EscapeString(string(d)), 1)
 
 	writeHTMLHead(w, r)

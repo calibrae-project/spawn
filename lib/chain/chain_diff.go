@@ -3,7 +3,7 @@ package chain
 import (
 	"math/big"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 const (

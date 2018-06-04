@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 type oneMinerID struct {
@@ -50,7 +51,7 @@ func ReloadMiners() {
 		var MinerIDfile [][3]string
 		e := json.Unmarshal(d, &MinerIDfile)
 		if e != nil {
-			println("miners.json", e.Error())
+			L.Error("miners.json", e.Error())
 			return
 		}
 		MinerIDs = nil
@@ -63,7 +64,7 @@ func ReloadMiners() {
 				if a, _ := btc.NewAddrFromString(r[2]); a != nil {
 					rec.Tag = a.OutScript()
 				} else {
-					println("Error in miners.json for", r[0])
+					L.Error("Error in miners.json for", r[0])
 					continue
 				}
 			}

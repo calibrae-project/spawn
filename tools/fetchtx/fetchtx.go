@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 	"io/ioutil"
-	"github.com/calibrae-project/spawn/lib/others/utils"
-	"github.com/calibrae-project/spawn"
+	"github.com/ParallelCoinTeam/duod/lib/others/utils"
+	"github.com/ParallelCoinTeam/duod"
 	"os"
 )
 
 
 func main() {
-	fmt.Println("Spawn FetchTx version", Spawn.Version)
+	fmt.Println("Duod FetchTx version", Duod.Version)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Specify transaction id on the command line (MSB).")

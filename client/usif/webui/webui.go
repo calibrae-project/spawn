@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/usif"
+	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/usif"
 )
 
 var startTime time.Time
@@ -119,7 +119,7 @@ func writeHTMLHead(w http.ResponseWriter, r *http.Request) {
 	} else {
 		s = strings.Replace(s, "{HELPURL}", "help", 1)
 	}
-	s = strings.Replace(s, "{VERSION}", Spawn.Version, 1)
+	s = strings.Replace(s, "{VERSION}", Duod.Version, 1)
 	if common.Testnet {
 		s = strings.Replace(s, "{TESTNET}", " Testnet ", 1)
 	} else {

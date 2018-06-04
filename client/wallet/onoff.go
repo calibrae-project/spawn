@@ -5,8 +5,9 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 var (
@@ -28,9 +29,9 @@ func InitMaps(empty bool) {
 	LoadMapSizes()
 	szs, ok = WalletAddrsCount[common.AllBalMinVal()]
 	if ok {
-		//fmt.Println("Have map sizes for MinBal", common.AllBalMinVal(), ":", szs[0], szs[1], szs[2], szs[3])
+		L.Debug("Have map sizes for MinBal ", common.AllBalMinVal(), " : ", szs[0], " ", szs[1], " ", szs[2], " ", szs[3])
 	} else {
-		//fmt.Println("No map sizes for MinBal", common.AllBalMinVal())
+		L.Debug("No map sizes for MinBal", common.AllBalMinVal())
 		szs = [4]int{10e6, 3e6, 10e3, 1e3} // defaults
 	}
 
@@ -44,7 +45,7 @@ init:
 // LoadBalance -
 func LoadBalance() {
 	if common.GetBool(&common.WalletON) {
-		//fmt.Println("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
+		L.Debug("wallet.LoadBalance() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 
@@ -89,7 +90,7 @@ func LoadBalance() {
 // Disable -
 func Disable() {
 	if !common.GetBool(&common.WalletON) {
-		//fmt.Println("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
+		L.Info("wallet.Disable() ignore: ", common.GetBool(&common.WalletON))
 		return
 	}
 	UpdateMapSizes()
@@ -116,14 +117,14 @@ func UpdateMapSizes() {
 
 	buf := new(bytes.Buffer)
 	gob.NewEncoder(buf).Encode(WalletAddrsCount)
-	ioutil.WriteFile(common.SpawnHomeDir+MapSizeFileName, buf.Bytes(), 0600)
+	ioutil.WriteFile(common.DuodHomeDir+MapSizeFileName, buf.Bytes(), 0600)
 }
 
 // LoadMapSizes -
 func LoadMapSizes() {
-	d, er := ioutil.ReadFile(common.SpawnHomeDir + MapSizeFileName)
+	d, er := ioutil.ReadFile(common.DuodHomeDir + MapSizeFileName)
 	if er != nil {
-		println("LoadMapSizes:", er.Error())
+		L.Error("LoadMapSizes:", er.Error())
 		return
 	}
 
@@ -131,6 +132,6 @@ func LoadMapSizes() {
 
 	er = gob.NewDecoder(buf).Decode(&WalletAddrsCount)
 	if er != nil {
-		println("LoadMapSizes:", er.Error())
+		L.Error("LoadMapSizes:", er.Error())
 	}
 }

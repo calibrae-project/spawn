@@ -4,7 +4,7 @@ import (
 	"os"
 	"fmt"
 	"encoding/binary"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 func main() {

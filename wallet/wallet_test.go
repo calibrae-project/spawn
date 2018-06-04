@@ -21,7 +21,7 @@ const (
 func start() error {
 	PassSeedFilename = Secret
 	RawKeysFilename = OTHERS
-	os.Setenv("Spawn_WALLET_CONFIG", ConfigFile)
+	os.Setenv("Duod_WALLET_CONFIG", ConfigFile)
 	return ioutil.WriteFile(Secret, []byte(SeedPass), 0600)
 }
 

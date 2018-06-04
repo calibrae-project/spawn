@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 func main() {

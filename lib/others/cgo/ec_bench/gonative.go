@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // CNT -

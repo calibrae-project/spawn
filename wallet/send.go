@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 // Resolved while parsing "-send" parameter

@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/client/wallet"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/peersdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/client/usif"
+	"github.com/ParallelCoinTeam/duod/client/wallet"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
 func pCfg(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func pCfg(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(r.Form["friends_file"]) > 0 {
-			ioutil.WriteFile(common.SpawnHomeDir+"friends.txt", []byte(r.Form["friends_file"][0]), 0600)
+			ioutil.WriteFile(common.DuodHomeDir+"friends.txt", []byte(r.Form["friends_file"][0]), 0600)
 			network.MutexNet.Lock()
 			network.NextConnectFriends = time.Now()
 			network.MutexNet.Unlock()

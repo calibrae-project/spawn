@@ -3,11 +3,11 @@ package wallet
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 var (
@@ -157,7 +157,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 		}
 
 		if rec == nil {
-			println("balance rec not found for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String(),
+			L.Error("balance rec not found for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String(),
 				btc.NewUint256(tx.TxID[:]).String(), vout, btc.UintToBtc(out.Value))
 			continue
 		}
@@ -166,7 +166,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 
 		if rec.unspMap != nil {
 			if _, ok := rec.unspMap[nr]; !ok {
-				println("unspent rec not in map for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
+				L.Error("unspent rec not in map for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
 				continue
 			}
 			delete(rec.unspMap, nr)
@@ -193,7 +193,7 @@ func allDelUTXOs(tx *utxo.Rec, outs []bool) {
 			}
 		}
 		if i == len(rec.unsp) {
-			println("unspent rec not in list for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
+			L.Error("unspent rec not in list for", btc.NewAddrFromPkScript(out.PKScr, common.CFG.Testnet).String())
 			continue
 		}
 		if len(rec.unsp) == 1 {
@@ -366,17 +366,17 @@ func PrintStat() {
 		}
 	}
 
-	fmt.Println("AllBalMinVal:", btc.UintToBtc(common.AllBalMinVal()), "  UseMapCnt:", common.CFG.AllBalances.UseMapCnt)
+	L.Info("AllBalMinVal:", btc.UintToBtc(common.AllBalMinVal()), "  UseMapCnt:", common.CFG.AllBalances.UseMapCnt)
 
-	fmt.Println("AllBalancesP2KH: ", len(AllBalancesP2KH), "records,",
+	L.Info("AllBalancesP2KH: ", len(AllBalancesP2KH), "records,",
 		p2khOuts, "outputs,", btc.UintToBtc(p2khVals), "BTC,", p2khMaps, "maps")
 
-	fmt.Println("AllBalancesP2SH: ", len(AllBalancesP2SH), "records,",
+	L.Info("AllBalancesP2SH: ", len(AllBalancesP2SH), "records,",
 		p2shOuts, "outputs,", btc.UintToBtc(p2shVals), "BTC,", p2shMaps, "maps")
 
-	fmt.Println("AllBalancesP2WKH: ", len(AllBalancesP2WKH), "records,",
+	L.Info("AllBalancesP2WKH: ", len(AllBalancesP2WKH), "records,",
 		p2wkhOuts, "outputs,", btc.UintToBtc(p2wkhVals), "BTC,", p2wkhMaps, "maps")
 
-	fmt.Println("AllBalancesP2WSH: ", len(AllBalancesP2WSH), "records,",
+	L.Info("AllBalancesP2WSH: ", len(AllBalancesP2WSH), "records,",
 		p2wshOuts, "outputs,", btc.UintToBtc(p2wshVals), "BTC,", p2wshMaps, "maps")
 }

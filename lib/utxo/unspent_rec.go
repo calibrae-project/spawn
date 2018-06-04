@@ -2,7 +2,7 @@ package utxo
 
 import (
 	//"encoding/binary"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
 )
 
 /*

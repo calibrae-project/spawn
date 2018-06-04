@@ -10,19 +10,20 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/rpcapi"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/client/usif/textui"
-	"github.com/calibrae-project/spawn/client/usif/webui"
-	"github.com/calibrae-project/spawn/client/wallet"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/chain"
-	"github.com/calibrae-project/spawn/lib/others/peersdb"
-	"github.com/calibrae-project/spawn/lib/others/qdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/client/rpcapi"
+	"github.com/ParallelCoinTeam/duod/client/usif"
+	"github.com/ParallelCoinTeam/duod/client/usif/textui"
+	"github.com/ParallelCoinTeam/duod/client/usif/webui"
+	"github.com/ParallelCoinTeam/duod/client/wallet"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/chain"
+	"github.com/ParallelCoinTeam/duod/lib/L"
+	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
 )
 
 var (
@@ -87,7 +88,7 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 
 		resetSaveTimer()
 	} else {
-		//fmt.Println("Warning: AcceptBlock failed. If the block was valid, you may need to rebuild the unspent DB (-r)")
+		L.Debug("Warning: AcceptBlock failed. If the block was valid, you may need to rebuild the unspent DB (-r)")
 		newEnd := common.BlockChain.LastBlock()
 		common.Last.Mutex.Lock()
 		common.Last.Block = newEnd
@@ -96,7 +97,7 @@ func LocalAcceptBlock(newbl *network.BlockRcvd) (e error) {
 		network.MutexRcv.Lock()
 		if network.LastCommitedHeader != newEnd {
 			network.LastCommitedHeader = newEnd
-			//println("LastCommitedHeader moved to", network.LastCommitedHeader.Height)
+			L.Debug("LastCommitedHeader moved to", network.LastCommitedHeader.Height)
 		}
 		network.DiscardedBlocks[newbl.Hash.BIdx()] = true
 		network.MutexRcv.Unlock()
@@ -140,7 +141,7 @@ func RetryCachedBlocks() bool {
 
 			e := LocalAcceptBlock(newbl)
 			if e != nil {
-				fmt.Println("AcceptBlock2", newbl.BlockTreeNode.BlockHash.String(), "-", e.Error())
+				L.Debug("AcceptBlock2", newbl.BlockTreeNode.BlockHash.String(), "-", e.Error())
 				newbl.Conn.Misbehave("LocalAcceptBl2", 250)
 			}
 			if usif.ExitNow.Get() {
@@ -215,7 +216,7 @@ func HandleNetBlock(newbl *network.BlockRcvd) {
 	common.Busy()
 	if e := LocalAcceptBlock(newbl); e != nil {
 		common.CountSafe("DiscardFreshBlockB")
-		fmt.Println("AcceptBlock1", newbl.Block.Hash.String(), "-", e.Error())
+		L.Debug("AcceptBlock1", newbl.Block.Hash.String(), "-", e.Error())
 		newbl.Conn.Misbehave("LocalAcceptBl1", 250)
 	} else {
 		//println("block", newbl.Block.Height, "accepted")
@@ -253,7 +254,7 @@ func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 	common.RecalcAverageBlockSize()
 
 	common.CountSafe("RPCBlockOK")
-	println("New mined block", msg.Block.Height, "accepted OK in", rb.TmAccepted.Sub(rb.TmQueue).String())
+	L.Debug("New mined block", msg.Block.Height, "accepted OK in", rb.TmAccepted.Sub(rb.TmQueue).String())
 
 	common.Last.Mutex.Lock()
 	common.Last.Time = time.Now()
@@ -266,10 +267,10 @@ func HandleRPCblock(msg *rpcapi.BlockSubmitted) {
 func main() {
 	var ptr *byte
 	if unsafe.Sizeof(ptr) < 8 {
-		fmt.Println("WARNING: Spawn client shall be build for 64-bit arch. It will likely crash now.")
+		L.Warn("Duod client shall be build for 64-bit arch. It will likely crash now.")
 	}
 
-	fmt.Println("Spawn client version", Spawn.Version)
+	L.Info("Duod client version", Duod.Version)
 	runtime.GOMAXPROCS(runtime.NumCPU()) // It seems that Go does not do it by default
 
 	// Disable Ctrl+C
@@ -280,8 +281,8 @@ func main() {
 			if !ok {
 				err = fmt.Errorf("pkg: %v", r)
 			}
-			fmt.Println("main panic recovered:", err.Error())
-			fmt.Println(string(debug.Stack()))
+			L.Debug("main panic recovered:", err.Error())
+			L.Debug(string(debug.Stack()))
 			network.NetCloseAll()
 			common.CloseBlockChain()
 			peersdb.ClosePeerDB()
@@ -294,16 +295,16 @@ func main() {
 
 	if common.FLAG.SaveConfig {
 		common.SaveConfig()
-		fmt.Println("Configuration file saved")
+		L.Debug("Configuration file saved")
 		os.Exit(0)
 	}
 
 	if common.FLAG.VolatileUTXO {
-		fmt.Println("WARNING! Using UTXO database in a volatile mode. Make sure to close the client properly (do not kill it!)")
+		L.Warn("Using UTXO database in a volatile mode. Make sure to close the client properly (do not kill it!)")
 	}
 
 	if common.FLAG.TrustAll {
-		fmt.Println("WARNING! Assuming all scripts inside new blocks to PASS. Verify the last block's hash when finished.")
+		L.Warn("Assuming all scripts inside new blocks to PASS. Verify the last block's hash when finished.")
 	}
 
 	hostInit() // This will create the DB lock file and keep it open
@@ -317,7 +318,7 @@ func main() {
 
 	if common.FLAG.Rescan && common.FLAG.VolatileUTXO {
 
-		fmt.Println("UTXO database rebuilt complete in the volatile mode, so flush DB to disk and exit...")
+		L.Debug("UTXO database rebuilt complete in the volatile mode, so flush DB to disk and exit...")
 
 	} else if !usif.ExitNow.Get() {
 
@@ -331,14 +332,14 @@ func main() {
 		peersdb.Testnet = common.Testnet
 		peersdb.ConnectOnly = common.CFG.ConnectOnly
 		peersdb.Services = common.Services
-		peersdb.InitPeers(common.SpawnHomeDir)
+		peersdb.InitPeers(common.DuodHomeDir)
 		if common.FLAG.UnbanAllPeers {
 			var keys []qdb.KeyType
 			var vals [][]byte
 			peersdb.PeerDB.Browse(func(k qdb.KeyType, v []byte) uint32 {
 				peer := peersdb.NewPeer(v)
 				if peer.Banned != 0 {
-					fmt.Println("Unban", peer.NetAddr.String())
+					L.Debug("Unban", peer.NetAddr.String())
 					peer.Banned = 0
 					keys = append(keys, k)
 					vals = append(vals, peer.Bytes())
@@ -349,7 +350,7 @@ func main() {
 				peersdb.PeerDB.Put(keys[i], vals[i])
 			}
 
-			fmt.Println(len(keys), "peers un-baned")
+			L.Debug(len(keys), "peers unbanned")
 		}
 
 		for k, v := range common.BlockChain.BlockIndex {
@@ -366,7 +367,7 @@ func main() {
 		}
 
 		if common.CFG.WebUI.Interface != "" {
-			fmt.Println("Starting WebUI at", common.CFG.WebUI.Interface)
+			L.Infof("Starting WebUI at http://%s\n", common.CFG.WebUI.Interface)
 			go webui.ServerThread(common.CFG.WebUI.Interface)
 		}
 
@@ -520,9 +521,11 @@ func main() {
 	if common.FLAG.UndoBlocks == 0 {
 		network.MempoolSave(false)
 	}
-	fmt.Println("Blockchain closed in", time.Now().Sub(sta).String())
+	L.Debug("Blockchain closed in ", time.Now().Sub(sta).String())
 	peersdb.ClosePeerDB()
 	usif.SaveBlockFees()
 	sys.UnlockDatabaseDir()
 	os.RemoveAll(common.TempBlocksDir())
+	L.Debug("Completed shutdown")
+	L.DebugNoInfo("\n\n")
 }

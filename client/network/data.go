@@ -8,8 +8,9 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 // ProcessGetData -
@@ -20,7 +21,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 	b := bytes.NewReader(pl)
 	cnt, e := btc.ReadVLen(b)
 	if e != nil {
-		println("ProcessGetData:", e.Error(), c.PeerAddr.IP())
+		L.Debug("ProcessGetData:", e.Error(), c.PeerAddr.IP())
 		return
 	}
 	for i := 0; i < int(cnt); i++ {
@@ -79,7 +80,7 @@ func (c *OneConnection) ProcessGetData(pl []byte) {
 			}
 		} else if typ == MsgCompactBlock {
 			if !c.SendCompactBlock(btc.NewUint256(h[4:])) {
-				println(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
+				L.Debug(c.ConnID, c.PeerAddr.IP(), c.Node.Agent, "asked for CmpctBlk we don't have", btc.NewUint256(h[4:]).String())
 				if c.Misbehave("GetCmpctBlk", 100) {
 					break
 				}
@@ -136,7 +137,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 		sta, b2g = conn.ProcessNewHeader(hdr[:])
 		if b2g == nil {
 			if sta == PHstatusFatal {
-				println("Unrequested Block: FAIL - Ban", conn.PeerAddr.IP(), conn.Node.Agent)
+				L.Debug("Unrequested Block: FAIL - Ban", conn.PeerAddr.IP(), conn.Node.Agent)
 				conn.DoS("BadUnreqBlock")
 			} else {
 				common.CountSafe("ErrUnreqBlock")
@@ -161,14 +162,14 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 	er := common.BlockChain.PostCheckBlock(b2g.Block)
 	if er != nil {
 		b2g.InProgress--
-		println("Corrupt block received from", conn.PeerAddr.IP(), er.Error())
+		L.Debug("Corrupt block received from", conn.PeerAddr.IP(), er.Error())
 		//ioutil.WriteFile(hash.String() + ".bin", b, 0700)
 		conn.DoS("BadBlock")
 
 		// we don't need to remove from conn.GetBlockInProgress as we're disconnecting
 
 		if b2g.Block.MerkleRootMatch() {
-			println("It was a wrongly mined one - clean it up")
+			L.Debug("It was a wrongly mined one - clean it up")
 			DelB2G(idx) //remove it from BlocksToGet
 			if b2g.BlockTreeNode == LastCommitedHeader {
 				LastCommitedHeader = LastCommitedHeader.Parent
@@ -186,7 +187,7 @@ func netBlockReceived(conn *OneConnection, b []byte) {
 	conn.Mutex.Lock()
 	bip := conn.GetBlockInProgress[idx]
 	if bip == nil {
-		//println(conn.ConnID, "received unrequested block", hash.String())
+		L.Debug(conn.ConnID, "received unrequested block", hash.String())
 		common.CountSafe("UnreqBlockRcvd")
 		conn.counters["NewBlock!"]++
 		orb.TxMissing = -2
@@ -408,7 +409,7 @@ func (c *OneConnection) GetBlockData() (yes bool) {
 	bu := new(bytes.Buffer)
 	btc.WriteVlen(bu, uint64(cnt))
 	pl := append(bu.Bytes(), invs.Bytes()...)
-	//println(c.ConnID, "fetching", cnt, "new blocks ->", cbip)
+	L.Debug(c.ConnID, "fetching", cnt, "new blocks ->", cbip)
 	c.SendRawMsg("getdata", pl)
 	yes = true
 

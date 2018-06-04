@@ -13,15 +13,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/calibrae-project/spawn"
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/client/network"
-	"github.com/calibrae-project/spawn/client/usif"
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/others/peersdb"
-	"github.com/calibrae-project/spawn/lib/others/qdb"
-	"github.com/calibrae-project/spawn/lib/others/sys"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/client/network"
+	"github.com/ParallelCoinTeam/duod/client/usif"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/others/peersdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/qdb"
+	"github.com/ParallelCoinTeam/duod/lib/others/sys"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 type oneUIcmd struct {
@@ -137,8 +137,8 @@ func showInfo(par string) {
 	b2gIdxLen := len(network.IndexToBlocksToGet)
 	network.MutexRcv.Unlock()
 
-	fmt.Printf("Spawn: %s,  Synced: %t,  Uptime %s,  Peers: %d,  ECDSAs: %d\n",
-		Spawn.Version, common.GetBool(&common.BlockChainSynchronized),
+	fmt.Printf("Duod: %s,  Synced: %t,  Uptime %s,  Peers: %d,  ECDSAs: %d\n",
+		Duod.Version, common.GetBool(&common.BlockChainSynchronized),
 		time.Now().Sub(common.StartTime).String(), btc.EcdsaVerifyCnt(), peersdb.PeerDB.Count())
 
 	// Memory used

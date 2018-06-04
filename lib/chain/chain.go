@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/utxo"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/utxo"
 )
 
 // AbortNow -
@@ -63,24 +63,24 @@ func NewChainExt(dbrootdir string, genesis *btc.Uint256, rescan bool, opts *NewC
 
 	ch.CB = *opts
 
-	ch.Consensus.GensisTimestamp = 1231006505
-	ch.Consensus.MaxPOWBits = 0x1d00ffff
+	ch.Consensus.GensisTimestamp = 1405742300 // 1231006505
+	ch.Consensus.MaxPOWBits = 0x1e0fffff // 0x1d00ffff
 	ch.Consensus.MaxPOWValue, _ = new(big.Int).SetString("00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)
 	if ch.testnet() {
-		ch.Consensus.BIP34Height = 21111
-		ch.Consensus.BIP65Height = 581885
-		ch.Consensus.BIP66Height = 330776
-		ch.Consensus.EnforceCSV = 770112
-		ch.Consensus.EnforceSegwit = 834624
-		ch.Consensus.BIP9Threshold = 1512
+		ch.Consensus.BIP34Height = 1000000 // 21111
+		ch.Consensus.BIP65Height = 1000000 // 581885
+		ch.Consensus.BIP66Height = 1000000 // 330776
+		ch.Consensus.EnforceCSV = 1000000 // 770112
+		ch.Consensus.EnforceSegwit = 1000000 // 834624
+		ch.Consensus.BIP9Threshold = 1000000 // 1512
 	} else {
-		ch.Consensus.BIP34Height = 227931
-		ch.Consensus.BIP65Height = 388381
-		ch.Consensus.BIP66Height = 363725
-		ch.Consensus.EnforceCSV = 419328
-		ch.Consensus.EnforceSegwit = 481824 // https://www.reddit.com/r/Bitcoin/comments/6okd1n/bip91_lock_in_is_guaranteed_as_of_block_476768/
-		ch.Consensus.BIP91Height = 477120
-		ch.Consensus.BIP9Threshold = 1916
+		ch.Consensus.BIP34Height = 1000000 // 227931
+		ch.Consensus.BIP65Height = 1000000 // 388381
+		ch.Consensus.BIP66Height = 1000000 // 363725
+		ch.Consensus.EnforceCSV = 1000000 // 419328
+		ch.Consensus.EnforceSegwit = 1000000 // 481824 // https://www.reddit.com/r/Bitcoin/comments/6okd1n/bip91_lock_in_is_guaranteed_as_of_block_476768/
+		ch.Consensus.BIP91Height = 1000000 // 477120
+		ch.Consensus.BIP9Threshold = 1000000 // 1916
 	}
 
 	ch.Blocks = NewBlockDBExt(dbrootdir, bdbopts)

@@ -9,7 +9,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/calibrae-project/spawn/client/common"
+	"github.com/ParallelCoinTeam/duod/client/common"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 const (
@@ -233,6 +234,6 @@ func (c *OneConnection) TryPing() bool {
 	rand.Read(c.PingInProgress[:])
 	c.SendRawMsg("ping", c.PingInProgress)
 	c.LastPingSent = time.Now()
-	//println(c.PeerAddr.IP(), "ping...")
+	L.Debug(c.PeerAddr.IP(), "ping...")
 	return true
 }

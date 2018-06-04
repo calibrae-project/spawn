@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/calibrae-project/spawn/lib/btc"
-	"github.com/calibrae-project/spawn/lib/script"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/script"
 )
 
 // PreCheckBlock -

@@ -3,7 +3,7 @@ package main
 /*
   This is a ECVerify speedup that works only with Windows
 
-  Use secp256k1.dll from Spawn/tools/sipa_dll
+  Use secp256k1.dll from Duod/tools/sipa_dll
   or build one yourself.
 
 */
@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/calibrae-project/spawn/client/common"
-	"github.com/calibrae-project/spawn/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/btc"
+	"github.com/ParallelCoinTeam/duod/lib/L"
 )
 
 var (
@@ -42,10 +42,10 @@ func verify() bool {
 
 func init() {
 	if verify() {
-		common.Log.Println("Using secp256k1.dll by sipa for ECVerify")
+		L.Debug("Using secp256k1.dll by sipa for ECVerify")
 		btc.ECVerify = ECVerify
 	} else {
-		common.Log.Println("ERROR: Could not initiate secp256k1.dll")
+		L.Debug("ERROR: Could not initiate secp256k1.dll")
 		os.Exit(1)
 	}
 }
